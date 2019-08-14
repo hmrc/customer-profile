@@ -45,7 +45,7 @@ trait CustomerProfileController extends HeaderValidator {
         .validate[ChangeEmail]
         .fold(
           errors => {
-            Logger.warn("Received error with service getPaperlessSettings: " + errors)
+            Logger.warn("Errors validating request body: " + errors)
             Future successful BadRequest
           },
           changeEmail => {

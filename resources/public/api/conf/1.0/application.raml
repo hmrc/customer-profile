@@ -113,6 +113,10 @@ uses:
               200:
       /pending-email:
         post:
+          body:
+            application/json:
+              type: !include schemas/pending-email.json
+              example: !include examples/pending-email.json
           displayName: Resend pending email
           description: Triggers a resend of the verification email
           is: [headers.acceptHeader]
