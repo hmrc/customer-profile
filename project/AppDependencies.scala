@@ -16,8 +16,8 @@ object AppDependencies {
   private val pegdownVersion        = "1.6.0"
   private val wiremockVersion       = "2.21.0"
   private val refinedVersion        = "0.9.4"
-  private val enumeratumVersion     = "1.6.1"
-  private val enumeratumPlayVersion = "1.6.1"
+//  private val enumeratumVersion     = "1.6.1"
+//  private val enumeratumPlayVersion = "1.6.1"
 
   val compile = Seq(
     "uk.gov.hmrc"       %% "bootstrap-play-26"        % bootstrapPlayVersion,
@@ -27,8 +27,8 @@ object AppDependencies {
     "uk.gov.hmrc"       %% "emailaddress"             % emailAddressVersion,
     "eu.timepit"        %% "refined"                  % refinedVersion,
     "com.typesafe.play" %% "play-json-joda"           % jodaVersion,
-    "com.beachape"      %% "enumeratum"               % enumeratumVersion,
-    "com.beachape"      %% "enumeratum-play-json"     % enumeratumPlayVersion
+//    "com.beachape"      %% "enumeratum"               % enumeratumVersion,
+//    "com.beachape"      %% "enumeratum-play-json"     % enumeratumPlayVersion
   )
 
   trait TestDependencies {
