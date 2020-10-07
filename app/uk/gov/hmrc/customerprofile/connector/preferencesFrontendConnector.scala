@@ -20,7 +20,6 @@ import com.google.inject.Inject
 import javax.inject.Named
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
-import uk.gov.hmrc.customerprofile.domain.StatusWithUrl
 import uk.gov.hmrc.http.{CoreGet, CorePut, HeaderCarrier, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.http._
 
@@ -35,14 +34,14 @@ class preferencesFrontendConnector @Inject() (
     extends ServicesCircuitBreaker {
 
   def url(path: String): String = s"$serviceUrl$path"
-
-  def getStatus(
-                    )(implicit headerCarrier: HeaderCarrier,
-                      ex:                     ExecutionContext
-                    ): Future[Option[StatusWithUrl]] =
-    withCircuitBreaker(http.GET[Option[StatusWithUrl]](url(s"/paperless/status")))
-      .recover {
-        case _:        NotFoundException                                            => None
-      }
+//TODO: Add this call when endpoint details are known
+//  def getStatus(
+//                    )(implicit headerCarrier: HeaderCarrier,
+//                      ex:                     ExecutionContext
+//                    ): Future[Option[StatusWithUrl]] =
+//    withCircuitBreaker(http.GET[Option[StatusWithUrl]](url(s"/paperless/status")))
+//      .recover {
+//        case _:        NotFoundException                                            => None
+//      }
 
 }
