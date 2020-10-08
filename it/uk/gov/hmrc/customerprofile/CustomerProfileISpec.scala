@@ -135,6 +135,17 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     }
 
+    "return preferences if email bounced" in {
+      authRecordExists(nino)
+      respondPreferencesWithBouncedEmail()
+
+      val response = await(getRequestWithAcceptHeader(url))
+
+      response.status                         shouldBe 200
+      (response.json \ "digital").as[Boolean] shouldBe true
+
+    }
+
     "copy relevant preferences to future payload positions" in {
       val linkSent = LocalDate.now()
       authRecordExists(nino)
