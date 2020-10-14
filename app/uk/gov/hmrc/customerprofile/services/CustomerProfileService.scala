@@ -37,6 +37,7 @@ class CustomerProfileService @Inject() (
   citizenDetailsConnector:       CitizenDetailsConnector,
   preferencesConnector:          PreferencesConnector,
   entityResolver:                EntityResolverConnector,
+  preferencesFrontend:           PreferencesFrontendConnector,
   val accountAccessControl:      AccountAccessControl,
   val appNameConfiguration:      Configuration,
   val auditConnector:            AuditConnector,

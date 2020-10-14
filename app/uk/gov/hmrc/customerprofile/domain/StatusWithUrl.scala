@@ -36,9 +36,9 @@ object StatusName {
 
     override def reads(json: JsValue): JsResult[StatusName] = json match {
       case JsString("Paper")            => JsSuccess(Paper)
-      case JsString("EmailNotVerified") => JsSuccess(EmailNotVerified)
-      case JsString("BouncedEmail")     => JsSuccess(BouncedEmail)
-      case JsString("Alright")          => JsSuccess(Alright)
+      case JsString("EmailNotVerified") => JsSuccess(Pending)
+      case JsString("BouncedEmail")     => JsSuccess(Bounced)
+      case JsString("Alright")          => JsSuccess(Verified)
       case JsString("NewCustomer")      => JsSuccess(NewCustomer)
       case JsString("NoEmail")          => JsSuccess(NoEmail)
       case _                            => JsError()
