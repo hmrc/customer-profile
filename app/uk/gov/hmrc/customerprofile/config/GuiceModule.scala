@@ -48,13 +48,13 @@ class GuiceModule(
 
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
+    bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
 
     bindConfigInt("controllers.confidenceLevel")
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
     bind(classOf[String]).annotatedWith(named("citizen-details")).toInstance(servicesConfig.baseUrl("citizen-details"))
     bind(classOf[String]).annotatedWith(named("entity-resolver")).toInstance(servicesConfig.baseUrl("entity-resolver"))
     bind(classOf[String]).annotatedWith(named("preferences")).toInstance(servicesConfig.baseUrl("preferences"))
-    bind(classOf[String]).annotatedWith(named("preferences-frontend")).toInstance(servicesConfig.baseUrl("preferences-frontend"))
     bind(classOf[String]).annotatedWith(named("mobile-shuttering")).toInstance(servicesConfig.baseUrl("mobile-shuttering"))
   }
 

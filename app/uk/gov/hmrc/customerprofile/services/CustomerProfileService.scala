@@ -23,6 +23,7 @@ import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, NinoNotFoundOnAccount}
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.domain.EmailPreference._
+import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
@@ -34,14 +35,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CustomerProfileService @Inject() (
-  citizenDetailsConnector:       CitizenDetailsConnector,
-  preferencesConnector:          PreferencesConnector,
-  entityResolver:                EntityResolverConnector,
-  preferencesFrontend:           PreferencesFrontendConnector,
-  val accountAccessControl:      AccountAccessControl,
-  val appNameConfiguration:      Configuration,
-  val auditConnector:            AuditConnector,
-  @Named("appName") val appName: String)
+  citizenDetailsConnector:                     CitizenDetailsConnector,
+  preferencesConnector:                        PreferencesConnector,
+  entityResolver:                              EntityResolverConnector,
+  val accountAccessControl:                    AccountAccessControl,
+  val appNameConfiguration:                    Configuration,
+  val auditConnector:                          AuditConnector,
+  @Named("appName") val appName:               String,
+  @Named("reOptInEnabled") val reOptInEnabled: Boolean)
     extends Auditor {
 
   def getAccounts(
@@ -101,7 +102,7 @@ class CustomerProfileService @Inject() (
     ex:          ExecutionContext
   ): Future[Option[Preference]] =
     withAudit("getPreferences", Map.empty) {
-      makePreferencesForwardsCompatible(entityResolver.getPreferences())
+      makePreferencesBackwardsCompatible(entityResolver.getPreferences())
     }
 
   def setPreferencesPendingEmail(
@@ -118,14 +119,20 @@ class CustomerProfileService @Inject() (
       } yield response
     }
 
-  def mapStatusToExisitingValue(statusReceived: Option[Status]): Option[StatusName] = statusReceived match {
-    case Some(Status.Pending)  => Some(StatusName.Pending)
-    case Some(Status.Bounced)  => Some(StatusName.Bounced)
-    case Some(Status.Verified) => Some(StatusName.Verified)
-    case None                  => None
-  }
+  def reOptInEnabledCheck(preferences: Preference): Preference =
+    if (reOptInEnabled)
+      preferences
+    else {
+      preferences.status.map(_.name) match {
+        case Some(statusName) =>
+          if (statusName.contains(ReOptIn))
+            preferences.copy(email = preferences.email.map(_.copy(status = Verified)),status = preferences.status.map(_.copy(name = Some(Verified))))
+          else preferences
+        case _ => preferences
+      }
+    }
 
-  private def makePreferencesForwardsCompatible(
+  private def makePreferencesBackwardsCompatible(
     preferencesReceived: Future[Option[Preference]]
   )(implicit ex:         ExecutionContext
   ): Future[Option[Preference]] =
@@ -133,21 +140,16 @@ class CustomerProfileService @Inject() (
       emailAddressCopied <- preferencesReceived.map(
                              _.map(pref => pref.copy(emailAddress = pref.email.map(_.email.value)))
                            )
-      statusPresent <- preferencesReceived.map(_.exists(_.email.isDefined))
+      statusPresent <- preferencesReceived.map(_.exists(_.status.isDefined))
       statusCopied <- if (statusPresent)
                        Future successful emailAddressCopied
-                         .map(pref =>
-                           pref.copy(status = Some(
-                             PaperlessStatus(name = mapStatusToExisitingValue(pref.email.map(email => email.status)))
-                           )
-                           )
-                         )
+                         .map(pref => pref.copy(email = pref.email.map(_.copy(status = pref.status.get.name.get))))
                      else Future successful emailAddressCopied
       linkSentPresent <- preferencesReceived.map(_.exists(_.email.exists(_.linkSent.isDefined)))
       linkSent        <- if (linkSentPresent) preferencesReceived.map(_.get.email.get.linkSent) else Future successful None
-      forwardsCompatiblePreferences <- if (linkSentPresent)
-                                        Future successful statusCopied.map(pref => pref.copy(linkSent = linkSent))
-                                      else Future successful statusCopied
-    } yield forwardsCompatiblePreferences
+      backwardsCompatiblePreferences <- if (linkSentPresent)
+                                         Future successful statusCopied.map(pref => pref.copy(linkSent = linkSent))
+                                       else Future successful statusCopied
+    } yield backwardsCompatiblePreferences
 
 }
