@@ -17,6 +17,7 @@
 package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, OFormat, Reads, Writes}
+import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 case class TermsAccepted(
@@ -30,22 +31,22 @@ object TermsAccepted {
 case class Paperless(
   generic:  TermsAccepted,
   email:    EmailAddress,
-  language: Option[String])
+  language: Option[Language] = Some(English))
 
 object Paperless {
 
   implicit val formats: OFormat[Paperless] = {
     import uk.gov.hmrc.emailaddress.PlayJsonFormats.{emailAddressReads, emailAddressWrites}
-    Json.format[Paperless]
+    Json.using[Json.WithDefaultValues].format[Paperless]
   }
 }
 
 case class PaperlessOptOut(
   generic:  Option[TermsAccepted],
-  language: Option[String])
+  language: Option[Language] = Some(English))
 
 object PaperlessOptOut {
-  implicit val format: OFormat[PaperlessOptOut] = Json.format[PaperlessOptOut]
+  implicit val format: OFormat[PaperlessOptOut] = Json.using[Json.WithDefaultValues].format[PaperlessOptOut]
 }
 
 case class OptInPage(
@@ -80,31 +81,54 @@ object PageType {
   val reads: Reads[PageType] = new Reads[PageType] {
 
     override def reads(json: JsValue): JsResult[PageType] = json match {
-      case JsString("AndroidOptInPage")   => JsSuccess(AndroidOptInPage)
-      case JsString("IosOptInPage")       => JsSuccess(IosOptInPage)
-      case JsString("AndroidOptOutPage")  => JsSuccess(AndroidOptOutPage)
-      case JsString("IosOptOutPage")      => JsSuccess(IosOptOutPage)
-      case JsString("AndroidReOptInPage") => JsSuccess(AndroidReOptInPage)
-      case JsString("IosReOptInPage")     => JsSuccess(IosReOptInPage)
+      case JsString("AndroidOptInPage")    => JsSuccess(AndroidOptInPage)
+      case JsString("IosOptInPage")        => JsSuccess(IosOptInPage)
+      case JsString("AndroidOptOutPage")   => JsSuccess(AndroidOptOutPage)
+      case JsString("IosOptOutPage")       => JsSuccess(IosOptOutPage)
+      case JsString("AndroidReOptInPage")  => JsSuccess(AndroidReOptInPage)
+      case JsString("IosReOptInPage")      => JsSuccess(IosReOptInPage)
       case JsString("AndroidReOptOutPage") => JsSuccess(AndroidReOptOutPage)
       case JsString("IosReOptOutPage")     => JsSuccess(IosReOptOutPage)
-      case _                          => JsError()
+      case _                               => JsError()
     }
   }
 
   val writes: Writes[PageType] = new Writes[PageType] {
 
     override def writes(pageType: PageType) = pageType match {
-      case AndroidOptInPage   => JsString("AndroidOptInPage")
-      case IosOptInPage     => JsString("IosOptInPage")
-      case AndroidOptOutPage  => JsString("AndroidOptOutPage")
-      case IosOptOutPage    => JsString("IosOptOutPage")
-      case AndroidReOptInPage => JsString("AndroidReOptInPage")
-      case IosReOptInPage   => JsString("IosReOptInPage")
+      case AndroidOptInPage    => JsString("AndroidOptInPage")
+      case IosOptInPage        => JsString("IosOptInPage")
+      case AndroidOptOutPage   => JsString("AndroidOptOutPage")
+      case IosOptOutPage       => JsString("IosOptOutPage")
+      case AndroidReOptInPage  => JsString("AndroidReOptInPage")
+      case IosReOptInPage      => JsString("IosReOptInPage")
       case AndroidReOptOutPage => JsString("AndroidReOptOutPage")
-      case IosReOptOutPage   => JsString("IosReOptOutPage")
+      case IosReOptOutPage     => JsString("IosReOptOutPage")
     }
   }
 
   implicit val formats: Format[PageType] = Format(reads, writes)
+}
+
+sealed trait Language
+
+object Language {
+  case object English extends Language
+
+  val reads: Reads[Language] = new Reads[Language] {
+
+    override def reads(json: JsValue): JsResult[Language] = json match {
+      case JsString("en") => JsSuccess(English)
+      case _              => JsError()
+    }
+  }
+
+  val writes: Writes[Language] = new Writes[Language] {
+
+    override def writes(language: Language): JsString = language match {
+      case English => JsString("en")
+    }
+  }
+
+  implicit val formats: Format[Language] = Format(reads, writes)
 }

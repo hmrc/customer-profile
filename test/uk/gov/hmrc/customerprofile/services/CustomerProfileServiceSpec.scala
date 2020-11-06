@@ -26,6 +26,7 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
+import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
@@ -121,7 +122,7 @@ class CustomerProfileServiceSpec
   )
 
   val newEmail             = EmailAddress("new@new.com")
-  val newPaperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some("en"))
+  val newPaperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
 
   val nino = Nino("CS700100A")
 
@@ -304,20 +305,20 @@ class CustomerProfileServiceSpec
       mockAudit(transactionName = "paperlessSettingsOptOut")
       (entityResolver
         .paperlessOptOut(_: PaperlessOptOut)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some("en")), *, *)
+        .expects(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)), *, *)
         .returns(Future successful PreferencesExists)
 
-      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some("en")))) shouldBe PreferencesExists
+      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) shouldBe PreferencesExists
     }
 
     "If sent, override the accepted value to 'false' when opting out" in {
       mockAudit(transactionName = "paperlessSettingsOptOut")
       (entityResolver
         .paperlessOptOut(_: PaperlessOptOut)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some("en")), *, *)
+        .expects(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)), *, *)
         .returns(Future successful PreferencesExists)
 
-      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(true))), Some("en")))) shouldBe PreferencesExists
+      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(true))), Some(English)))) shouldBe PreferencesExists
     }
   }
 

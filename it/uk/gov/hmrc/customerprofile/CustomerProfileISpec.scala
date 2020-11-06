@@ -25,6 +25,7 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.{parse, toJson}
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSResponse
+import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, OptInPage, PageType, Paperless, PaperlessOptOut, Shuttering, TermsAccepted, Version}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub._
@@ -130,7 +131,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       response.status                                shouldBe 200
       (response.json \ "digital").as[Boolean]        shouldBe false
       (response.json \ "email").isEmpty              shouldBe true
-      (response.json \ "status" \ "name").as[String] shouldBe "Paper"
+      (response.json \ "status" \ "name").as[String]       shouldBe "Paper"
       (response.json \ "linkSent").isEmpty           shouldBe true
       (response.json \ "emailAddress").isEmpty       shouldBe true
 
@@ -245,7 +246,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
         Paperless(
           generic = TermsAccepted(Some(true), Some(OptInPage(Version(1, 1), 44, PageType.IosReOptInPage))),
           email   = EmailAddress("new-email@new-email.new.email"),
-          Some("en")
+          Some(English)
         )
       )
 
@@ -267,6 +268,20 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       accountsFound(nino)
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
+    }
+
+    "return a 400 response when an invalid language is sent" in {
+      respondWithEntityDetailsByNino(nino.value, entityId)
+      respondPreferencesWithPaperlessOptedIn()
+      authRecordExists(nino)
+      successfulPendingEmailUpdate(entityId)
+      accountsFound(nino)
+
+      val paperless = parse(
+        """{ "email": "test@test.com", "generic": { "accepted": true, "optInPage": { "cohort": 24, "pageType": "AndroidOptInPage", "version": {"major": 1, "minor": 2 } } }, "language": "xx" }""".stripMargin
+      )
+
+      await(postRequestWithAcceptHeader(url, Json.toJson(paperless))).status shouldBe 400
     }
 
     "return a Conflict response when preferences has no existing verified or pending email" in {
@@ -346,7 +361,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       toJson(
         PaperlessOptOut(
           generic = Some(TermsAccepted(Some(false), Some(OptInPage(Version(1, 1), 44, PageType.AndroidReOptInPage)))),
-          Some("en")
+          Some(English)
         )
       )
 
@@ -355,6 +370,17 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       successPaperlessSettingsChange()
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
+    }
+
+    "return a 400 response when an invalid language is sent" in {
+      authRecordExists(nino)
+      successPaperlessSettingsChange()
+
+      val paperless = parse(
+        """{ "generic": { "accepted": false, "optInPage": { "cohort": 24, "pageType": "AndroidOptOutPage", "version": {"major": 1, "minor": 2 } } }, "language": "xx" }""".stripMargin
+      )
+
+      await(postRequestWithAcceptHeader(url, Json.toJson(paperless))).status shouldBe 400
     }
 
     "return 406 if no request header is supplied" in {
@@ -587,7 +613,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
         Paperless(
           generic = TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.IosOptInPage))),
           email   = EmailAddress("new-email@new-email.new.email"),
-          Some("en")
+          Some(English)
         )
       )
 
@@ -611,7 +637,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
         Paperless(
           generic = TermsAccepted(accepted = Some(false), Some(OptInPage(Version(1, 1), 44, PageType.IosOptOutPage))),
           email   = EmailAddress("new-email@new-email.new.email"),
-          Some("en")
+          Some(English)
         )
       )
 

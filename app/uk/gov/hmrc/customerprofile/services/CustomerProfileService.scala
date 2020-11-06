@@ -24,6 +24,7 @@ import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, NinoNotFoundOnAcc
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.domain.EmailPreference._
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
+import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
@@ -72,15 +73,9 @@ class CustomerProfileService @Inject() (
     withAudit("paperlessSettings", Map("accepted" -> settings.generic.accepted.toString)) {
       for {
         preferences ← entityResolver.getPreferences()
-        status ← preferences.fold(
-                  entityResolver
-                    .paperlessSettings(settings.copy(generic = settings.generic.copy(accepted = Some(true))))
-                ) { preference =>
+        status ← preferences.fold(paperlessOptIn(settings)) { preference =>
                   if (preference.digital) setPreferencesPendingEmail(ChangeEmail(settings.email.value), journeyId)
-                  else
-                    entityResolver.paperlessSettings(
-                      settings.copy(generic = settings.generic.copy(accepted = Some(true)))
-                    )
+                  else paperlessOptIn(settings)
                 }
       } yield status
     }
@@ -151,5 +146,13 @@ class CustomerProfileService @Inject() (
                                          Future successful statusCopied.map(pref => pref.copy(linkSent = linkSent))
                                        else Future successful statusCopied
     } yield backwardsCompatiblePreferences
+
+  private def paperlessOptIn(
+    settings:    Paperless
+  )(implicit hc: HeaderCarrier,
+    ex:          ExecutionContext
+  ): Future[PreferencesStatus] = entityResolver.paperlessSettings(
+    settings.copy(generic = settings.generic.copy(accepted = Some(true)))
+  )
 
 }
