@@ -61,6 +61,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "return account details" in {
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -70,6 +71,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "return 200 if no nino on account" in {
       accountsFoundWithoutNino()
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -83,6 +85,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       accountsFailure()
+      stubForShutteringDisabled
       await(getRequestWithAcceptHeader(url)).status shouldBe 401
     }
 
@@ -114,6 +117,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return preferences" in {
       authRecordExists(nino)
       respondPreferencesWithPaperlessOptedIn()
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -125,6 +129,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return preferences if opted out" in {
       authRecordExists(nino)
       respondPreferencesWithPaperlessOptedOut()
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -140,6 +145,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return preferences if email bounced" in {
       authRecordExists(nino)
       respondPreferencesWithBouncedEmail()
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -153,6 +159,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       val linkSent = LocalDate.now()
       authRecordExists(nino)
       respondPreferencesWithUnverifiedEmail(Some(linkSent))
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -169,6 +176,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       authFailure()
+      stubForShutteringDisabled
       await(getRequestWithAcceptHeader(url)).status shouldBe 401
     }
 
@@ -200,6 +208,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return 404 response status code when citizen-details returns 404 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 404)
       authRecordExists(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -213,6 +222,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       authFailure()
+      stubForShutteringDisabled
       await(getRequestWithAcceptHeader(url)).status shouldBe 401
     }
 
@@ -256,6 +266,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       successPaperlessSettingsChange()
       accountsFound(nino)
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
     }
@@ -266,6 +277,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
     }
@@ -276,6 +288,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val paperless = parse(
         """{ "email": "test@test.com", "generic": { "accepted": true, "optInPage": { "cohort": 24, "pageType": "AndroidOptInPage", "version": {"major": 1, "minor": 2 } } }, "language": "xx" }""".stripMargin
@@ -292,6 +305,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithBouncedEmail()
       conflictPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, paperless))
       response.status shouldBe 409
@@ -304,6 +318,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondWithEntityDetailsByNino(nino.value, entityId)
       authRecordExists(nino)
       respondNoPreferences()
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, paperless))
       response.status shouldBe 404
@@ -318,6 +333,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       errorPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, paperless))
       response.status shouldBe 500
@@ -330,6 +346,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       authFailure()
+      stubForShutteringDisabled
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 401
     }
 
@@ -368,6 +385,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return a 204 response when successful" in {
       authRecordExists(nino)
       successPaperlessSettingsChange()
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
     }
@@ -375,6 +393,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     "return a 400 response when an invalid language is sent" in {
       authRecordExists(nino)
       successPaperlessSettingsChange()
+      stubForShutteringDisabled
 
       val paperless = parse(
         """{ "generic": { "accepted": false, "optInPage": { "cohort": 24, "pageType": "AndroidOptOutPage", "version": {"major": 1, "minor": 2 } } }, "language": "xx" }""".stripMargin
@@ -389,6 +408,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       authFailure()
+      stubForShutteringDisabled
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 401
     }
 
@@ -425,6 +445,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, changeEmail)).status shouldBe 204
     }
@@ -437,6 +458,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       conflictPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
       response.status shouldBe 409
@@ -448,6 +470,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondWithEntityDetailsByNino(nino.value, entityId)
       authRecordExists(nino)
       respondNoPreferences()
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
       response.status shouldBe 404
@@ -462,6 +485,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       errorPendingEmailUpdate(entityId)
       accountsFound(nino)
+      stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
       response.status shouldBe 500
@@ -474,6 +498,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "propagate 401" in {
       authFailure()
+      stubForShutteringDisabled
       await(postRequestWithAcceptHeader(url, changeEmail)).status shouldBe 401
     }
 
@@ -529,6 +554,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
     "return personal details for the given NINO from citizen-details" in {
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
       authRecordExists(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -539,6 +565,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
     "return a 423 response status code when the NINO is locked due to Manual Correspondence Indicator flag being set in NPS" in {
       npsDataIsLockedDueToMciFlag(nino)
       authRecordExists(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -551,6 +578,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
     "return 500 response status code when citizen-details returns 500 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 500)
       authRecordExists(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -587,6 +615,7 @@ class CustomerProfileCitizenDetailsDisabledISpec extends CustomerProfileTests {
     val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
     "return 404 for disabled citizen-details" in {
       authRecordExists(nino)
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -623,6 +652,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
       authRecordExists(nino)
       successPaperlessSettingsOptInWithVersion
       accountsFound(nino)
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
     }
@@ -647,6 +677,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
       authRecordExists(nino)
       successPaperlessSettingsOptOutWithVersion
       accountsFound(nino)
+      stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
     }
@@ -669,6 +700,7 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
     "return preferences with a status of verified instead of reOptIn" in {
       authRecordExists(nino)
       respondPreferencesWithReOptInRequired()
+      stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
 
