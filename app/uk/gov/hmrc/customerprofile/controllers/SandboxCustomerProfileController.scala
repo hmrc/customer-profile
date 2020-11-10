@@ -85,7 +85,7 @@ class SandboxCustomerProfileController @Inject() (
       digital      = true,
       emailAddress = Some("jt@test.com"),
       email        = Some(EmailPreference(email = EmailAddress("jt@test.com"), status = status, linkSent = linkSent)),
-      status       = Some(PaperlessStatus(Some(status), Some(Category.ActionRequired))),
+      status       = Some(PaperlessStatus(status, Category.ActionRequired)),
       linkSent     = linkSent
     )
 

@@ -141,7 +141,7 @@ class CustomerProfileServiceSpec
     Preference(
       digital = digital,
       email   = Some(EmailPreference(EmailAddress("old@old.com"), status)),
-      status  = Some(PaperlessStatus(name = Some(status), category = Some(Category.Info)))
+      status  = Some(PaperlessStatus(name = status, category = Category.Info))
     )
 
   def mockGetAccounts() = {
@@ -240,7 +240,7 @@ class CustomerProfileServiceSpec
         existingDigitalPreference.copy(
           emailAddress = existingDigitalPreference.email.map(_.email.value),
           status = Some(
-            PaperlessStatus(existingDigitalPreference.status.get.name, category = Some(Category.Info))
+            PaperlessStatus(existingDigitalPreference.status.get.name, category = Category.Info)
           )
         )
       )
@@ -330,7 +330,7 @@ class CustomerProfileServiceSpec
       expectedPreferences.copy(
         email        = expectedPreferences.email.map(_.copy(status = ReOptIn)),
         status = Some(
-          PaperlessStatus(Some(ReOptIn), category = Some(Category.Info))
+          PaperlessStatus(ReOptIn, category = Category.Info)
         )
       )
     }
@@ -352,7 +352,7 @@ class CustomerProfileServiceSpec
       expectedPreferences.copy(
         email        = expectedPreferences.email.map(_.copy(status = Verified)),
         status = Some(
-          PaperlessStatus(Some(Verified), category = Some(Category.Info))
+          PaperlessStatus(Verified, category = Category.Info)
         )
       )
     }

@@ -19,8 +19,8 @@ package uk.gov.hmrc.customerprofile.domain
 import play.api.libs.json._
 
 case class PaperlessStatus(
-  name:     Option[StatusName],
-  category: Option[Category] = None)
+  name:     StatusName,
+  category: Category)
 
 object PaperlessStatus {
   implicit val formats = Json.format[PaperlessStatus]

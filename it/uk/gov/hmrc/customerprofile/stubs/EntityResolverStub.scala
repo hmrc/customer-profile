@@ -8,7 +8,7 @@ import play.api.libs.json.Json
 import play.api.libs.json.Json.{stringify, toJson}
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Alright, Bounced, BouncedEmail, EmailNotVerified, Paper, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain.{EmailPreference, OptInPage, PageType, Paperless, PaperlessOptOut, PaperlessStatus, Preference, StatusName, TermsAccepted, Version}
+import uk.gov.hmrc.customerprofile.domain.{Category, EmailPreference, OptInPage, PageType, Paperless, PaperlessOptOut, PaperlessStatus, Preference, StatusName, TermsAccepted, Version}
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 object EntityResolverStub {
@@ -34,9 +34,9 @@ object EntityResolverStub {
       Preference(
         digital = optedIn,
         email   = Some(EmailPreference(EmailAddress(value = email), status = emailStatus, linkSent = linkSent)),
-        status  = Some(PaperlessStatus(name = Some(status)))
+        status  = Some(PaperlessStatus(name = status, category = Category.ActionRequired))
       )
-    } else Preference(digital = false, status = Some(PaperlessStatus(name = Some(status))))
+    } else Preference(digital = false, status = Some(PaperlessStatus(name = status, category = Category.ActionRequired)))
 
   private def urlEqualToEntityResolverPaye(nino: String): UrlPattern =
     urlEqualTo(s"/entity-resolver/paye/$nino")

@@ -18,13 +18,10 @@ package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.{Inject, Singleton}
 import javax.inject.Named
-import org.joda.time.LocalDate
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, NinoNotFoundOnAccount}
 import uk.gov.hmrc.customerprofile.connector._
-import uk.gov.hmrc.customerprofile.domain.EmailPreference._
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
-import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
@@ -115,17 +112,10 @@ class CustomerProfileService @Inject() (
     }
 
   def reOptInEnabledCheck(preferences: Preference): Preference =
-    if (reOptInEnabled)
-      preferences
-    else {
-      preferences.status.map(_.name) match {
-        case Some(statusName) =>
-          if (statusName.contains(ReOptIn))
-            preferences.copy(email = preferences.email.map(_.copy(status = Verified)),status = preferences.status.map(_.copy(name = Some(Verified))))
-          else preferences
-        case _ => preferences
-      }
-    }
+    if (!reOptInEnabled && preferences.status.map(_.name).contains(ReOptIn))
+      preferences.copy(email  = preferences.email.map(_.copy(status = Verified)),
+                       status = preferences.status.map(_.copy(name  = Verified)))
+    else preferences
 
   private def makePreferencesBackwardsCompatible(
     preferencesReceived: Future[Option[Preference]]
@@ -135,14 +125,15 @@ class CustomerProfileService @Inject() (
       emailAddressCopied <- preferencesReceived.map(
                              _.map(pref => pref.copy(emailAddress = pref.email.map(_.email.value)))
                            )
-      statusPresent <- preferencesReceived.map(_.exists(_.status.isDefined))
-      statusCopied <- if (statusPresent)
-                       Future successful emailAddressCopied
-                         .map(pref => pref.copy(email = pref.email.map(_.copy(status = pref.status.get.name.get))))
-                     else Future successful emailAddressCopied
-      linkSentPresent <- preferencesReceived.map(_.exists(_.email.exists(_.linkSent.isDefined)))
-      linkSent        <- if (linkSentPresent) preferencesReceived.map(_.get.email.get.linkSent) else Future successful None
-      backwardsCompatiblePreferences <- if (linkSentPresent)
+      statusName <- preferencesReceived.map(_.flatMap(_.status.map(_.name)))
+      statusCopied <- if (statusName.isDefined)
+                       Future.successful(
+                         emailAddressCopied
+                           .map(pref => pref.copy(email = pref.email.map(_.copy(status = statusName.get))))
+                       )
+                     else Future.successful(emailAddressCopied)
+      linkSent <- preferencesReceived.map(_.flatMap(_.email.flatMap(_.linkSent)))
+      backwardsCompatiblePreferences <- if (linkSent.isDefined)
                                          Future successful statusCopied.map(pref => pref.copy(linkSent = linkSent))
                                        else Future successful statusCopied
     } yield backwardsCompatiblePreferences

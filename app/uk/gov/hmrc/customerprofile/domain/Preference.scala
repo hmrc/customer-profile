@@ -17,7 +17,7 @@
 package uk.gov.hmrc.customerprofile.domain
 
 import org.joda.time.LocalDate
-import play.api.libs.json.{JsError, Json, _}
+import play.api.libs.json._
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 case class EmailPreference(
