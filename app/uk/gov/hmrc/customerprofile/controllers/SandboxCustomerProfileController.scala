@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -84,7 +84,6 @@ class SandboxCustomerProfileController @Inject() (
     Preference(
       digital      = true,
       emailAddress = Some("jt@test.com"),
-      email        = Some(EmailPreference(email = EmailAddress("jt@test.com"), status = status, linkSent = linkSent)),
       status       = if(status == ReOptIn) Some(PaperlessStatus(status, Category.ActionRequired, Some(10))) else Some(PaperlessStatus(status, Category.ActionRequired)),
       linkSent     = linkSent
     )
@@ -165,7 +164,7 @@ class SandboxCustomerProfileController @Inject() (
         case _ =>
           Ok(
             toJson(
-              Preference(digital = false, None, None, None, None)
+              Preference(digital = false, None, None, None)
             )
           )
       })
