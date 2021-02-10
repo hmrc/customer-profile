@@ -17,8 +17,8 @@
 package uk.gov.hmrc.customerprofile.controllers
 
 import java.time.LocalDate
-
 import com.google.inject.Singleton
+
 import javax.inject.Inject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
@@ -30,7 +30,7 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
 

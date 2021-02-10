@@ -4,8 +4,8 @@ object AppDependencies {
 
   import play.core.PlayVersion
 
-  private val bootstrapPlayVersion          = "1.6.0"
-  private val playHmrcVersion               = "4.1.0-play-26"
+  private val bootstrapPlayVersion          = "3.2.0"
+  private val playHmrcVersion               = "5.3.0-play-26"
   private val domainVersion                 = "5.6.0-play-26"
   private val reactiveCircuitBreakerVersion = "3.5.0"
   private val emailAddressVersion           = "3.5.0"
@@ -18,7 +18,7 @@ object AppDependencies {
   private val refinedVersion        = "0.9.4"
 
   val compile = Seq(
-    "uk.gov.hmrc"       %% "bootstrap-play-26"        % bootstrapPlayVersion,
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-26"        % bootstrapPlayVersion,
     "uk.gov.hmrc"       %% "play-hmrc-api"            % playHmrcVersion,
     "uk.gov.hmrc"       %% "domain"                   % domainVersion,
     "uk.gov.hmrc"       %% "reactive-circuit-breaker" % reactiveCircuitBreakerVersion,
