@@ -4,27 +4,27 @@ object AppDependencies {
 
   import play.core.PlayVersion
 
-  private val bootstrapPlayVersion          = "3.2.0"
-  private val playHmrcVersion               = "5.3.0-play-26"
-  private val domainVersion                 = "5.6.0-play-26"
+  private val bootstrapPlayVersion          = "5.0.0"
+  private val playHmrcVersion               = "6.2.0-play-27"
+  private val domainVersion                 = "5.11.0-play-27"
   private val reactiveCircuitBreakerVersion = "3.5.0"
   private val emailAddressVersion           = "3.5.0"
   private val jodaVersion                   = "2.7.4"
 
-  private val scalatestPlusVersion  = "3.1.2"
-  private val scalaMockVersion      = "4.1.0"
-  private val pegdownVersion        = "1.6.0"
-  private val wiremockVersion       = "2.21.0"
-  private val refinedVersion        = "0.9.4"
+  private val scalatestPlusVersion = "4.0.3"
+  private val scalaMockVersion     = "4.1.0"
+  private val pegdownVersion       = "1.6.0"
+  private val wiremockVersion      = "2.21.0"
+  private val refinedVersion       = "0.9.4"
 
   val compile = Seq(
-    "uk.gov.hmrc"       %% "bootstrap-backend-play-26"        % bootstrapPlayVersion,
-    "uk.gov.hmrc"       %% "play-hmrc-api"            % playHmrcVersion,
-    "uk.gov.hmrc"       %% "domain"                   % domainVersion,
-    "uk.gov.hmrc"       %% "reactive-circuit-breaker" % reactiveCircuitBreakerVersion,
-    "uk.gov.hmrc"       %% "emailaddress"             % emailAddressVersion,
-    "eu.timepit"        %% "refined"                  % refinedVersion,
-    "com.typesafe.play" %% "play-json-joda"           % jodaVersion
+    "uk.gov.hmrc"       %% "bootstrap-backend-play-27" % bootstrapPlayVersion,
+    "uk.gov.hmrc"       %% "play-hmrc-api"             % playHmrcVersion,
+    "uk.gov.hmrc"       %% "domain"                    % domainVersion,
+    "uk.gov.hmrc"       %% "reactive-circuit-breaker"  % reactiveCircuitBreakerVersion,
+    "uk.gov.hmrc"       %% "emailaddress"              % emailAddressVersion,
+    "eu.timepit"        %% "refined"                   % refinedVersion,
+    "com.typesafe.play" %% "play-json-joda"            % jodaVersion
   )
 
   trait TestDependencies {
