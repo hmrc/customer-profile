@@ -22,7 +22,6 @@ import javax.inject.Named
 import play.api.libs.json.Json
 import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc._
-import play.api.{Logger, LoggerLike, mvc}
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.customerprofile.auth._
@@ -32,8 +31,8 @@ import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, Paperless, PaperlessOptO
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
-import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
+import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -59,7 +58,7 @@ class LiveCustomerProfileController @Inject() (
     block:   Request[A] => Future[Result],
     taxId:   Option[Nino]
   ): Future[Result] = {
-    implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+    implicit val hc: HeaderCarrier = fromRequest(request)
 
     accessControl
       .grantAccess(taxId)
@@ -68,19 +67,19 @@ class LiveCustomerProfileController @Inject() (
       }
       .recover {
         case _: Upstream4xxResponse =>
-          Logger.info("Unauthorized! Failed to grant access since 4xx response!")
+          logger.info("Unauthorized! Failed to grant access since 4xx response!")
           Unauthorized(toJson(ErrorUnauthorizedMicroService))
 
         case _: NinoNotFoundOnAccount =>
-          Logger.info("Unauthorized! NINO not found on account!")
+          logger.info("Unauthorized! NINO not found on account!")
           Forbidden(toJson(ErrorUnauthorizedNoNino))
 
         case _: FailToMatchTaxIdOnAuth =>
-          Logger.info("Unauthorized! Failure to match URL NINO against Auth NINO")
+          logger.info("Unauthorized! Failure to match URL NINO against Auth NINO")
           Forbidden(toJson(ErrorUnauthorized))
 
         case _: AccountWithLowCL =>
-          Logger.info("Unauthorized! Account with low CL!")
+          logger.info("Unauthorized! Account with low CL!")
           Forbidden(toJson(ErrorUnauthorizedLowCL))
 
         case e: AuthorisationException =>
@@ -105,12 +104,12 @@ class LiveCustomerProfileController @Inject() (
   override def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
     if (shuttering.shuttered) Future.successful(WebServerIsDown(Json.toJson(shuttering))) else fn
 
-  def log(message: String): Unit = Logger.info(s"$app $message")
+  def log(message: String): Unit = logger.info(s"$app $message")
 
   def result(errorResponse: ErrorResponse): Result =
     Status(errorResponse.httpStatusCode)(toJson(errorResponse))
 
-  def errorWrapper(func: => Future[mvc.Result])(implicit hc: HeaderCarrier): Future[Result] =
+  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
     func.recover {
       case e: AuthorisationException =>
         Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
@@ -124,13 +123,13 @@ class LiveCustomerProfileController @Inject() (
         Forbidden(toJson(ErrorUnauthorizedNoNino))
 
       case e: Throwable =>
-        Logger.error(s"$app Internal server error: ${e.getMessage}", e)
+        logger.error(s"$app Internal server error: ${e.getMessage}", e)
         Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
     }
 
   override def getAccounts(journeyId: JourneyId): Action[AnyContent] =
     validateAccept(acceptHeaderValidationRules).async { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
         withShuttering(shuttered) {
           errorWrapper(
@@ -142,14 +141,12 @@ class LiveCustomerProfileController @Inject() (
       }
     }
 
-  def getLogger: LoggerLike = Logger
-
   override def getPersonalDetails(
     nino:      Nino,
     journeyId: JourneyId
   ): Action[AnyContent] =
     withAcceptHeaderValidationAndAuthIfLive(Some(nino)).async { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
         withShuttering(shuttered) {
           errorWrapper {
@@ -169,7 +166,7 @@ class LiveCustomerProfileController @Inject() (
 
   override def getPreferences(journeyId: JourneyId): Action[AnyContent] =
     withAcceptHeaderValidationAndAuthIfLive().async { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
         withShuttering(shuttered) {
           errorWrapper(

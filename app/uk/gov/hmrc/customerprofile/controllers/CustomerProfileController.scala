@@ -24,11 +24,13 @@ import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.HeaderCarrierConverter.fromHeadersAndSession
+import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
 
 import scala.concurrent.Future
 
 trait CustomerProfileController extends HeaderValidator {
+
+  val logger: Logger = Logger(this.getClass)
 
   def controllerComponents: ControllerComponents
 
@@ -43,12 +45,12 @@ trait CustomerProfileController extends HeaderValidator {
 
   def paperlessSettingsOptOut(journeyId: JourneyId): Action[JsValue] =
     withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       request.body
         .validate[PaperlessOptOut]
         .fold(
           errors => {
-            Logger.warn("Received error with service getPaperlessSettings: " + errors)
+            logger.warn("Received error with service getPaperlessSettings: " + errors)
             Future successful BadRequest
           },
           settings => optOut(settings, journeyId)
@@ -57,12 +59,12 @@ trait CustomerProfileController extends HeaderValidator {
 
   def preferencesPendingEmail(journeyId: JourneyId): Action[JsValue] =
     withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       request.body
         .validate[ChangeEmail]
         .fold(
           errors => {
-            Logger.warn("Errors validating request body: " + errors)
+            logger.warn("Errors validating request body: " + errors)
             Future successful BadRequest
           },
           changeEmail => pendingEmail(changeEmail, journeyId)
@@ -71,12 +73,12 @@ trait CustomerProfileController extends HeaderValidator {
 
   final def paperlessSettingsOptIn(journeyId: JourneyId): Action[JsValue] =
     withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromHeadersAndSession(request.headers, None)
+      implicit val hc: HeaderCarrier = fromRequest(request)
       request.body
         .validate[Paperless]
         .fold(
           errors => {
-            Logger.warn("Received error with service getPaperlessSettings: " + errors)
+            logger.warn("Received error with service getPaperlessSettings: " + errors)
             Future successful BadRequest
           },
           settings => optIn(settings, journeyId)

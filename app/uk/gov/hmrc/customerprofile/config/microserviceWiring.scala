@@ -47,7 +47,7 @@ class WSHttpImpl @Inject() (
     with WSDelete
     with WSPatch
     with Hooks {
-  override lazy val configuration: Option[Config] = Option(config.underlying)
+  override lazy val configuration: Config = config.underlying
 }
 
 class MicroserviceAudit @Inject() (

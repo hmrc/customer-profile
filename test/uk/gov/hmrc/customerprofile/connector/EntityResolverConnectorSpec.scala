@@ -82,8 +82,8 @@ class EntityResolverConnectorSpec
   "getPreferences()" should {
     def mockHttpGET(preferences: Future[Option[Preference]]) =
       (http
-        .GET(_: String)(_: HttpReads[Option[Preference]], _: HeaderCarrier, _: ExecutionContext))
-        .expects(s"$baseUrl/preferences", *, *, *)
+        .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[Option[Preference]], _: HeaderCarrier, _: ExecutionContext))
+        .expects(s"$baseUrl/preferences", *, *, *, *, *)
         .returns(preferences)
 
     "return the preferences for utr only" in {

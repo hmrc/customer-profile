@@ -21,7 +21,7 @@ import javax.inject.Named
 import play.api.http.Status
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
-import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference, TermsAccepted}
+import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 
@@ -57,6 +57,7 @@ class EntityResolverConnector @Inject() (
   import Paperless.formats
 
   val externalServiceName = "entity-resolver"
+  val logger: Logger = Logger(this.getClass)
 
   def url(path: String) = s"$serviceUrl$path"
 
@@ -79,7 +80,7 @@ class EntityResolverConnector @Inject() (
       case OK      => PreferencesExists
       case CREATED => PreferencesCreated
       case _ =>
-        Logger.warn("Failed to update paperless settings")
+        logger.warn("Failed to update paperless settings")
         PreferencesFailure
     }
 
@@ -96,13 +97,13 @@ class EntityResolverConnector @Inject() (
         case OK      => PreferencesExists
         case CREATED =>
           //how could you create an opt-out paperless setting prior to opting-in??
-          Logger.warn("Unexpected behaviour : creating paperless setting opt-out")
+          logger.warn("Unexpected behaviour : creating paperless setting opt-out")
           PreferencesCreated
         case NOT_FOUND =>
-          Logger.warn("Failed to find a record to apply request to opt-out of paperless settings")
+          logger.warn("Failed to find a record to apply request to opt-out of paperless settings")
           PreferencesDoesNotExist
         case _ =>
-          Logger.warn("Failed to apply request to opt-out of paperless settings")
+          logger.warn("Failed to apply request to opt-out of paperless settings")
           PreferencesFailure
       }
 

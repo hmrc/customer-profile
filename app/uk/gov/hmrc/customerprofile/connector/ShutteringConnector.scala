@@ -31,6 +31,8 @@ class ShutteringConnector @Inject() (
   http:                                   CoreGet,
   @Named("mobile-shuttering") serviceUrl: String) {
 
+  val logger: Logger = Logger(this.getClass)
+
   def getShutteringStatus(
     journeyId:              JourneyId
   )(implicit headerCarrier: HeaderCarrier,
@@ -42,11 +44,11 @@ class ShutteringConnector @Inject() (
         (json).as[Shuttering]
       } recover {
       case e: Upstream5xxResponse =>
-        Logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
+        logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
         Shuttering.shutteringDisabled
 
       case e =>
-        Logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
+        logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
         Shuttering.shutteringDisabled
     }
 }
