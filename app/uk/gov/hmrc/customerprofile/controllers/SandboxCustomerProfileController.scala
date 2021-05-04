@@ -28,7 +28,6 @@ import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn,
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -96,8 +95,6 @@ class SandboxCustomerProfileController @Inject() (
       routeToTwoFactor = false,
       journeyId.value
     )
-
-  private val email = EmailAddress("name@email.co.uk")
 
   override def withAcceptHeaderValidationAndAuthIfLive(taxId: Option[Nino] = None): ActionBuilder[Request, AnyContent] =
     validateAccept(acceptHeaderValidationRules)

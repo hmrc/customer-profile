@@ -42,6 +42,8 @@ class PreferencesConnector @Inject() (
   val environment:                  Environment)
     extends ServicesCircuitBreaker {
 
+  val logger: Logger = Logger(this.getClass)
+
   def url(path: String): String = s"$serviceUrl$path"
 
   def updatePendingEmail(
@@ -65,5 +67,5 @@ class PreferencesConnector @Inject() (
     msg:      String,
     entityId: String
   ): Unit =
-    Logger.warn(msg + s" for entity $entityId")
+    logger.warn(msg + s" for entity $entityId")
 }

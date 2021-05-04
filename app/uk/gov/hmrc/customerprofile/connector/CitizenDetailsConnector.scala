@@ -32,6 +32,8 @@ class CitizenDetailsConnector @Inject() (
   import play.api.http.Status.LOCKED
   import uk.gov.hmrc.customerprofile.domain.PersonDetails
 
+  val logger: Logger = Logger(this.getClass)
+
   def personDetails(
     nino:        Nino
   )(implicit hc: HeaderCarrier,
@@ -39,10 +41,10 @@ class CitizenDetailsConnector @Inject() (
   ): Future[PersonDetails] =
     http.GET[PersonDetails](s"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details") recover {
       case e: Upstream4xxResponse if e.upstreamResponseCode == LOCKED =>
-        Logger.info("Person details are hidden")
+        logger.info("Person details are hidden")
         throw e
       case e: NotFoundException =>
-        Logger.info(s"No details found for nino '$nino'")
+        logger.info(s"No details found for nino '$nino'")
         throw e
     }
 }
