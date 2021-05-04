@@ -39,8 +39,8 @@ class CitizenDetailsConnectorSpec
 
   def mockHttpGet(exception: Exception) =
     (http
-      .GET(_: String)(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
-      .expects(*, *, *, *)
+      .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *, *, *, *)
       .returns(Future failed exception)
 
   "citizenDetailsConnector" should {
