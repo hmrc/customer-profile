@@ -126,14 +126,6 @@ class CustomerProfileServiceSpec
 
   val nino = Nino("CS700100A")
 
-  val accounts: Accounts = Accounts(
-    Some(nino),
-    None,
-    routeToIV        = false,
-    routeToTwoFactor = false,
-    "journeyId"
-  )
-
   def existingPreferences(
     digital: Boolean,
     status:  StatusName = Verified
@@ -147,9 +139,9 @@ class CustomerProfileServiceSpec
   def mockGetAccounts() = {
     mockAudit(transactionName = "getAccounts")
     (accountAccessControl
-      .accounts(_: JourneyId)(_: HeaderCarrier))
-      .expects(*, *)
-      .returns(Future successful accounts)
+      .retrieveNino()(_: HeaderCarrier))
+      .expects(*)
+      .returns(Future successful Some(nino))
   }
 
   def mockGetPreferences(maybeExistingPreferences: Option[Preference]) =
@@ -189,13 +181,6 @@ class CustomerProfileServiceSpec
       ))
       .expects(ChangeEmail(newEmail.value), entity._id, *, *)
       .returns(Future.successful(EmailUpdateOk))
-  }
-
-  "getAccounts" should {
-    "audit and return accounts" in {
-      mockGetAccounts()
-      await(service.getAccounts(journeyId)) shouldBe accounts
-    }
   }
 
   "getPersonalDetails" should {
@@ -254,7 +239,7 @@ class CustomerProfileServiceSpec
       await(service.getPreferences()) shouldBe Some(
         preferences.copy(
           emailAddress = preferences.email.map(_.email.value),
-          email = None
+          email        = None
         )
       )
 
@@ -273,7 +258,11 @@ class CustomerProfileServiceSpec
 
     "ReOptIn for a user who already has a defined digital preference and has received the reOptIn status" in {
       mockAuditPaperlessSettings()
-      mockGetPreferences(Some(existingDigitalPreference.copy(status = Some(PaperlessStatus(StatusName.ReOptIn, Category.ReOptInRequired)))))
+      mockGetPreferences(
+        Some(
+          existingDigitalPreference.copy(status = Some(PaperlessStatus(StatusName.ReOptIn, Category.ReOptInRequired)))
+        )
+      )
       mockPaperlessSettings(PreferencesExists)
 
       await(service.paperlessSettings(newPaperlessSettings, journeyId)) shouldBe PreferencesExists

@@ -22,19 +22,16 @@ import play.api.libs.json.Json.obj
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser.{ENROLMENT, WWW_AUTHENTICATE}
 import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.auth.core.ConfidenceLevel.L200
-import uk.gov.hmrc.customerprofile.domain.CredentialStrength
-import uk.gov.hmrc.customerprofile.domain.CredentialStrength.Strong
 import uk.gov.hmrc.domain.{Nino, SaUtr}
 
 object AuthStub {
   private val authUrl: String = "/auth/authorise"
-  private val utr:     SaUtr  = SaUtr("1872796160")
 
   private val authorisationRequestJson: String =
     """{ "authorise": [], "retrieve": ["nino","confidenceLevel"] }""".stripMargin
 
-  private val accountsRequestJson: String =
-    """{ "authorise": [], "retrieve": ["nino","saUtr","credentialStrength","confidenceLevel"] }""".stripMargin
+  private val ninoRequestJson: String =
+    """{ "authorise": [], "retrieve": ["nino"] }""".stripMargin
 
   def authRecordExists(
     nino:            Nino,
@@ -69,24 +66,18 @@ object AuthStub {
         .willReturn(aResponse().withStatus(200).withBody(obj("confidenceLevel" -> L200.level).toString))
     )
 
-  def accountsFound(
-    nino:               Nino,
-    confidenceLevel:    ConfidenceLevel = L200,
-    credentialStrength: CredentialStrength = Strong,
-    saUtr:              SaUtr = utr
+  def ninoFound(
+    nino:               Nino
   ): StubMapping =
     stubFor(
       post(urlEqualTo(authUrl))
-        .withRequestBody(equalToJson(accountsRequestJson, true, false))
+        .withRequestBody(equalToJson(ninoRequestJson, true, false))
         .willReturn(
           aResponse()
             .withStatus(200)
             .withBody(
               obj(
-                "confidenceLevel"    -> confidenceLevel.level,
-                "nino"               -> nino.nino,
-                "credentialStrength" -> credentialStrength.name,
-                "saUtr"              -> saUtr.utr
+                "nino"               -> nino.nino
               ).toString
             )
         )
@@ -95,7 +86,7 @@ object AuthStub {
   def accountsFailure(): StubMapping =
     stubFor(
       post(urlEqualTo(authUrl))
-        .withRequestBody(equalToJson(accountsRequestJson, true, false))
+        .withRequestBody(equalToJson(ninoRequestJson, true, false))
         .willReturn(
           aResponse()
             .withStatus(401)
@@ -104,22 +95,13 @@ object AuthStub {
         )
     )
 
-  def accountsFoundWithoutNino(
-    confidenceLevel:    ConfidenceLevel    = L200,
-    credentialStrength: CredentialStrength = Strong,
-    saUtr:              SaUtr              = utr
-  ): StubMapping =
+  def ninoNotFound(): StubMapping =
     stubFor(
       post(urlEqualTo(authUrl))
-        .withRequestBody(equalToJson(accountsRequestJson, true, false))
+        .withRequestBody(equalToJson(ninoRequestJson, true, false))
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody(
-              obj("confidenceLevel"    -> confidenceLevel.level,
-                  "credentialStrength" -> credentialStrength.name,
-                  "saUtr"              -> saUtr.utr).toString
-            )
         )
     )
 }

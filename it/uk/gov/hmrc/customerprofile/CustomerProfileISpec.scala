@@ -56,61 +56,6 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   def postRequestWithAcceptHeader(url: String): Future[WSResponse] =
     wsUrl(url).addHttpHeaders(acceptJsonHeader).post("")
 
-  "GET /profile/accounts" should {
-    val url: String = s"/profile/accounts?journeyId=$journeyId"
-
-    "return account details" in {
-      accountsFound(nino)
-      stubForShutteringDisabled
-
-      val response = await(getRequestWithAcceptHeader(url))
-
-      response.status                     shouldBe 200
-      (response.json \ "nino").as[String] shouldBe nino.nino
-    }
-
-    "return 200 if no nino on account" in {
-      accountsFoundWithoutNino()
-      stubForShutteringDisabled
-
-      val response = await(getRequestWithAcceptHeader(url))
-
-      response.status                        shouldBe 200
-      (response.json \ "nino").asOpt[String] shouldBe None
-    }
-
-    "return 406 if no request header is supplied" in {
-      await(wsUrl(url).get()).status shouldBe 406
-    }
-
-    "propagate 401" in {
-      accountsFailure()
-      stubForShutteringDisabled
-      await(getRequestWithAcceptHeader(url)).status shouldBe 401
-    }
-
-    "return 400 if no journeyId is supplied" in {
-      await(wsUrl("/profile/accounts").get()).status shouldBe 400
-    }
-
-    "return 400 if invalid journeyId is supplied" in {
-      await(wsUrl("/profile/accounts?journeyId=ThisIsAnInvalidJourneyId").get()).status shouldBe 400
-    }
-
-    "return shuttered when shuttered" in {
-      stubForShutteringEnabled
-      authRecordExists(nino)
-
-      val response = await(getRequestWithAcceptHeader(url))
-
-      response.status shouldBe 521
-      val shuttering: Shuttering = Json.parse(response.body).as[Shuttering]
-      shuttering.shuttered shouldBe true
-      shuttering.title     shouldBe Some("Shuttered")
-      shuttering.message   shouldBe Some("Preferences are currently not available")
-    }
-  }
-
   "GET /profile/preferences" should {
     val url = s"/profile/preferences?journeyId=$journeyId"
 
@@ -265,7 +210,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesNoPaperlessSet()
       authRecordExists(nino)
       successPaperlessSettingsChange()
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
@@ -276,7 +221,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
@@ -287,7 +232,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val paperless = parse(
@@ -304,7 +249,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       respondPreferencesWithBouncedEmail()
       conflictPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, paperless))
@@ -332,7 +277,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       respondPreferencesWithPaperlessOptedIn()
       errorPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, paperless))
@@ -444,7 +389,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       authRecordExists(nino)
       successfulPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, changeEmail)).status shouldBe 204
@@ -457,7 +402,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       respondPreferencesWithPaperlessOptedIn()
       authRecordExists(nino)
       conflictPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
@@ -484,7 +429,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       authRecordExists(nino)
       respondPreferencesWithPaperlessOptedIn()
       errorPendingEmailUpdate(entityId)
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
@@ -651,7 +596,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
       respondPreferencesNoPaperlessSet()
       authRecordExists(nino)
       successPaperlessSettingsOptInWithVersion
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204
@@ -676,7 +621,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
       respondPreferencesNoPaperlessSet()
       authRecordExists(nino)
       successPaperlessSettingsOptOutWithVersion
-      accountsFound(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       await(postRequestWithAcceptHeader(url, paperless)).status shouldBe 204

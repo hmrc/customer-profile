@@ -19,15 +19,11 @@ package uk.gov.hmrc.customerprofile.auth
 import eu.timepit.refined.auto._
 import org.scalatest.concurrent.Eventually
 import uk.gov.hmrc.auth.core.ConfidenceLevel.{L200, L50}
-import uk.gov.hmrc.customerprofile.domain.Accounts
-import uk.gov.hmrc.customerprofile.domain.CredentialStrength.{Strong, Weak}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.stubs.AuthStub._
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.domain.{Nino, SaUtr}
 import uk.gov.hmrc.http.HeaderCarrier
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class AccountAccessControlISpec extends BaseISpec with Eventually {
 
@@ -38,45 +34,12 @@ class AccountAccessControlISpec extends BaseISpec with Eventually {
   val journeyId:                JourneyId            = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val testAccountAccessControl: AccountAccessControl = app.injector.instanceOf[AccountAccessControl]
 
-  "Returning the accounts" should {
+  "Returning the nino" should {
     "be found and routeToIV and routeToTwoFactor should be true" in {
-      accountsFound(nino, L50, Weak, saUtr)
+      ninoFound(nino)
 
-      val accounts: Accounts = await(testAccountAccessControl.accounts(journeyId)(hc))
-      accounts.nino.get         shouldBe nino
-      accounts.saUtr.get        shouldBe saUtr
-      accounts.routeToIV        shouldBe true
-      accounts.routeToTwoFactor shouldBe true
-    }
-
-    "be found and routeToIV is false and routeToTwoFactor is true" in {
-      accountsFound(nino, L50, Strong, saUtr)
-
-      val accounts: Accounts = await(testAccountAccessControl.accounts(journeyId)(hc))
-      accounts.nino.get         shouldBe nino
-      accounts.saUtr.get        shouldBe saUtr
-      accounts.routeToIV        shouldBe true
-      accounts.routeToTwoFactor shouldBe false
-    }
-
-    "be found and routeToIV and routeToTwoFactor should be false" in {
-      accountsFound(nino, L200, Strong, saUtr)
-
-      val accounts: Accounts = await(testAccountAccessControl.accounts(journeyId)(hc))
-      accounts.nino.get         shouldBe nino
-      accounts.saUtr.get        shouldBe saUtr
-      accounts.routeToIV        shouldBe false
-      accounts.routeToTwoFactor shouldBe false
-    }
-
-    "be found when the users account does not have a NINO" in {
-      accountsFoundWithoutNino(L200, Strong, saUtr)
-
-      val accounts: Accounts = await(testAccountAccessControl.accounts(journeyId)(hc))
-      accounts.nino             shouldBe None
-      accounts.saUtr.get        shouldBe saUtr
-      accounts.routeToIV        shouldBe false
-      accounts.routeToTwoFactor shouldBe false
+      val foundNino: Option[Nino] = await(testAccountAccessControl.retrieveNino()(hc))
+      foundNino.get         shouldBe nino
     }
 
   }

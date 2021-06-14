@@ -24,24 +24,6 @@ uses:
 
 /customer-profile:
   /profile:
-    /accounts:
-      get:
-        displayName: Get accounts
-        description: This endpoint retrieves the accounts associated with the auth record.
-        is: [headers.acceptHeader]
-        (annotations.scope): "read:customer-profile"
-        securedBy: [ sec.oauth_2_0: { scopes: [ "read:customer-profile" ] } ]
-        queryParameters:
-          journeyId:
-            type: string
-            required: true
-        responses:
-          200:
-            body:
-              application/json:
-                examples:
-                  example-1:
-                    value: !include examples/get-accounts-example-1.json
     /personal-details:
       /{nino}:
         uriParameters:

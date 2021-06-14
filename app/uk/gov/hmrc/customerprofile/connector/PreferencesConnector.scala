@@ -17,10 +17,10 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import com.google.inject.{Inject, Singleton}
+
 import javax.inject.Named
 import play.api.libs.json.{Json, OFormat}
 import play.api.{Configuration, Environment, Logger}
-import play.mvc.Http.Status._
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
 import uk.gov.hmrc.http._
@@ -43,6 +43,8 @@ class PreferencesConnector @Inject() (
     extends ServicesCircuitBreaker {
 
   val logger: Logger = Logger(this.getClass)
+  val NOT_FOUND = 404
+  val CONFLICT  = 409
 
   def url(path: String): String = s"$serviceUrl$path"
 
@@ -54,8 +56,8 @@ class PreferencesConnector @Inject() (
   ): Future[PreferencesStatus] =
     http.PUT(url(s"/preferences/$entityId/pending-email"), changeEmail).map(_ => EmailUpdateOk).recoverWith {
       case e: NotFoundException ⇒ log(e.message, entityId); Future(NoPreferenceExists)
-      case e: Upstream4xxResponse ⇒
-        e.upstreamResponseCode match {
+      case e: UpstreamErrorResponse ⇒
+        e.statusCode match {
           case CONFLICT ⇒ log(e.message, entityId); Future(EmailNotExist)
           case NOT_FOUND ⇒ log(e.message, entityId); Future(NoPreferenceExists)
           case _ ⇒ log(e.message, entityId); Future(EmailUpdateFailed)

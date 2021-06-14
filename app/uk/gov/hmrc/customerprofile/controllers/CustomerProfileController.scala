@@ -34,8 +34,6 @@ trait CustomerProfileController extends HeaderValidator {
 
   def controllerComponents: ControllerComponents
 
-  def getAccounts(journeyId: JourneyId): Action[AnyContent]
-
   def getPersonalDetails(
     nino:      Nino,
     journeyId: JourneyId

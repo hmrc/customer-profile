@@ -127,20 +127,6 @@ class LiveCustomerProfileController @Inject() (
         Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
     }
 
-  override def getAccounts(journeyId: JourneyId): Action[AnyContent] =
-    validateAccept(acceptHeaderValidationRules).async { implicit request =>
-      implicit val hc: HeaderCarrier = fromRequest(request)
-      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-        withShuttering(shuttered) {
-          errorWrapper(
-            service
-              .getAccounts(journeyId)
-              .map(as => Ok(toJson(as)))
-          )
-        }
-      }
-    }
-
   override def getPersonalDetails(
     nino:      Nino,
     journeyId: JourneyId
@@ -230,7 +216,7 @@ class LiveCustomerProfileController @Inject() (
   ): Future[Result] =
     shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
       withShuttering(shuttered) {
-        errorWrapper(service.setPreferencesPendingEmail(changeEmail, journeyId).map {
+        errorWrapper(service.setPreferencesPendingEmail(changeEmail).map {
           case EmailUpdateOk      => NoContent
           case EmailNotExist      => Conflict
           case NoPreferenceExists => NotFound

@@ -27,9 +27,8 @@ import play.api.test.Helpers._
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import uk.gov.hmrc.auth.core.SessionRecordNotFound
 import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, AccountWithLowCL, FailToMatchTaxIdOnAuth, NinoNotFoundOnAccount}
-import uk.gov.hmrc.customerprofile.connector.{PreferencesDoesNotExist, PreferencesFailure, _}
+import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.domain
-import uk.gov.hmrc.customerprofile.domain.StatusName.Verified
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.domain.{Paperless, _}
@@ -55,13 +54,13 @@ class LiveCustomerProfileControllerSpec
   implicit val shutteringConnectorMock: ShutteringConnector =
     mock[ShutteringConnector]
 
-  val shuttered =
+  val shuttered: Shuttering =
     Shuttering(
       shuttered = true,
       Some("Shuttered"),
       Some("Preferences are currently not available")
     )
-  val notShuttered = Shuttering.shutteringDisabled
+  val notShuttered: Shuttering = Shuttering.shutteringDisabled
 
   val controller: LiveCustomerProfileController =
     new LiveCustomerProfileController(
@@ -103,73 +102,6 @@ class LiveCustomerProfileControllerSpec
       .grantAccess(_: Option[Nino])(_: HeaderCarrier))
       .expects(maybeNino, *)
       .returns(Future failed e)
-
-  "getAccounts" should {
-    def mockGetAccounts(result: Future[Accounts]) =
-      (service
-        .getAccounts(_: JourneyId)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *, *)
-        .returns(result)
-
-    "return account details with journey id" in {
-      val accounts: Accounts = Accounts(
-        Some(nino),
-        None,
-        routeToIV        = false,
-        routeToTwoFactor = false,
-        "102030394AAA"
-      )
-      mockGetAccounts(Future successful accounts)
-      mockShutteringResponse(notShuttered)
-
-      val result = controller.getAccounts(journeyId)(requestWithAcceptHeader)
-
-      status(result)        shouldBe 200
-      contentAsJson(result) shouldBe toJson(accounts)
-    }
-
-    "propagate 401" in {
-      mockGetAccounts(Future failed new SessionRecordNotFound)
-      mockShutteringResponse(notShuttered)
-
-      val result = controller.getAccounts(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 401
-    }
-
-    "return 403 if the user has no nino" in {
-      mockGetAccounts(Future failed new NinoNotFoundOnAccount("no nino"))
-      mockShutteringResponse(notShuttered)
-
-      val result = controller.getAccounts(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 403
-    }
-
-    "return status code 406 when the headers are invalid" in {
-      val result = controller.getAccounts(journeyId)(requestWithoutAcceptHeader)
-      status(result) shouldBe 406
-    }
-
-    "return 500 for an unexpected error" in {
-      mockGetAccounts(Future failed new RuntimeException())
-      mockShutteringResponse(notShuttered)
-
-      val result = controller.getAccounts(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 500
-    }
-
-    "return 521 when shuttered" in {
-      mockShutteringResponse(shuttered)
-
-      val result = controller.getAccounts(journeyId)(requestWithAcceptHeader)
-
-      status(result) shouldBe 521
-      val jsonBody = contentAsJson(result)
-      (jsonBody \ "shuttered").as[Boolean] shouldBe true
-      (jsonBody \ "title").as[String]      shouldBe "Shuttered"
-      (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
-    }
-  }
 
   "getPersonalDetails" should {
     def mockGetAccounts(result: Future[PersonDetails]) =
@@ -689,11 +621,11 @@ class LiveCustomerProfileControllerSpec
       result:      Future[PreferencesStatus]
     ) =
       (service
-        .setPreferencesPendingEmail(_: ChangeEmail, _: JourneyId)(
+        .setPreferencesPendingEmail(_: ChangeEmail)(
           _: HeaderCarrier,
           _: ExecutionContext
         ))
-        .expects(changeEmail, *, *, *)
+        .expects(changeEmail, *, *)
         .returns(result)
 
     val newEmail    = EmailAddress("new@new.com")

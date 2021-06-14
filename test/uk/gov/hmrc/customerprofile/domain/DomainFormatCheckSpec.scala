@@ -38,12 +38,6 @@ class DomainFormatCheckSpec
 
   import DomainGenerator._
 
-  "Accounts" in {
-    Logger.debug(
-      "Accounts response : " + prettyPrint(accountsWithNinoAndSaUtrAsJson)
-    )
-  }
-
   "Personal details" in {
     Logger.debug(
       "Personal details response : " + prettyPrint(personalDetailsAsJson)
@@ -72,19 +66,6 @@ object DomainGenerator {
   import uk.gov.hmrc.domain.Generator
 
   val nino: Nino = new Generator().nextNino
-  val saUtr: SaUtr = new SaUtrGenerator().nextSaUtr
-
-  val accountsWithNinoAndSaUtr = Accounts(
-    Some(nino),
-    Some(saUtr),
-    routeToIV = false,
-    routeToTwoFactor = false,
-    "102030394AAA"
-  )
-
-  lazy val accountsWithNinoAndSaUtrAsJson: JsValue = toJson(
-    accountsWithNinoAndSaUtr
-  )
 
   val email = EmailAddress("name@email.co.uk")
 
