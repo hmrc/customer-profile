@@ -63,60 +63,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       "X-MOBILE-USER-ID" -> "208606423740"
     )
 
-  "GET /sandbox/profile/accounts  " should {
-    val url = "/profile/accounts"
-
-    "return the default account details by default with journey id" in {
-      val response = await(request(url, None, journeyId).get())
-      response.status shouldBe 200
-      response.json shouldBe toJson(
-        Accounts(
-          Some(nino),
-          None,
-          routeToIV        = false,
-          routeToTwoFactor = false,
-          journeyId
-        )
-      )
-    }
-
-    "return 401 for ERROR-401" in {
-      val response = await(request(url, Some("ERROR-401"), journeyId).get())
-      response.status shouldBe 401
-    }
-
-    "return 403 for ERROR-403" in {
-      val response = await(request(url, Some("ERROR-403"), journeyId).get())
-      response.status shouldBe 403
-    }
-
-    "return 406 without Accept header" in {
-      val response = await(requestWithoutAcceptHeader(url, journeyId).get())
-      response.status shouldBe 406
-    }
-
-    "return 500 for ERROR-401" in {
-      val response = await(request(url, Some("ERROR-500"), journeyId).get())
-      response.status shouldBe 500
-    }
-
-    "return 400 if no journeyId is supplied" in {
-      val response =
-        await(requestWithoutJourneyId("/profile/accounts", None).get())
-      response.status shouldBe 400
-    }
-
-    "return 400 if invalid journeyId is supplied" in {
-      val response = await(
-        requestWithoutJourneyId(
-          "/profile/accounts?journeyId=ThisIsAnInvalidJourneyId",
-          None
-        ).get()
-      )
-      response.status shouldBe 400
-    }
-  }
-
   "GET /sandbox/profile/personal-details/:nino" should {
     val url = s"/profile/personal-details/${nino.value}"
 

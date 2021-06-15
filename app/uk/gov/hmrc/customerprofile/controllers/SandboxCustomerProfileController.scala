@@ -87,15 +87,6 @@ class SandboxCustomerProfileController @Inject() (
       linkSent     = linkSent
     )
 
-  private def accounts(journeyId: JourneyId) =
-    Accounts(
-      Some(nino),
-      None,
-      routeToIV        = false,
-      routeToTwoFactor = false,
-      journeyId.value
-    )
-
   override def withAcceptHeaderValidationAndAuthIfLive(taxId: Option[Nino] = None): ActionBuilder[Request, AnyContent] =
     validateAccept(acceptHeaderValidationRules)
 
@@ -103,16 +94,6 @@ class SandboxCustomerProfileController @Inject() (
     if (shuttering.shuttered)
       Future.successful(WebServerIsDown(Json.toJson(shuttering)))
     else fn
-
-  override def getAccounts(journeyId: JourneyId): Action[AnyContent] =
-    validateAccept(acceptHeaderValidationRules).async { implicit request =>
-      Future successful (request.headers.get(SANDBOX_CONTROL_HEADER) match {
-        case Some("ERROR-401") => Unauthorized
-        case Some("ERROR-403") => Forbidden
-        case Some("ERROR-500") => InternalServerError
-        case _                 => Ok(toJson(accounts(journeyId)))
-      })
-    }
 
   override def getPersonalDetails(
     nino:      Nino,

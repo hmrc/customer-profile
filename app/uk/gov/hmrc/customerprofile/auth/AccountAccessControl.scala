@@ -17,14 +17,13 @@
 package uk.gov.hmrc.customerprofile.auth
 
 import com.google.inject.Inject
+
 import javax.inject.Named
 import play.api.mvc.Results
 import uk.gov.hmrc.api.controllers._
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{nino, _}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{confidenceLevel, nino}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
-import uk.gov.hmrc.customerprofile.domain.Accounts
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.{Nino, SaUtr}
 import uk.gov.hmrc.http._
 
@@ -49,18 +48,9 @@ class AccountAccessControl @Inject() (
 
   val ninoNotFoundOnAccount = new NinoNotFoundOnAccount("The user must have a National Insurance Number")
 
-  def accounts(journeyId: JourneyId)(implicit hc: HeaderCarrier): Future[Accounts] =
+  def retrieveNino()(implicit hc: HeaderCarrier): Future[Option[Nino]] =
     authorised()
-      .retrieve(nino and saUtr and credentialStrength and confidenceLevel) {
-        case foundNino ~ foundSaUtr ~ foundCredentialStrength ~ foundConfidenceLevel ⇒
-          Future successful Accounts(
-            foundNino.map(Nino(_)),
-            foundSaUtr.map(SaUtr(_)),
-            serviceConfidenceLevel > foundConfidenceLevel.level,
-            foundCredentialStrength.orNull != "strong",
-            journeyId.value
-          )
-      }
+      .retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
 
   def grantAccess(taxId: Option[Nino])(implicit hc: HeaderCarrier): Future[Unit] =
     authorised()

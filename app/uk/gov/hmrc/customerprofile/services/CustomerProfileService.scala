@@ -45,13 +45,12 @@ class CustomerProfileService @Inject() (
   @Named("reOptInEnabled") val reOptInEnabled: Boolean)
     extends Auditor {
 
-  def getAccounts(
-    journeyId:   JourneyId
+  def getNino(
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
-  ): Future[Accounts] =
+  ): Future[Option[Nino]] =
     withAudit("getAccounts", Map.empty) {
-      accountAccessControl.accounts(journeyId)
+      accountAccessControl.retrieveNino()
     }
 
   def getPersonalDetails(
@@ -75,7 +74,7 @@ class CustomerProfileService @Inject() (
         status ← preferences.fold(paperlessOptIn(settings)) { preference =>
                   if (preference.digital && preference.status
                         .getOrElse(PaperlessStatus(Verified, Info))
-                        .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value), journeyId)
+                        .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
                   else paperlessOptIn(settings)
                 }
       } yield status
@@ -102,15 +101,14 @@ class CustomerProfileService @Inject() (
     }
 
   def setPreferencesPendingEmail(
-    changeEmail: ChangeEmail,
-    journeyId:   JourneyId
+    changeEmail: ChangeEmail
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
     withAudit("updatePendingEmailPreference", Map("email" → changeEmail.email)) {
       for {
-        account ← getAccounts(journeyId)
-        entity ← entityResolver.getEntityIdByNino(account.nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        nino ← getNino()
+        entity ← entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         response ← preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }

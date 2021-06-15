@@ -67,7 +67,7 @@ class EntityResolverConnector @Inject() (
   ): Future[Option[Preference]] =
     withCircuitBreaker(http.GET[Option[Preference]](url(s"/preferences")))
       .recover {
-        case response: Upstream4xxResponse if response.upstreamResponseCode == GONE => None
+        case response: UpstreamErrorResponse if response.statusCode == GONE => None
         case _:        NotFoundException                                            => None
       }
 

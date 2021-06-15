@@ -18,7 +18,6 @@ API
 
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
-| ```/profile/accounts``` | GET | Look up for the current user's tax account identifiers. [More...](docs/accounts.md)  |
 | ```/profile/personal-details/:nino``` | GET | Returns a user's designatory details. [More...](docs/personalDetails.md)  |
 | ```/profile/preferences``` | GET | Returns the user's preferences. [More...](docs/preferences.md)|
 | ```/profile/preferences/paperless-settings/opt-in``` | POST | Sets or updates the user's paperless opt-in preference settings. [More...](docs/paperlessSettingsOptIn.md)|
@@ -38,7 +37,6 @@ See each linked file for details:
 
 | *Task* | *Supported Methods* | *Description* |
 |--------|----|----|
-| ```/sandbox/profile/accounts``` | GET | Acts as a stub for the related live endpoint. [More...](docs/sandbox/accounts.md)  |
 | ```/sandbox/profile/personal-details/:nino``` | GET | Acts as a stub for the related live endpoint. [More...](docs/sandbox/personalDetails.md)  |
 | ```/sandbox/profile/preferences``` | GET | Acts as a stub for the related live endpoint. [More...](docs/sandbox/preferences.md)|
 | ```/sandbox/profile/preferences/paperless-settings/opt-in``` | POST | Acts as a stub for the related live endpoint. [More...](docs/sandbox/paperlessSettingsOptIn.md)|
