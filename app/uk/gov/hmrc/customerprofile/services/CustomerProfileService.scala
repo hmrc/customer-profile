@@ -59,7 +59,9 @@ class CustomerProfileService @Inject() (
     ex:          ExecutionContext
   ): Future[PersonDetails] =
     withAudit("getPersonalDetails", Map("nino" -> nino.value)) {
-      citizenDetailsConnector.personDetails(nino)
+      citizenDetailsConnector
+        .personDetails(nino)
+        .map(details => details.copy(person = details.person.copy(fullName = details.person.shortName)))
     }
 
   def paperlessSettings(

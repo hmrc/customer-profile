@@ -6,7 +6,8 @@
     "title": "Mr",
     "sex": "M",
     "dateOfBirth": -26092800000,
-    "nino": "AA000006C"
+    "nino": "AA000006C",
+    "fullName": "Angus Smith"
   },
   "address": {
     "line1": "123456",

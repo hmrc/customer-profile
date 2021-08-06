@@ -92,7 +92,8 @@ object DomainGenerator {
       None,
       Some("M"),
       Some(LocalDate.now.minusYears(30)),
-      Some(nino)
+      Some(nino),
+      Some("John Albert")
     )
   val address: Option[Address] = None
   val personalDetails = PersonDetails(person, address)

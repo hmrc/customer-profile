@@ -188,14 +188,15 @@ class CustomerProfileServiceSpec
       val person = PersonDetails(
         Person(
           Some("Firstname"),
-          Some("Lastname"),
           Some("Middle"),
+          Some("Lastname"),
           Some("Intial"),
           Some("Title"),
           Some("Honours"),
           Some("sex"),
           None,
-          None
+          None,
+          Some("Firstname Lastname")
         ),
         None
       )
@@ -211,8 +212,8 @@ class CustomerProfileServiceSpec
       val personalDetails = await(service.getPersonalDetails(nino))
 
       personalDetails                  shouldBe person
-      personalDetails.person.shortName shouldBe Some("Firstname Middle")
-      personalDetails.person.fullName  shouldBe "Title Firstname Lastname Middle Honours"
+      personalDetails.person.shortName shouldBe Some("Firstname Lastname")
+      personalDetails.person.completeName  shouldBe "Title Firstname Middle Lastname Honours"
     }
   }
 
