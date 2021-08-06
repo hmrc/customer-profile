@@ -114,14 +114,14 @@ class LiveCustomerProfileControllerSpec
       val person = PersonDetails(
         Person(
           Some("Firstname"),
-          Some("Lastname"),
           Some("Middle"),
+          Some("Lastname"),
           Some("Intial"),
           Some("Title"),
           Some("Honours"),
           Some("sex"),
           None,
-          None
+          None, Some("Firstname Lastname")
         ),
         None
       )
