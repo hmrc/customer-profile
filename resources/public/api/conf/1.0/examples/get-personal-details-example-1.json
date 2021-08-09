@@ -5,7 +5,9 @@
     "title": "Ms",
     "sex": "Female",
     "dateOfBirth": 513774181935,
-    "nino": "CS700100A"
+    "nino": "CS700100A",
+    "fullName": "Angus Smith",
+    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf"
   },
   "address": {
     "line1": "999 Big Street",

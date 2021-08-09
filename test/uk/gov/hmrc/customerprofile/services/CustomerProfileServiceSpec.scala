@@ -196,7 +196,8 @@ class CustomerProfileServiceSpec
           Some("sex"),
           None,
           None,
-          Some("Firstname Lastname")
+          Some("Firstname Lastname"),
+          Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
         None
       )
@@ -211,9 +212,9 @@ class CustomerProfileServiceSpec
         .returns(Future successful person)
       val personalDetails = await(service.getPersonalDetails(nino))
 
-      personalDetails                  shouldBe person
-      personalDetails.person.shortName shouldBe Some("Firstname Lastname")
-      personalDetails.person.completeName  shouldBe "Title Firstname Middle Lastname Honours"
+      personalDetails                     shouldBe person
+      personalDetails.person.shortName    shouldBe Some("Firstname Lastname")
+      personalDetails.person.completeName shouldBe "Title Firstname Middle Lastname Honours"
     }
   }
 

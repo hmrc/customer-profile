@@ -78,7 +78,8 @@ class SandboxCustomerProfileISpec extends BaseISpec {
           Some("Female"),
           Option(LocalDate.parse("1999-01-31")),
           Some(nino),
-          Some("Jennifer Thorsteinson")
+          Some("Jennifer Thorsteinson"),
+          Some("/")
         ),
         Some(
           Address(
