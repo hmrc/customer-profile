@@ -48,16 +48,17 @@ object Person extends WriteDatesAsLongs {
 }
 
 case class Person(
-  firstName:   Option[String],
-  middleName:  Option[String],
-  lastName:    Option[String],
-  initials:    Option[String],
-  title:       Option[String],
-  honours:     Option[String],
-  sex:         Option[String],
-  dateOfBirth: Option[LocalDate],
-  nino:        Option[Nino],
-  fullName:    Option[String]) {
+  firstName:                  Option[String],
+  middleName:                 Option[String],
+  lastName:                   Option[String],
+  initials:                   Option[String],
+  title:                      Option[String],
+  honours:                    Option[String],
+  sex:                        Option[String],
+  dateOfBirth:                Option[LocalDate],
+  nino:                       Option[Nino],
+  fullName:                   Option[String],
+  nationalInsuranceLetterUrl: Option[String]) {
 
   lazy val shortName: Option[String] = for {
     f <- firstName

@@ -7,7 +7,8 @@
     "sex": "M",
     "dateOfBirth": -26092800000,
     "nino": "AA000006C",
-    "fullName": "Angus Smith"
+    "fullName": "Angus Smith",
+    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf"
   },
   "address": {
     "line1": "123456",

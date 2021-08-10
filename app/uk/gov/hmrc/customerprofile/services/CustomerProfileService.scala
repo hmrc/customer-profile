@@ -61,7 +61,13 @@ class CustomerProfileService @Inject() (
     withAudit("getPersonalDetails", Map("nino" -> nino.value)) {
       citizenDetailsConnector
         .personDetails(nino)
-        .map(details => details.copy(person = details.person.copy(fullName = details.person.shortName)))
+        .map(details =>
+          details.copy(person =
+            details.person.copy(fullName = details.person.shortName,
+                                nationalInsuranceLetterUrl =
+                                  Some("/personal-account/national-insurance-summary/save-letter-as-pdf"))
+          )
+        )
     }
 
   def paperlessSettings(

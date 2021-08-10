@@ -5,7 +5,9 @@
     "title": "Ms",
     "sex": "Female",
     "dateOfBirth": 917740800000,
-    "nino": "CS700100A"
+    "nino": "CS700100A",
+    "fullName": "Jennifer Thorsteinson",
+    "nationalInsuranceLetterUrl": "/"
   },
   "address": {
     "line1": "999 Big Street",

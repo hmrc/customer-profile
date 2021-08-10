@@ -60,7 +60,8 @@ class SandboxCustomerProfileController @Inject() (
         Some("Female"),
         Some(LocalDate.parse("1999-01-31")),
         Some(nino),
-        Some("Jennifer Thorsteinson")
+        Some("Jennifer Thorsteinson"),
+        Some("/")
       ),
       Some(
         Address(

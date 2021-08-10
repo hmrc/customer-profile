@@ -121,7 +121,9 @@ class LiveCustomerProfileControllerSpec
           Some("Honours"),
           Some("sex"),
           None,
-          None, Some("Firstname Lastname")
+          None,
+          Some("Firstname Lastname"),
+          Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
         None
       )
