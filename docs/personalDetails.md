@@ -36,7 +36,10 @@ Personal Details
     "title": "Ms",
     "sex": "Female",
     "dateOfBirth": 513774181935,
-    "nino": "CS700100A"
+    "nino": "CS700100A",
+    "fullName": "Jennifer Thorsteinson",
+    "nationalInsuranceLetterUrl": "/",
+    "changeAddressLink" : "/"
   },
   "address": {
     "line1": "999 Big Street",

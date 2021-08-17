@@ -7,7 +7,8 @@
     "dateOfBirth": 917740800000,
     "nino": "CS700100A",
     "fullName": "Jennifer Thorsteinson",
-    "nationalInsuranceLetterUrl": "/"
+    "nationalInsuranceLetterUrl": "/",
+    "changeAddressLink" : "/"
   },
   "address": {
     "line1": "999 Big Street",

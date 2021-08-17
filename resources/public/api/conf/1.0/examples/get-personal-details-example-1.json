@@ -7,7 +7,8 @@
     "dateOfBirth": 513774181935,
     "nino": "CS700100A",
     "fullName": "Angus Smith",
-    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf"
+    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf",
+    "changeAddressLink" : "/personal-account/personal-details"
   },
   "address": {
     "line1": "999 Big Street",

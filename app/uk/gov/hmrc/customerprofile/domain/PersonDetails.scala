@@ -58,7 +58,8 @@ case class Person(
   dateOfBirth:                Option[LocalDate],
   nino:                       Option[Nino],
   fullName:                   Option[String],
-  nationalInsuranceLetterUrl: Option[String]) {
+  nationalInsuranceLetterUrl: Option[String],
+  changeAddressLink:          Option[String]) {
 
   lazy val shortName: Option[String] = for {
     f <- firstName
