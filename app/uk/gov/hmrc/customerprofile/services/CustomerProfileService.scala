@@ -62,10 +62,11 @@ class CustomerProfileService @Inject() (
       citizenDetailsConnector
         .personDetails(nino)
         .map(details =>
-          details.copy(person =
-            details.person.copy(fullName = details.person.shortName,
-                                nationalInsuranceLetterUrl =
-                                  Some("/personal-account/national-insurance-summary/save-letter-as-pdf"))
+          details.copy(person = details.person.copy(
+            fullName                   = details.person.shortName,
+            nationalInsuranceLetterUrl = Some("/personal-account/national-insurance-summary/save-letter-as-pdf"),
+            changeAddressLink          = Some("/personal-account/personal-details")
+          )
           )
         )
     }

@@ -197,7 +197,8 @@ class CustomerProfileServiceSpec
           None,
           None,
           Some("Firstname Lastname"),
-          Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
+          Some("/personal-account/national-insurance-summary/save-letter-as-pdf"),
+          Some("/personal-account/personal-details")
         ),
         None
       )
