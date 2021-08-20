@@ -94,8 +94,7 @@ object DomainGenerator {
       Some(LocalDate.now.minusYears(30)),
       Some(nino),
       Some("John Albert"),
-      Some("/personal-account/national-insurance-summary/save-letter-as-pdf"),
-      Some("/personal-account/personal-details")
+      Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
     )
   val address: Option[Address] = None
   val personalDetails = PersonDetails(person, address)

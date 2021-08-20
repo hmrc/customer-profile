@@ -8,8 +8,7 @@
     "dateOfBirth": -26092800000,
     "nino": "AA000006C",
     "fullName": "Angus Smith",
-    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf",
-    "changeAddressLink" : "/personal-account/personal-details"
+    "nationalInsuranceLetterUrl": "/personal-account/national-insurance-summary/save-letter-as-pdf"
   },
   "address": {
     "line1": "123456",
@@ -20,6 +19,7 @@
     "postcode": "98765",
     "startDate": 946684800000,
     "country": "Test Country",
-    "type": "Residential"
+    "type": "Residential",
+    "changeAddressLink" : "/personal-account/personal-details"
   }
 }

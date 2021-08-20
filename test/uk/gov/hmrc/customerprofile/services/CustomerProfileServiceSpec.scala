@@ -197,8 +197,7 @@ class CustomerProfileServiceSpec
           None,
           None,
           Some("Firstname Lastname"),
-          Some("/personal-account/national-insurance-summary/save-letter-as-pdf"),
-          Some("/personal-account/personal-details")
+          Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
         None
       )
@@ -213,7 +212,9 @@ class CustomerProfileServiceSpec
         .returns(Future successful person)
       val personalDetails = await(service.getPersonalDetails(nino))
 
-      personalDetails                     shouldBe person
+      personalDetails shouldBe person.copy(address =
+        Some(Address(changeAddressLink = Some("/personal-account/personal-details")))
+      )
       personalDetails.person.shortName    shouldBe Some("Firstname Lastname")
       personalDetails.person.completeName shouldBe "Title Firstname Middle Lastname Honours"
     }
