@@ -58,8 +58,7 @@ case class Person(
   dateOfBirth:                Option[LocalDate],
   nino:                       Option[Nino],
   fullName:                   Option[String],
-  nationalInsuranceLetterUrl: Option[String],
-  changeAddressLink:          Option[String]) {
+  nationalInsuranceLetterUrl: Option[String]) {
 
   lazy val shortName: Option[String] = for {
     f <- firstName
@@ -75,15 +74,16 @@ object Address extends WriteDatesAsLongs {
 }
 
 case class Address(
-  line1:     Option[String],
-  line2:     Option[String],
-  line3:     Option[String],
-  line4:     Option[String],
-  line5:     Option[String],
-  postcode:  Option[String],
-  country:   Option[String],
-  startDate: Option[LocalDate],
-  `type`:    Option[String])
+  line1:             Option[String]    = None,
+  line2:             Option[String]    = None,
+  line3:             Option[String]    = None,
+  line4:             Option[String]    = None,
+  line5:             Option[String]    = None,
+  postcode:          Option[String]    = None,
+  country:           Option[String]    = None,
+  startDate:         Option[LocalDate] = None,
+  `type`:            Option[String]    = None,
+  changeAddressLink: Option[String])
 
 object PersonDetails {
   implicit val formats: OFormat[PersonDetails] = format[PersonDetails]
