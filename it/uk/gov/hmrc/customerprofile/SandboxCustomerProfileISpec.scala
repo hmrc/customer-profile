@@ -69,16 +69,16 @@ class SandboxCustomerProfileISpec extends BaseISpec {
     val expectedDetails =
       PersonDetails(
         Person(
-          Some("Jennifer"),
+          Some("Nia"),
           None,
-          Some("Thorsteinson"),
+          Some("Jackson"),
           None,
           Some("Ms"),
           None,
           Some("Female"),
           Option(LocalDate.parse("1999-01-31")),
           Some(nino),
-          Some("Jennifer Thorsteinson"),
+          Some("Nia Jackson"),
           Some("/")
         ),
         Some(
