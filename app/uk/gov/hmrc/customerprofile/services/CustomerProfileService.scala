@@ -69,8 +69,8 @@ class CustomerProfileService @Inject() (
             ),
             address = Some(
               details.address
-                .getOrElse(Address(changeAddressLink = Some("/personal-account/personal-details")))
-                .copy(changeAddressLink = Some("/personal-account/personal-details"))
+                .getOrElse(Address(changeAddressLink = Some("/personal-account/your-profile")))
+                .copy(changeAddressLink = Some("/personal-account/your-profile"))
             )
           )
         )

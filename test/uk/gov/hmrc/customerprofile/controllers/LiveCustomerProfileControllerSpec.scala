@@ -125,7 +125,7 @@ class LiveCustomerProfileControllerSpec
           Some("Firstname Lastname"),
           Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
-        Some(Address(changeAddressLink = Some("/personal-account/personal-details")))
+        Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
       )
 
       authSuccess(Some(nino))
