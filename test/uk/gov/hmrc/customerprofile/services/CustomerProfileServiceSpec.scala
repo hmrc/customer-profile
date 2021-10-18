@@ -213,7 +213,7 @@ class CustomerProfileServiceSpec
       val personalDetails = await(service.getPersonalDetails(nino))
 
       personalDetails shouldBe person.copy(address =
-        Some(Address(changeAddressLink = Some("/personal-account/personal-details")))
+        Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
       )
       personalDetails.person.shortName    shouldBe Some("Firstname Lastname")
       personalDetails.person.completeName shouldBe "Title Firstname Middle Lastname Honours"

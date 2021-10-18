@@ -20,6 +20,6 @@
     "startDate": 946684800000,
     "country": "Test Country",
     "type": "Residential",
-    "changeAddressLink" : "/personal-account/personal-details"
+    "changeAddressLink" : "/personal-account/your-profile"
   }
 }
