@@ -655,5 +655,18 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
       (response.json \ "status" \ "majorVersion").as[Int]  shouldBe 10
     }
 
+    "treat RE_OPT_IN_MODIFIED as ReOpt in require" in {
+      authRecordExists(nino)
+      respondPreferencesWithReOptInModified()
+      stubForShutteringDisabled
+
+      val response = await(getRequestWithAcceptHeader(url))
+
+      response.status                                 shouldBe 200
+      (response.json \ "digital").as[Boolean]         shouldBe true
+      (response.json \ "status" \ "name").as[String]  shouldBe "verified"
+      (response.json \ "status" \ "majorVersion").as[Int]  shouldBe 10
+    }
+
   }
 }

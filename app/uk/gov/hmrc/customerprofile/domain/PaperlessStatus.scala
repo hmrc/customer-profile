@@ -27,7 +27,7 @@ object PaperlessStatus {
   import play.api.libs.functional.syntax._
   import play.api.libs.json._
 
-  implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]]{
+  implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
 
     override def writes(o: Option[T]): JsValue = o match {
@@ -38,15 +38,15 @@ object PaperlessStatus {
 
   implicit val statusReads: Reads[PaperlessStatus] = (
     (__ \ "name").read[StatusName] and
-      (__ \ "category").read[Category] and
-      (__ \ "reoptinMajor").readNullable[Int]
-    ) (PaperlessStatus.apply _)
+    (__ \ "category").read[Category] and
+    (__ \ "reoptinMajor").readNullable[Int]
+  )(PaperlessStatus.apply _)
 
   implicit val statusWrites: Writes[PaperlessStatus] = (
     (__ \ "name").write[StatusName] and
-      (__ \ "category").write[Category] and
-      (__ \ "majorVersion").writeNullable[Int]
-    ) (unlift(PaperlessStatus.unapply))
+    (__ \ "category").write[Category] and
+    (__ \ "majorVersion").writeNullable[Int]
+  )(unlift(PaperlessStatus.unapply))
 
 }
 
@@ -78,6 +78,7 @@ object StatusName {
       case JsString("bounced")            => JsSuccess(Bounced)
       case JsString("pending")            => JsSuccess(Pending)
       case JsString("OLD_VERSION")        => JsSuccess(ReOptIn)
+      case JsString("RE_OPT_IN_MODIFIED") => JsSuccess(ReOptIn)
       case _                              => JsError()
     }
   }

@@ -111,6 +111,13 @@ object EntityResolverStub {
       )
     )
 
+  def respondPreferencesWithReOptInModified(): StubMapping =
+    stubFor(
+      get(urlEqualToPreferences).willReturn(
+        aResponse().withStatus(200).withBody((preferences(status = "RE_OPT_IN_MODIFIED")))
+      )
+    )
+
   def respondPreferencesNoPaperlessSet(): StubMapping =
     stubFor(
       get(urlEqualToPreferences)
