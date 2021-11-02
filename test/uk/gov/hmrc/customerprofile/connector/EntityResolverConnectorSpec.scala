@@ -16,26 +16,26 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.joda.time.LocalDate
+
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{ConfigLoader, Configuration, Environment}
 import uk.gov.hmrc.circuitbreaker.UnhealthyServiceException
 import uk.gov.hmrc.customerprofile.config.WSHttpImpl
-import uk.gov.hmrc.customerprofile.domain.StatusName.{Pending, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.{NotFoundException, _}
+import uk.gov.hmrc.http._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class EntityResolverConnectorSpec
-    extends WordSpecLike
+  extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
@@ -50,7 +50,7 @@ class EntityResolverConnectorSpec
   val termsAndCondtionssPostUrl:                       String        = s"$baseUrl/preferences/terms-and-conditions"
   val circuitBreakerNumberOfCallsToTriggerStateChange: Int           = 5
 
-  // create a new connectopr each time because the circuit breaker is stateful
+  // create a new connector each time because the circuit breaker is stateful
   def preferenceConnector: EntityResolverConnector = {
     def mockCircuitBreakerConfig() = {
       (config

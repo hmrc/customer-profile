@@ -17,7 +17,8 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{Configuration, Environment}
@@ -29,7 +30,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class PreferencesConnectorSpec
-    extends WordSpecLike
+  extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout

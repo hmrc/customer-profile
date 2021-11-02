@@ -16,14 +16,14 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import java.time.LocalDate
+import org.scalatest.matchers.should.Matchers
 
-import org.scalatest.{Matchers, WordSpecLike}
+import java.time.LocalDate
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.{prettyPrint, toJson}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.customerprofile.domain.StatusName.Verified
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.domain.{Nino, SaUtr}
 import uk.gov.hmrc.emailaddress.EmailAddress
@@ -31,31 +31,33 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 import scala.util.Random
 
 class DomainFormatCheckSpec
-    extends WordSpecLike
+  extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout {
 
   import DomainGenerator._
 
+  val logger: Logger = Logger(this.getClass)
+
   "Personal details" in {
-    Logger.debug(
+    logger.debug(
       "Personal details response : " + prettyPrint(personalDetailsAsJson)
     )
   }
 
   "Paperless" in {
-    Logger.debug("Paperless request : " + prettyPrint(paperlessAsJson))
+    logger.debug("Paperless request : " + prettyPrint(paperlessAsJson))
   }
 
   "Paperless opt out" in {
-    Logger.debug(
+    logger.debug(
       "Paperless opt out response : " + prettyPrint(paperlessOptOutAsJson)
     )
   }
 
   "Verified email Preference" in {
-    Logger.debug(
+    logger.debug(
       "Preference response : " + prettyPrint(verifiedEmailPreferenceAsJson)
     )
   }

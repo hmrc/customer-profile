@@ -16,7 +16,9 @@
 
 package uk.gov.hmrc.customerprofile.support
 
-import org.scalatest.{Matchers, OptionValues, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
+import org.scalatest.OptionValues
 import org.scalatestplus.play.WsScalaTestClient
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
 import play.api.Application
@@ -27,7 +29,7 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import scala.language.postfixOps
 
 class BaseISpec
-    extends WordSpecLike
+  extends AnyWordSpecLike
     with Matchers
     with OptionValues
     with WsScalaTestClient

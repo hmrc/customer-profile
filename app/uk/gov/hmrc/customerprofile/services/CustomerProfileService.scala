@@ -30,7 +30,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.service.Auditor
-
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -39,7 +38,6 @@ class CustomerProfileService @Inject() (
   preferencesConnector:                        PreferencesConnector,
   entityResolver:                              EntityResolverConnector,
   val accountAccessControl:                    AccountAccessControl,
-  val appNameConfiguration:                    Configuration,
   val auditConnector:                          AuditConnector,
   @Named("appName") val appName:               String,
   @Named("reOptInEnabled") val reOptInEnabled: Boolean)
