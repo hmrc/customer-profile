@@ -18,7 +18,8 @@ package uk.gov.hmrc.customerprofile.controllers
 
 import eu.timepit.refined.auto._
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.HeaderNames
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.{parse, toJson}
@@ -42,7 +43,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class LiveCustomerProfileControllerSpec
-    extends WordSpecLike
+  extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout

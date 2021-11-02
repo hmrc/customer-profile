@@ -17,6 +17,7 @@
 package uk.gov.hmrc.customerprofile.auth
 
 import com.google.inject.Inject
+import play.api.libs.json.{JsValue, Json, Writes}
 
 import javax.inject.Named
 import play.api.mvc.Results
@@ -30,7 +31,13 @@ import uk.gov.hmrc.http._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-case object ErrorUnauthorizedMicroService extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource")
+case object ErrorUnauthorizedMicroService
+    extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource") {
+
+  implicit val writes: Writes[ErrorResponse] = new Writes[ErrorResponse] {
+    def writes(e: ErrorResponse): JsValue = Json.obj("code" -> e.errorCode, "message" -> e.message)
+  }
+}
 
 class FailToMatchTaxIdOnAuth(message: String) extends HttpException(message, 403)
 

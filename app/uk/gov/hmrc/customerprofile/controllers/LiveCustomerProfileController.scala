@@ -33,6 +33,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
+import play.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -68,19 +69,19 @@ class LiveCustomerProfileController @Inject() (
       .recover {
         case _: Upstream4xxResponse =>
           logger.info("Unauthorized! Failed to grant access since 4xx response!")
-          Unauthorized(toJson(ErrorUnauthorizedMicroService))
+          Unauthorized(toJson[ErrorResponse](ErrorUnauthorizedMicroService))
 
         case _: NinoNotFoundOnAccount =>
           logger.info("Unauthorized! NINO not found on account!")
-          Forbidden(toJson(ErrorUnauthorizedNoNino))
+          Forbidden(toJson[ErrorResponse](ErrorUnauthorizedNoNino))
 
         case _: FailToMatchTaxIdOnAuth =>
           logger.info("Unauthorized! Failure to match URL NINO against Auth NINO")
-          Forbidden(toJson(ErrorUnauthorized))
+          Forbidden(toJson[ErrorResponse](ErrorUnauthorized))
 
         case _: AccountWithLowCL =>
           logger.info("Unauthorized! Account with low CL!")
-          Forbidden(toJson(ErrorUnauthorizedLowCL))
+          Forbidden(toJson[ErrorResponse](ErrorUnauthorizedLowCL))
 
         case e: AuthorisationException =>
           Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
@@ -96,7 +97,7 @@ class LiveCustomerProfileController @Inject() (
       ): Future[Result] =
         if (acceptHeaderValidationRules(request.headers.get("Accept"))) {
           invokeAuthBlock(request, block, taxId)
-        } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson(ErrorAcceptHeaderInvalid)))
+        } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid)))
       override def parser:                     BodyParser[AnyContent] = outer.parser
       override protected def executionContext: ExecutionContext       = outer.executionContext
     }
@@ -120,11 +121,11 @@ class LiveCustomerProfileController @Inject() (
 
       case _: NinoNotFoundOnAccount =>
         log("User has no NINO. Unauthorized!")
-        Forbidden(toJson(ErrorUnauthorizedNoNino))
+        Forbidden(toJson[ErrorResponse](ErrorUnauthorizedNoNino))
 
       case e: Throwable =>
         logger.error(s"$app Internal server error: ${e.getMessage}", e)
-        Status(ErrorInternalServerError.httpStatusCode)(toJson(ErrorInternalServerError))
+        Status(ErrorInternalServerError.httpStatusCode)(toJson[ErrorResponse](ErrorInternalServerError))
     }
 
   override def getPersonalDetails(
@@ -178,9 +179,9 @@ class LiveCustomerProfileController @Inject() (
         errorWrapper(service.paperlessSettings(settingsToSend, journeyId).map {
           case PreferencesExists | EmailUpdateOk => NoContent
           case PreferencesCreated                => Created
-          case EmailNotExist                     => Conflict(toJson(ErrorPreferenceConflict))
-          case NoPreferenceExists                => NotFound(toJson(ErrorNotFound))
-          case _                                 => InternalServerError(toJson(PreferencesSettingsError))
+          case EmailNotExist                     => Conflict(toJson[ErrorResponse](ErrorPreferenceConflict))
+          case NoPreferenceExists                => NotFound(toJson[ErrorResponse](ErrorNotFound))
+          case _                                 => InternalServerError(toJson[ErrorResponse]((PreferencesSettingsError)))
         })
       }
     }
@@ -203,7 +204,7 @@ class LiveCustomerProfileController @Inject() (
           case PreferencesExists       => NoContent
           case PreferencesCreated      => Created
           case PreferencesDoesNotExist => NotFound
-          case _                       => InternalServerError(toJson(PreferencesSettingsError))
+          case _                       => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
         })
       }
     }
@@ -220,7 +221,7 @@ class LiveCustomerProfileController @Inject() (
           case EmailUpdateOk      => NoContent
           case EmailNotExist      => Conflict
           case NoPreferenceExists => NotFound
-          case _                  => InternalServerError(toJson(PreferencesSettingsError))
+          case _                  => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
         })
       }
     }

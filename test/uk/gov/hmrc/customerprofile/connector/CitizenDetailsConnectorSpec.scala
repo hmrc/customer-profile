@@ -17,16 +17,17 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
+import org.scalatest.wordspec.AnyWordSpecLike
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class CitizenDetailsConnectorSpec
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout

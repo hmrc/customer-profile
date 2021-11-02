@@ -20,7 +20,8 @@ import eu.timepit.refined.auto._
 import org.scalamock.handlers.CallHandler3
 import org.scalamock.matchers.MatcherBase
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{Matchers, WordSpecLike}
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Configuration
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
@@ -40,7 +41,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class CustomerProfileServiceSpec
-    extends WordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
@@ -70,12 +71,6 @@ class CustomerProfileServiceSpec
         dataEvent.detail.equals(detail)
       }
 
-    (appNameConfiguration
-      .getString(_: String, _: Option[Set[String]]))
-      .expects("appName", None)
-      .returns(Some(appName))
-      .anyNumberOfTimes()
-
     (auditConnector
       .sendEvent(_: DataEvent)(_: HeaderCarrier, _: ExecutionContext))
       .expects(
@@ -102,7 +97,6 @@ class CustomerProfileServiceSpec
       preferencesConnector,
       entityResolver,
       accountAccessControl,
-      appNameConfiguration,
       auditConnector,
       "customer-profile",
       true
@@ -344,7 +338,6 @@ class CustomerProfileServiceSpec
           preferencesConnector,
           entityResolver,
           accountAccessControl,
-          appNameConfiguration,
           auditConnector,
           "customer-profile",
           false
