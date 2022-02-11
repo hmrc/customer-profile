@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,8 +62,9 @@ case class Person(
 
   lazy val shortName: Option[String] = for {
     f <- firstName
+    m <- middleName
     l <- lastName
-  } yield List(f, l).mkString(" ")
+  } yield List(f, m, l).mkString(" ")
 
   lazy val completeName: String =
     List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
