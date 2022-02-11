@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -190,7 +190,7 @@ class CustomerProfileServiceSpec
           Some("sex"),
           None,
           None,
-          Some("Firstname Lastname"),
+          Some("Firstname Middle Lastname"),
           Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
         None
@@ -209,7 +209,7 @@ class CustomerProfileServiceSpec
       personalDetails shouldBe person.copy(address =
         Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
       )
-      personalDetails.person.shortName    shouldBe Some("Firstname Lastname")
+      personalDetails.person.shortName    shouldBe Some("Firstname Middle Lastname")
       personalDetails.person.completeName shouldBe "Title Firstname Middle Lastname Honours"
     }
   }
