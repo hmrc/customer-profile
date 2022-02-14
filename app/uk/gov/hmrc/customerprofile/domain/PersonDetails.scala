@@ -60,11 +60,8 @@ case class Person(
   fullName:                   Option[String],
   nationalInsuranceLetterUrl: Option[String]) {
 
-  lazy val shortName: Option[String] = for {
-    f <- firstName
-    m <- middleName
-    l <- lastName
-  } yield List(f, m, l).mkString(" ")
+  lazy val shortName: String =
+    List(firstName, middleName, lastName).flatten.mkString(" ")
 
   lazy val completeName: String =
     List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
@@ -75,15 +72,15 @@ object Address extends WriteDatesAsLongs {
 }
 
 case class Address(
-  line1:             Option[String]    = None,
-  line2:             Option[String]    = None,
-  line3:             Option[String]    = None,
-  line4:             Option[String]    = None,
-  line5:             Option[String]    = None,
-  postcode:          Option[String]    = None,
-  country:           Option[String]    = None,
+  line1:             Option[String] = None,
+  line2:             Option[String] = None,
+  line3:             Option[String] = None,
+  line4:             Option[String] = None,
+  line5:             Option[String] = None,
+  postcode:          Option[String] = None,
+  country:           Option[String] = None,
   startDate:         Option[LocalDate] = None,
-  `type`:            Option[String]    = None,
+  `type`:            Option[String] = None,
   changeAddressLink: Option[String])
 
 object PersonDetails {
