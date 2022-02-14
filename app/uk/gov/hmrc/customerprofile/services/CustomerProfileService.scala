@@ -62,7 +62,7 @@ class CustomerProfileService @Inject() (
         .map(details =>
           details.copy(
             person = details.person.copy(
-              fullName                   = details.person.shortName,
+              fullName                   = Some(details.person.shortName),
               nationalInsuranceLetterUrl = Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
             ),
             address = Some(

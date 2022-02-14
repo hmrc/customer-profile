@@ -182,7 +182,7 @@ class CustomerProfileServiceSpec
       val person = PersonDetails(
         Person(
           Some("Firstname"),
-          Some("Middle"),
+          None,
           Some("Lastname"),
           Some("Intial"),
           Some("Title"),
@@ -190,7 +190,7 @@ class CustomerProfileServiceSpec
           Some("sex"),
           None,
           None,
-          Some("Firstname Middle Lastname"),
+          Some("Firstname Lastname"),
           Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
         None
@@ -209,8 +209,43 @@ class CustomerProfileServiceSpec
       personalDetails shouldBe person.copy(address =
         Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
       )
-      personalDetails.person.shortName    shouldBe Some("Firstname Middle Lastname")
-      personalDetails.person.completeName shouldBe "Title Firstname Middle Lastname Honours"
+      personalDetails.person.shortName    shouldBe "Firstname Lastname"
+      personalDetails.person.completeName shouldBe "Title Firstname Lastname Honours"
+    }
+
+    "return middle name if present" in {
+      val person = PersonDetails(
+        Person(
+          Some("Firstname"),
+          Some("Middlename"),
+          Some("Lastname"),
+          Some("Intial"),
+          Some("Title"),
+          Some("Honours"),
+          Some("sex"),
+          None,
+          None,
+          Some("Firstname Middlename Lastname"),
+          Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
+        ),
+        None
+      )
+
+      mockAudit(
+        transactionName = "getPersonalDetails",
+        detail          = Map("nino" -> nino.value)
+      )
+      (citizenDetailsConnector
+        .personDetails(_: Nino)(_: HeaderCarrier, _: ExecutionContext))
+        .expects(nino, *, *)
+        .returns(Future successful person)
+      val personalDetails = await(service.getPersonalDetails(nino))
+
+      personalDetails shouldBe person.copy(address =
+        Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
+      )
+      personalDetails.person.shortName    shouldBe "Firstname Middlename Lastname"
+      personalDetails.person.completeName shouldBe "Title Firstname Middlename Lastname Honours"
     }
   }
 
