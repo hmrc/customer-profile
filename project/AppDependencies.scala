@@ -8,7 +8,7 @@ object AppDependencies {
   private val playHmrcVersion               = "6.4.0-play-28"
   private val domainVersion                 = "6.2.0-play-28"
   private val reactiveCircuitBreakerVersion = "3.5.0"
-  private val emailAddressVersion           = "3.5.0"
+  private val emailAddressVersion           = "3.6.0"
   private val jodaVersion                   = "2.7.4"
   private val flexmarkAllVersion            = "0.36.8"
 
