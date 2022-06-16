@@ -23,11 +23,12 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.stubs.AuthStub._
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.domain.{Nino, SaUtr}
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
+import uk.gov.hmrc.http.HeaderNames._
 
 class AccountAccessControlISpec extends BaseISpec with Eventually {
 
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+  implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization("Bearer 123")))
 
   val saUtr:                    SaUtr                = SaUtr("1872796160")
   val nino:                     Nino                 = Nino("CS100700A")
@@ -39,7 +40,7 @@ class AccountAccessControlISpec extends BaseISpec with Eventually {
       ninoFound(nino)
 
       val foundNino: Option[Nino] = await(testAccountAccessControl.retrieveNino()(hc))
-      foundNino.get         shouldBe nino
+      foundNino.get shouldBe nino
     }
 
   }

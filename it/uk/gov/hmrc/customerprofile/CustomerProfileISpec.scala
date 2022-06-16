@@ -41,20 +41,22 @@ import scala.concurrent.Future
 import scala.io.Source.fromInputStream
 
 trait CustomerProfileTests extends BaseISpec with Eventually {
-  val nino:             Nino             = Nino("AA000006C")
-  val acceptJsonHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
-  val journeyId:        JourneyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
+  val nino:                    Nino             = Nino("AA000006C")
+  val acceptJsonHeader:        (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
+  val journeyId:               JourneyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
 
-  def getRequestWithAcceptHeader(url: String): Future[WSResponse] = wsUrl(url).addHttpHeaders(acceptJsonHeader).get()
+  def getRequestWithAcceptHeader(url: String): Future[WSResponse] =
+    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).get()
 
   def postRequestWithAcceptHeader(
     url:  String,
     form: JsValue
   ): Future[WSResponse] =
-    wsUrl(url).addHttpHeaders(acceptJsonHeader).post(form)
+    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).post(form)
 
   def postRequestWithAcceptHeader(url: String): Future[WSResponse] =
-    wsUrl(url).addHttpHeaders(acceptJsonHeader).post("")
+    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).post("")
 
   "GET /profile/preferences" should {
     val url = s"/profile/preferences?journeyId=$journeyId"
@@ -649,10 +651,10 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
 
-      response.status                                 shouldBe 200
-      (response.json \ "digital").as[Boolean]         shouldBe true
-      (response.json \ "status" \ "name").as[String]  shouldBe "verified"
-      (response.json \ "status" \ "majorVersion").as[Int]  shouldBe 10
+      response.status                                     shouldBe 200
+      (response.json \ "digital").as[Boolean]             shouldBe true
+      (response.json \ "status" \ "name").as[String]      shouldBe "verified"
+      (response.json \ "status" \ "majorVersion").as[Int] shouldBe 10
     }
 
     "treat RE_OPT_IN_MODIFIED as ReOpt in require" in {
@@ -662,10 +664,10 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
 
-      response.status                                 shouldBe 200
-      (response.json \ "digital").as[Boolean]         shouldBe true
-      (response.json \ "status" \ "name").as[String]  shouldBe "verified"
-      (response.json \ "status" \ "majorVersion").as[Int]  shouldBe 10
+      response.status                                     shouldBe 200
+      (response.json \ "digital").as[Boolean]             shouldBe true
+      (response.json \ "status" \ "name").as[String]      shouldBe "verified"
+      (response.json \ "status" \ "majorVersion").as[Int] shouldBe 10
     }
 
   }
