@@ -50,7 +50,9 @@ class BaseISpec
     "play.ws.timeout.connection"                   -> "6000 seconds",
     "play.ws.timeout.request"                      -> "20000 seconds",
     "microservice.services.mobile-shuttering.port" -> wireMockPort,
-    "optInVersionsEnabled"                         -> false
+    "optInVersionsEnabled"                         -> false,
+    "metrics.enabled"                              -> false,
+    "metrics.jvm.enabled"                          -> false
   )
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)

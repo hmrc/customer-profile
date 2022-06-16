@@ -4,11 +4,11 @@ object AppDependencies {
 
   import play.core.PlayVersion
 
-  private val bootstrapPlayVersion          = "5.12.0"
-  private val playHmrcVersion               = "6.4.0-play-28"
-  private val domainVersion                 = "6.2.0-play-28"
+  private val bootstrapPlayVersion          = "5.24.0"
+  private val playHmrcVersion               = "7.0.0-play-28"
+  private val domainVersion                 = "8.1.0-play-28"
   private val reactiveCircuitBreakerVersion = "3.5.0"
-  private val emailAddressVersion           = "3.5.0"
+  private val emailAddressVersion           = "3.6.0"
   private val jodaVersion                   = "2.7.4"
   private val flexmarkAllVersion            = "0.36.8"
 
