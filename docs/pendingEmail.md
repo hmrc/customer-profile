@@ -1,12 +1,12 @@
 Paperless Settings
 ----
-  Sets or Updates the user's paperless opt-in preference settings.
+  Updates the user's email address for pending emails.
 
   The acceptance is based off the user being shown and agreeing to, these [Terms and Conditions](https://www.tax.service.gov.uk/information/terms#secure)
 
 * **URL**
 
-  `/profile/preferences/pending-email`
+  `/profile/preferences/paperless-settings/opt-in`
 
 * **Method:**
 
@@ -23,29 +23,15 @@ Paperless Settings
 
 ```json
 { 
-"email": "test@test.com",
-"generic": { 
-    "accepted": true,
-    "optInPage": { 
-        "cohort": 24,
-        "pageType": "AndroidOptInPage", 
-        "version": { 
-            "major": 1, 
-            "minor": 2 
-        } 
-    }
-},
-"language": "en" 
+"email": "test@test.com"
 }
 ```
 
 * **Success Response:**
 
   * **Code:** 200 <br />
-    **Description:** Update to an existing record
-  * **Code:** 201 <br />
-    **Description:** Created a new record
-
+    **Description:** Sucessfully updated
+  
 * **Error Response:**
 
   * **Code:** 400 BAD REQUEST<br />
