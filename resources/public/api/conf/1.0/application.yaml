@@ -288,8 +288,10 @@ components:
         AUTHORIZATION header.
         See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
       flows:
-        clientCredentials:
+        authorizationCode:
+          authorizationUrl: https://api.service.hmrc.gov.uk/oauth/authorize
           tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          refreshUrl: https://api.service.hmrc.gov.uk/oauth/refresh
           scopes:
             read:customer-profile: Retrieve the customer profile
   schemas:
