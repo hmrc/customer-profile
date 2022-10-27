@@ -1,0 +1,545 @@
+openapi: 3.0.0
+info:
+  title: Customer Profile
+  description: >-
+    ### What is this API for?
+
+    The API is used to retrieve customer profile information.
+  contact: {}
+  version: '1.0'
+servers:
+  - url: https://test-api.service.hmrc.gov.uk/customer-profile
+    description: Sandbox
+  - url: https://api.service.hmrc.gov.uk/customer-profile
+    description: Production
+    variables: {}
+paths:
+  /customer-profile/profile/personal-details/{nino}:
+    get:
+      tags:
+        - customer-profile
+      summary: Get personal details
+      description: This endpoint retrieves a user's designatory details
+      operationId: Getpersonaldetails
+      parameters:
+        - name: nino
+          in: path
+          description: The NINO for the individual.
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: NS123456B
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CustomerProfileProfilePersonalDetailsresponse'
+                  - example:
+                      person:
+                        firstName: Jennifer
+                        lastName: Thorsteinson
+                        title: Ms
+                        sex: Female
+                        dateOfBirth: 513774181935
+                        nino: CS700100A
+                        fullName: Angus Smith
+                        nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
+                      address:
+                        line1: 999 Big Street
+                        line2: Worthing
+                        line3: West Sussex
+                        postcode: BN99 8IG
+                        changeAddressLink: /personal-account/your-profile
+              examples:
+                example-1:
+                  value:
+                    person:
+                      firstName: Jennifer
+                      lastName: Thorsteinson
+                      title: Ms
+                      sex: Female
+                      dateOfBirth: 513774181935
+                      nino: CS700100A
+                      fullName: Angus Smith
+                      nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
+                    address:
+                      line1: 999 Big Street
+                      line2: Worthing
+                      line3: West Sussex
+                      postcode: BN99 8IG
+                      changeAddressLink: /personal-account/your-profile
+      deprecated: false
+      security:
+        - applicationRestricted:
+            - read:customer-profile
+  /customer-profile/profile/preferences:
+    get:
+      tags:
+        - customer-profile
+      summary: Get preferences
+      description: This endpoint retrieves the preferences.
+      operationId: Getpreferences
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CustomerProfileProfilePreferencesresponse'
+                  - example:
+                      digital: true
+                      emailAddress: name@email.co.uk
+                      status:
+                        status: verified
+              examples:
+                example-1:
+                  value:
+                    digital: true
+                    emailAddress: name@email.co.uk
+                    status:
+                      status: verified
+      deprecated: false
+      security:
+        - applicationRestricted:
+            - read:customer-profile
+  /customer-profile/profile/preferences/paperless-settings/opt-in:
+    post:
+      tags:
+        - customer-profile
+      summary: Opt in paperless preferences
+      description: This endpoint sets or updates the user's paperless opt-in preference settings.
+      operationId: Optinpaperlesspreferences
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CustomerProfileProfilePreferencesPaperlessSettingsOptInrequest'
+                - example:
+                    generic:
+                      accepted: true
+                      optInPage:
+                        cohort: 24
+                        pageType: AndroidOptInPage
+                        version:
+                          major: 1
+                          minor: 2
+                    email: test@example.com
+                    language: en
+            example:
+              generic:
+                accepted: true
+                optInPage:
+                  cohort: 24
+                  pageType: AndroidOptInPage
+                  version:
+                    major: 1
+                    minor: 2
+              email: test@example.com
+              language: en
+        required: true
+      responses:
+        '201':
+          description: ''
+          headers: {}
+          content: {}
+        '204':
+          description: ''
+          headers: {}
+          content: {}
+      deprecated: false
+      security:
+        - applicationRestricted:
+            - read:customer-profile
+  /customer-profile/profile/preferences/paperless-settings/opt-out:
+    post:
+      tags:
+        - customer-profile
+      summary: Opt out paperless preferences
+      description: This endpoint opts the user out of paperless.
+      operationId: Optoutpaperlesspreferences
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CustomerProfileProfilePreferencesPaperlessSettingsOptOutrequest'
+                - example:
+                    generic:
+                      accepted: false
+                      optInPage:
+                        cohort: 24
+                        pageType: AndroidOptOutPage
+                        version:
+                          major: 1
+                          minor: 2
+                    language: en
+            example:
+              generic:
+                accepted: false
+                optInPage:
+                  cohort: 24
+                  pageType: AndroidOptOutPage
+                  version:
+                    major: 1
+                    minor: 2
+              language: en
+        required: true
+      responses:
+        '201':
+          description: ''
+          headers: {}
+          content: {}
+        '204':
+          description: ''
+          headers: {}
+          content: {}
+      deprecated: false
+      security:
+        - applicationRestricted:
+            - read:customer-profile
+  /customer-profile/profile/preferences/pending-email:
+    post:
+      tags:
+        - customer-profile
+      summary: Resend pending email
+      description: Triggers a resend of the verification email
+      operationId: Resendpendingemail
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/CustomerProfileProfilePreferencesPendingEmailrequest'
+                - example:
+                    email: EXAMPLE@TEST.com
+            example:
+              email: EXAMPLE@TEST.com
+        required: true
+      responses:
+        '204':
+          description: ''
+          headers: {}
+          content: {}
+      deprecated: false
+      security:
+        - applicationRestricted:
+            - read:customer-profile
+components:
+  securitySchemes:
+    applicationRestricted:
+      type: oauth2
+      description: |
+        HMRC supports OAuth 2.0 for authenticating user-restricted API requests using an OAuth 2.0 Bearer Token in the
+        AUTHORIZATION header.
+        See https://developer.service.hmrc.gov.uk/api-documentation/docs/authorisation/user-restricted-endpoints for details.
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.service.hmrc.gov.uk/oauth/token
+          scopes:
+            read:customer-profile: Retrieve the customer profile
+  schemas:
+    errorResponse:
+      title: errorResponse
+      required:
+        - code
+      type: object
+      properties:
+        code:
+          type: string
+    Address:
+      title: Address
+      required:
+        - line1
+        - line2
+        - line3
+        - postcode
+        - changeAddressLink
+      type: object
+      properties:
+        line1:
+          type: string
+        line2:
+          type: string
+        line3:
+          type: string
+        postcode:
+          type: string
+        changeAddressLink:
+          type: string
+      example:
+        line1: 999 Big Street
+        line2: Worthing
+        line3: West Sussex
+        postcode: BN99 8IG
+        changeAddressLink: /personal-account/your-profile
+    CustomerProfileProfilePersonalDetailsresponse:
+      title: CustomerProfileProfilePersonalDetailsresponse
+      required:
+        - person
+        - address
+      type: object
+      properties:
+        person:
+          $ref: '#/components/schemas/Person'
+        address:
+          $ref: '#/components/schemas/Address'
+      example:
+        person:
+          firstName: Jennifer
+          lastName: Thorsteinson
+          title: Ms
+          sex: Female
+          dateOfBirth: 513774181935
+          nino: CS700100A
+          fullName: Angus Smith
+          nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
+        address:
+          line1: 999 Big Street
+          line2: Worthing
+          line3: West Sussex
+          postcode: BN99 8IG
+          changeAddressLink: /personal-account/your-profile
+    CustomerProfileProfilePreferencesPaperlessSettingsOptInrequest:
+      title: CustomerProfileProfilePreferencesPaperlessSettingsOptInrequest
+      required:
+        - generic
+        - email
+        - language
+      type: object
+      properties:
+        generic:
+          $ref: '#/components/schemas/Generic'
+        email:
+          type: string
+          description: The email to be used for paperless communication.
+        language:
+          type: string
+          description: The language to be used for paperless communication.
+      description: Enable paperless settings for a given email
+    CustomerProfileProfilePreferencesPaperlessSettingsOptOutrequest:
+      title: CustomerProfileProfilePreferencesPaperlessSettingsOptOutrequest
+      required:
+        - generic
+        - language
+      type: object
+      properties:
+        generic:
+          $ref: '#/components/schemas/Generic1'
+        language:
+          type: string
+          description: The language to be used for paperless communication.
+      description: Disable paperless settings for a given email
+    CustomerProfileProfilePreferencesPendingEmailrequest:
+      title: CustomerProfileProfilePreferencesPendingEmailrequest
+      required:
+        - email
+      type: object
+      properties:
+        email:
+          type: string
+          description: The pending email to resend a verification link for. This user must already have this preference set.
+      description: The pending email to resend a verification link for
+    CustomerProfileProfilePreferencesresponse:
+      title: CustomerProfileProfilePreferencesresponse
+      required:
+        - digital
+        - emailAddress
+        - status
+      type: object
+      properties:
+        digital:
+          type: boolean
+        emailAddress:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+      example:
+        digital: true
+        emailAddress: name@email.co.uk
+        status:
+          status: verified
+    Generic:
+      title: Generic
+      required:
+        - accepted
+      type: object
+      properties:
+        accepted:
+          type: boolean
+          description: If the user accepts Ts & Cs to opt-in to paperless communication.
+        optInPage:
+          allOf:
+            - $ref: '#/components/schemas/OptInPage'
+            - description: Details of the terms and conditions accepted by the user
+    Generic1:
+      title: Generic1
+      required:
+        - accepted
+      type: object
+      properties:
+        accepted:
+          type: boolean
+          description: If the user accepts Ts & Cs to opt-in to paperless communication.
+        optInPage:
+          allOf:
+            - $ref: '#/components/schemas/OptInPage1'
+            - description: Details of the terms and conditions declined by the user
+    OptInPage:
+      title: OptInPage
+      type: object
+      properties:
+        cohort:
+          type: number
+          description: Numerical identifier of sending system for digital contact use
+        pageType:
+          type: string
+          description: 'Where the user has accepted these terms. Must be one of: AndroidOptInPage, IosOptInPage, AndroidOptOutPage, IosOptOutPage'
+        version:
+          allOf:
+            - $ref: '#/components/schemas/Version'
+            - description: The version of terms and conditions accepted
+      description: Details of the terms and conditions accepted by the user
+    OptInPage1:
+      title: OptInPage1
+      type: object
+      properties:
+        cohort:
+          type: number
+          description: Numerical identifier of sending system for digital contact use
+        pageType:
+          type: string
+          description: 'Where the user has declined these terms. Must be one of: AndroidOptInPage, IosOptInPage, AndroidOptOutPage, IosOptOutPage'
+        version:
+          allOf:
+            - $ref: '#/components/schemas/Version1'
+            - description: The version of terms and conditions declined
+      description: Details of the terms and conditions declined by the user
+    Person:
+      title: Person
+      required:
+        - firstName
+        - lastName
+        - title
+        - sex
+        - dateOfBirth
+        - nino
+        - fullName
+        - nationalInsuranceLetterUrl
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        title:
+          type: string
+        sex:
+          type: string
+        dateOfBirth:
+          type: integer
+          format: int64
+        nino:
+          type: string
+        fullName:
+          type: string
+        nationalInsuranceLetterUrl:
+          type: string
+      example:
+        firstName: Jennifer
+        lastName: Thorsteinson
+        title: Ms
+        sex: Female
+        dateOfBirth: 513774181935
+        nino: CS700100A
+        fullName: Angus Smith
+        nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
+    Status:
+      title: Status
+      required:
+        - status
+      type: object
+      properties:
+        status:
+          type: string
+      example:
+        status: verified
+    Version:
+      title: Version
+      type: object
+      properties:
+        major:
+          type: number
+          description: The major version number
+        minor:
+          type: number
+          description: The minor version number
+      description: The version of terms and conditions accepted
+    Version1:
+      title: Version1
+      type: object
+      properties:
+        major:
+          type: number
+          description: The major version number
+        minor:
+          type: number
+          description: The minor version number
+      description: The version of terms and conditions declined
+tags:
+  - name: customer-profile
+    description: ''
