@@ -83,7 +83,7 @@ paths:
                       changeAddressLink: /personal-account/your-profile
       deprecated: false
       security:
-        - applicationRestricted:
+        - userRestricted:
             - read:customer-profile
   /customer-profile/profile/preferences:
     get:
@@ -124,7 +124,7 @@ paths:
                       status: verified
       deprecated: false
       security:
-        - applicationRestricted:
+        - userRestricted:
             - read:customer-profile
   /customer-profile/profile/preferences/paperless-settings/opt-in:
     post:
@@ -183,7 +183,7 @@ paths:
           content: {}
       deprecated: false
       security:
-        - applicationRestricted:
+        - userRestricted:
             - read:customer-profile
   /customer-profile/profile/preferences/paperless-settings/opt-out:
     post:
@@ -240,7 +240,7 @@ paths:
           content: {}
       deprecated: false
       security:
-        - applicationRestricted:
+        - userRestricted:
             - read:customer-profile
   /customer-profile/profile/preferences/pending-email:
     post:
@@ -277,11 +277,11 @@ paths:
           content: {}
       deprecated: false
       security:
-        - applicationRestricted:
+        - userRestricted:
             - read:customer-profile
 components:
   securitySchemes:
-    applicationRestricted:
+    userRestricted:
       type: oauth2
       description: |
         HMRC supports OAuth 2.0 for authenticating user-restricted API requests using an OAuth 2.0 Bearer Token in the
