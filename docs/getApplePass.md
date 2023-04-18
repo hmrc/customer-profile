@@ -1,6 +1,6 @@
 Get Apple Pass
 ----
-Retrieves a base 64 encoded pass that can be called from the HMRC mobile app to allow a user too add there nino to there apple wallet.
+Retrieves a base 64 encoded pass that can be called from the HMRC mobile app to allow a user to add their nino to an Apple Wallet.
 
 The acceptance is based off the user being shown and agreeing to, these [Terms and Conditions](https://www.tax.service.gov.uk/information/terms#secure)
 
