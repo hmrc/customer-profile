@@ -19,9 +19,9 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import play.api.Logger
-import uk.gov.hmrc.customerprofile.domain.{ApplePass, GetApplePass, ApplePassUUIDGenerator}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass, ApplePassUUIDGenerator}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{BadRequestException, CoreGet, CorePost, HeaderCarrier}
+import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,19 +31,17 @@ class GetApplePassConnector @Inject()(httpPost: CorePost, httpGet : CoreGet, @Na
 
   def createApplePass(nino : Nino, name: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[GetApplePass]  = {
     httpPost.POST[ApplePassUUIDGenerator,GetApplePass](url = s"$findMyNinoAddToWalletUrl/create-apple-pass", ApplePassUUIDGenerator(name, nino)) recover {
-      case e => {
+      case e =>
         logger.info(s"Error: ${e.getMessage}")
         throw e
-      }
     }
   }
 
-  def getPass(passId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[ApplePass] = {
-    httpGet.GET[ApplePass](url = s"$findMyNinoAddToWalletUrl/get-pass-card?=$passId") recover {
-      case e => {
+  def getPass(passId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[RetrieveApplePass] = {
+    httpGet.GET[RetrieveApplePass](url = s"$findMyNinoAddToWalletUrl/get-pass-card?=$passId") recover {
+      case e =>
         logger.info(s"Error: ${e.getMessage}")
         throw e
-      }
     }
   }
 }

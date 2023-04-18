@@ -1,21 +1,12 @@
 package uk.gov.hmrc.customerprofile
 
-import eu.timepit.refined.auto._
-import org.scalatest.concurrent.Eventually
-import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json
 import play.api.libs.json.Json.parse
-import play.api.libs.ws.WSResponse
-import uk.gov.hmrc.customerprofile.domain.{ApplePass, Shuttering}
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, authRecordExistsWithoutNino, ninoFound}
+import uk.gov.hmrc.customerprofile.domain.Shuttering
+import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
 import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassUUID}
-import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.domain.Nino
-
-import scala.concurrent.Future
 
 class GetApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="

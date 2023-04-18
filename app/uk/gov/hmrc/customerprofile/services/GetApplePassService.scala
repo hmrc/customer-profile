@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.services
 import com.google.inject.Inject
 import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, NinoNotFoundOnAccount}
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GetApplePassConnector}
-import uk.gov.hmrc.customerprofile.domain.ApplePass
+import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -42,14 +42,14 @@ class GetApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConne
       accountAccessControl.retrieveNino()
     }
 
-  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[ApplePass] = {
+  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[RetrieveApplePass] = {
     withAudit("applePass", Map.empty) {
       for {
         nino <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         getApplePassUUID <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")), citizenDetails.person.completeName)
         getApplePassGenerator <- createApplePassConnector.getPass(getApplePassUUID.uuid)
-        applePass: ApplePass = ApplePass(getApplePassGenerator.applePass)
+        applePass: RetrieveApplePass = RetrieveApplePass(getApplePassGenerator.applePass)
       } yield applePass
     }
   }

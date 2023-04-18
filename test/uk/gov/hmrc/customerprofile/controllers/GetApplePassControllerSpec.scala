@@ -23,7 +23,7 @@ import play.api.test.Helpers.{contentAsJson, status, stubControllerComponents}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, AccountWithLowCL, FailToMatchTaxIdOnAuth, NinoNotFoundOnAccount}
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
-import uk.gov.hmrc.customerprofile.domain.{ApplePass, PersonDetails, Shuttering}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.mocks.ShutteringMock
 import uk.gov.hmrc.customerprofile.services.GetApplePassService
@@ -31,7 +31,7 @@ import uk.gov.hmrc.domain.Nino
 import eu.timepit.refined.auto._
 import play.api.mvc.AnyContentAsEmpty
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
-import play.api.libs.json.Json.{parse, toJson}
+import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.auth.core.SessionRecordNotFound
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -94,14 +94,14 @@ class GetApplePassControllerSpec
 
   "getApplePass" should {
 
-    def mockGetApplePass(result: Future[ApplePass]) =
+    def mockGetApplePass(result: Future[RetrieveApplePass]) =
       (service
         .getApplePass()(_: HeaderCarrier, _: ExecutionContext))
         .expects(*, *)
         .returns(result)
 
     "return an apple base 64 encoded string" in {
-      val applePass = ApplePass(base64String)
+      val applePass = RetrieveApplePass(base64String)
       authSuccess(None)
       mockGetApplePass(Future successful applePass)
       mockShutteringResponse(notShuttered)

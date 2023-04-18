@@ -23,7 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
-import uk.gov.hmrc.customerprofile.domain.{ApplePass, GetApplePass}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,12 +35,12 @@ class GetApplePassConnectorSpec
 
   implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
-  val httpGet: CoreGet = mock[CoreGet]
-  val httpPost: CorePost = mock[CorePost]
-  val connector: GetApplePassConnector = new GetApplePassConnector(httpPost, httpGet,"someUrl")
-  val nino:      Nino                    = Nino("CS700100A")
-  val uuid = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String = "TXIgSm9lIEJsb2dncw=="
+  val httpGet:      CoreGet = mock[CoreGet]
+  val httpPost:     CorePost = mock[CorePost]
+  val connector:    GetApplePassConnector = new GetApplePassConnector(httpPost, httpGet,"someUrl")
+  val nino:         Nino                  = Nino("CS700100A")
+  val uuid:         String = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String: String = "TXIgSm9lIEJsb2dncw=="
 
   def performSuccessfulPOST[I, O](response: Future[O])(implicit http: CorePost): Unit =
     (
@@ -108,9 +108,9 @@ class GetApplePassConnectorSpec
     }
     "calling the getPass" should {
       "return a base 64 encoded string given the call is successful" in {
-        performSuccessfulGET(Future successful ApplePass(base64String))(httpGet)
+        performSuccessfulGET(Future successful RetrieveApplePass(base64String))(httpGet)
         val result = await(connector.getPass(uuid))
-        result shouldBe ApplePass(base64String)
+        result shouldBe RetrieveApplePass(base64String)
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulGET(new BadRequestException(""))(httpGet)

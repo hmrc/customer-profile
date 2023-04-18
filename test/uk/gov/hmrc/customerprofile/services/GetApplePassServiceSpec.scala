@@ -26,7 +26,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GetApplePassConnector}
-import uk.gov.hmrc.customerprofile.domain.{ApplePass, GetApplePass, Person, PersonDetails}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass, Person, PersonDetails}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
@@ -51,8 +51,9 @@ class GetApplePassServiceSpec
   val appName: String = "customer-profile"
   val uuid = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String = "TXIgSm9lIEJsb2dncw=="
+  val nino: Nino = Nino("CS700100A")
 
-  val person = PersonDetails(
+  val person: PersonDetails = PersonDetails(
     Person(
       Some("Firstname"),
       None,
@@ -116,7 +117,7 @@ class GetApplePassServiceSpec
       .expects(nino, *, *, *)
       .returning(f)
 
-  def mockGetApplePass(f: Future[ApplePass]) =
+  def mockGetApplePass(f: Future[RetrieveApplePass]) =
     (getApplePassConnector
       .getPass(_: String)(_: HeaderCarrier, _: ExecutionContext))
       .expects(uuid, *, *)
@@ -134,8 +135,6 @@ class GetApplePassServiceSpec
     "customer-profile"
   )
 
-  val nino = Nino("CS700100A")
-
   "getApplePass" should {
     "audit and return an apple pass model with a base 64 encoded string" in {
 
@@ -149,10 +148,10 @@ class GetApplePassServiceSpec
         .returns(Future successful person)
 
       mockCreateApplePass(Future.successful(GetApplePass(uuid)))
-      mockGetApplePass(Future.successful(ApplePass(base64String)))
+      mockGetApplePass(Future.successful(RetrieveApplePass(base64String)))
 
       val result = await(service.getApplePass())
-      result shouldBe ApplePass(base64String)
+      result shouldBe RetrieveApplePass(base64String)
     }
 
   }

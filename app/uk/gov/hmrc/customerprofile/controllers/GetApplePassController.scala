@@ -39,28 +39,26 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class GetApplePassController @Inject()(
-                                     service : GetApplePassService,
-                                     accessControl: AccountAccessControl,
-                                     @Named("citizen-details.enabled") val citizenDetailsEnabled: Boolean,
-                                     controllerComponents:  ControllerComponents,
-                                     shutteringConnector: ShutteringConnector
-                                   )
-                                      (implicit val executionContext:ExecutionContext)
-  extends BackendController(controllerComponents)  with HeaderValidator
-     {
+  service:                                          GetApplePassService,
+  accessControl:                                    AccountAccessControl,
+  @Named("citizen-details.enabled")   val citizenDetailsEnabled: Boolean,
+  controllerComponents:                             ControllerComponents,
+  shutteringConnector:                              ShutteringConnector
+)(implicit val executionContext                     :ExecutionContext)
+    extends BackendController(controllerComponents)
+    with HeaderValidator {
   outer =>
-
-       val logger: Logger = Logger(this.getClass)
+  val logger: Logger = Logger(this.getClass)
    def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
   private final val WebServerIsDown = new Status(521)
-  val app = "Live-Customer-Profile"
+  val app                          = "Apple Pass"
 
   def invokeAuthBlock[A](
-                          request: Request[A],
-                          block: Request[A] => Future[Result],
-                          taxId: Option[Nino]
-                        ): Future[Result] = {
+    request: Request[A],
+    block: Request[A] => Future[Result],
+    taxId: Option[Nino]
+  ): Future[Result] = {
     implicit val hc: HeaderCarrier = fromRequest(request)
 
     accessControl
@@ -90,16 +88,17 @@ class GetApplePassController @Inject()(
       }
   }
        def withAcceptHeaderValidationAndAuthIfLive(taxId: Option[Nino] = None): ActionBuilder[Request, AnyContent] =
-    new ActionBuilder[Request, AnyContent] {
+         new ActionBuilder[Request, AnyContent] {
 
-      def invokeBlock[A](request: Request[A],
-                          block: Request[A] => Future[Result]
-                        ): Future[Result] =
-        if (acceptHeaderValidationRules(request.headers.get("Accept"))) {
+           def invokeBlock[A](
+            request: Request[A],
+            block:   Request[A] => Future[Result]
+          ): Future[Result] =
+            if (acceptHeaderValidationRules(request.headers.get("Accept"))) {
           invokeAuthBlock(request, block, taxId)
         } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid)))
-      override def parser: BodyParser[AnyContent] = outer.parser
-      override protected def executionContext: ExecutionContext = outer.executionContext
+      override def parser:                     BodyParser[AnyContent] = outer.parser
+      override protected def executionContext: ExecutionContext       = outer.executionContext
     }
 
    def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
@@ -143,5 +142,4 @@ class GetApplePassController @Inject()(
         }
       }
     }
-
 }

@@ -10,10 +10,10 @@ import play.api.libs.json.Json.obj
 object FindmyNinoWalletStub {
 
   def getApplePassUUID(
-                                    nino: Nino,
-                                    name: String,
-                                    uuid: String
-                                  ): StubMapping =
+                        nino: Nino,
+                        name: String,
+                        uuid: String
+                        ): StubMapping =
     stubFor(
       post(urlEqualToCreateApplePass())
         .withRequestBody(equalToJson(
@@ -23,7 +23,6 @@ object FindmyNinoWalletStub {
             |}""".stripMargin))
         .willReturn(aResponse().withStatus(200)
           .withBody(obj("uuid" -> uuid).toString))
-
     )
 
   def getApplePass(uuid: String, applePass: String): StubMapping =
