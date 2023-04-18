@@ -126,6 +126,41 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
+  /customer-profile/apple-pass:
+    get:
+      tags:
+        - customer-profile
+      summary: Get apple pass
+      description: This endpoint retrieves the details needed to store a nino in a users apple wallet.
+      operationId: GetApplePass
+      parameters:
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+          headers: {}
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/GetApplePassResponse'
+                  - example:
+                      applePass: UEsDBBQACAgIABxqJlYAAAAAAAAAAAAAAAAIAAAAaWNvbi5wbmcBYjCdz4lQTkcNChoKAAAADUlIRFIAAAC0
+              examples:
+                example-1:
+                  value:
+                    applePass: UEsDBBQACAgIABxqJlYAAAAAAAAAAAAAAAAIAAAAaWNvbi5wbmcBYjCdz4lQTkcNChoKAAAADUlIRFIAAAC0
+      deprecated: false
+      security:
+        - userRestricted:
+            - read:customer-profile
   /customer-profile/profile/preferences/paperless-settings/opt-in:
     post:
       tags:
@@ -415,6 +450,16 @@ components:
         emailAddress: name@email.co.uk
         status:
           status: verified
+    GetApplePassResponse:
+      title: ApplePassResponse
+      required:
+        - applePass
+      type: object
+      properties:
+        applePass:
+          type: string
+      example:
+        applePass: UEsDBBQACAgIABxqJlYAAAAAAAAAAAAAAAAIAAAAaWNvbi5wbmcBYjCdz4lQTkcNChoKAAAADUlIRFIAAAC0
     Generic:
       title: Generic
       required:
