@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +61,18 @@ class DomainFormatCheckSpec
       "Preference response : " + prettyPrint(verifiedEmailPreferenceAsJson)
     )
   }
+
+  "Apple Pass UUID" in {
+    logger.debug(
+      "Apple Pass UUID response : " + prettyPrint(applePassUUIDJson)
+    )
+  }
+
+  "Apple pass" in {
+    logger.debug(
+      "Apple pass response : " + prettyPrint(applePassJson)
+    )
+  }
 }
 
 object DomainGenerator {
@@ -101,6 +113,10 @@ object DomainGenerator {
   val address: Option[Address] = None
   val personalDetails = PersonDetails(person, address)
   lazy val personalDetailsAsJson: JsValue = toJson(personalDetails)
+  val applePass: ApplePass = ApplePass("TXIgSm9lIEJsb2dncw==")
+  lazy val applePassJson: JsValue = toJson(applePass)
+  val applePassUUID: GetApplePass = GetApplePass("c864139e-77b5-448f-b443-17c69060870d")
+  lazy val applePassUUIDJson: JsValue = toJson(applePassUUID)
 
 }
 

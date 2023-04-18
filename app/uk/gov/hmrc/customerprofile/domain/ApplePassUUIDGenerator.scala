@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.customerprofile.controllers
+package uk.gov.hmrc.customerprofile.domain
 
-import play.api.http.Status._
-import uk.gov.hmrc.api.controllers.ErrorResponse
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.domain.Nino
 
-case object ErrorUnauthorizedNoNino
-    extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
+case class ApplePassUUIDGenerator(name: String, nino: Nino)
 
-case object ErrorManualCorrespondenceIndicator
-    extends ErrorResponse(LOCKED,
-                          "MANUAL_CORRESPONDENCE_IND",
-                          "Data cannot be disclosed to the user because MCI flag is set in NPS")
+object ApplePassUUIDGenerator {
 
-case object ErrorPreferenceConflict extends ErrorResponse(CONFLICT, "CONFLICT", "No existing verified or pending data")
+  implicit val format:Format[ApplePassUUIDGenerator] = Json.format[ApplePassUUIDGenerator]
+
+}
