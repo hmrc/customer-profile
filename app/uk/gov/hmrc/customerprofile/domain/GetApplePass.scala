@@ -16,15 +16,12 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{Format, Json}
 
-case class Shuttering(
-  shuttered: Boolean,
-  title:     Option[String] = None,
-  message:   Option[String] = None)
+case class GetApplePass(uuid: String)
 
-case object Shuttering {
-  implicit val format: OFormat[Shuttering] = Json.format[Shuttering]
+object GetApplePass {
 
-  def shutteringDisabled = this.apply(shuttered = false)
+  implicit val format:Format[GetApplePass] = Json.format[GetApplePass]
+
 }

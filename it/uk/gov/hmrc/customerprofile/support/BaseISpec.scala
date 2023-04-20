@@ -52,7 +52,8 @@ class BaseISpec
     "microservice.services.mobile-shuttering.port" -> wireMockPort,
     "optInVersionsEnabled"                         -> false,
     "metrics.enabled"                              -> false,
-    "metrics.jvm.enabled"                          -> false
+    "metrics.jvm.enabled"                          -> false,
+    "microservice.services.find-my-nino-add-to-wallet.port" -> wireMockPort
   )
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)

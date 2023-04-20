@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 HM Revenue & Customs
+ * Copyright 2023 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package uk.gov.hmrc.customerprofile.controllers
 
 import com.google.inject.{Inject, Singleton}
+import play.api.Logger
 
 import javax.inject.Named
 import play.api.libs.json.Json
@@ -33,7 +34,6 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
-import play.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -47,11 +47,12 @@ class LiveCustomerProfileController @Inject() (
   @Named("optInVersionsEnabled") val optInVersionsEnabled:     Boolean
 )(implicit val executionContext:                               ExecutionContext)
     extends BackendController(controllerComponents)
-    with CustomerProfileController {
+    with CustomerProfileController with ErrorHandling with ControllerChecks {
   outer =>
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
-  private final val WebServerIsDown = new Status(521)
+  override val logger: Logger = Logger(this.getClass)
+
   val app                           = "Live-Customer-Profile"
 
   def invokeAuthBlock[A](
@@ -100,32 +101,6 @@ class LiveCustomerProfileController @Inject() (
         } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid)))
       override def parser:                     BodyParser[AnyContent] = outer.parser
       override protected def executionContext: ExecutionContext       = outer.executionContext
-    }
-
-  override def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
-    if (shuttering.shuttered) Future.successful(WebServerIsDown(Json.toJson(shuttering))) else fn
-
-  def log(message: String): Unit = logger.info(s"$app $message")
-
-  def result(errorResponse: ErrorResponse): Result =
-    Status(errorResponse.httpStatusCode)(toJson(errorResponse))
-
-  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
-    func.recover {
-      case e: AuthorisationException =>
-        Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
-
-      case _: NotFoundException =>
-        log("Resource not found!")
-        result(ErrorNotFound)
-
-      case _: NinoNotFoundOnAccount =>
-        log("User has no NINO. Unauthorized!")
-        Forbidden(toJson[ErrorResponse](ErrorUnauthorizedNoNino))
-
-      case e: Throwable =>
-        logger.error(s"$app Internal server error: ${e.getMessage}", e)
-        Status(ErrorInternalServerError.httpStatusCode)(toJson[ErrorResponse](ErrorInternalServerError))
     }
 
   override def getPersonalDetails(

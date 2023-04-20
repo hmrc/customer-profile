@@ -9,3 +9,6 @@ POST        /profile/preferences/paperless-settings/opt-in         uk.gov.hmrc.c
 POST        /profile/preferences/paperless-settings/opt-out        uk.gov.hmrc.customerprofile.controllers.LiveCustomerProfileController.paperlessSettingsOptOut(journeyId: JourneyId)
 
 POST        /profile/preferences/pending-email                     uk.gov.hmrc.customerprofile.controllers.LiveCustomerProfileController.preferencesPendingEmail(journeyId: JourneyId)
+
+GET         /apple-pass                                           uk.gov.hmrc.customerprofile.controllers.ApplePassController.getApplePass(journeyId: JourneyId)
+

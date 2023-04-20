@@ -16,13 +16,14 @@ Please note it is mandatory to supply an Accept HTTP header to all below service
 API
 ---
 
-| *Task* | *Supported Methods* | *Description*                                                                                              |
-|--------|-----|------------------------------------------------------------------------------------------------------------|
-| ```/profile/personal-details/:nino``` | GET | Returns a user's designatory details. [More...](docs/personalDetails.md)                                   |
-| ```/profile/preferences``` | GET | Returns the user's preferences. [More...](docs/preferences.md)                                             |
-| ```/profile/preferences/paperless-settings/opt-in``` | POST | Sets or updates the user's paperless opt-in preference settings. [More...](docs/paperlessSettingsOptIn.md) |
-| ```/profile/preferences/paperless-settings/opt-out``` | POST | Opts the user out of paperless. [More...](docs/paperlessSettingsOptOut.md)                                 |
-| ```/profile/pending-email``` | POST | Updates the user's email address for pending emails. [More...](docs/pendingEmail.md)                       |
+| *Task*                                                 | *Supported Methods* | *Description*                                                                                                    |
+|--------------------------------------------------------|---------------------|------------------------------------------------------------------------------------------------------------------|
+| ```/profile/personal-details/:nino```                  | GET                 | Returns a user's designatory details. [More...](docs/personalDetails.md)                                         |
+| ```/profile/preferences```                             | GET                 | Returns the user's preferences. [More...](docs/preferences.md)                                                   |
+| ```/profile/preferences/paperless-settings/opt-in```   | POST                | Sets or updates the user's paperless opt-in preference settings. [More...](docs/paperlessSettingsOptIn.md)       |
+| ```/profile/preferences/paperless-settings/opt-out```  | POST                | Opts the user out of paperless. [More...](docs/paperlessSettingsOptOut.md)                                       |
+| ```/profile/pending-email```                           | POST                | Updates the user's email address for pending emails. [More...](docs/pendingEmail.md)                             |
+| ```/apple-pass```                                     | GET                 | Returns an encrypted pass that allows a user to store a nino in an apple wallet. [More...](docs/getApplePass.md) |
 
 # Sandbox
 All the above endpoints are accessible on sandbox with `/sandbox` prefix on each endpoint, e.g.

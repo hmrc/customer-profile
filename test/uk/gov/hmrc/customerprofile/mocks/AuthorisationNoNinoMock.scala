@@ -18,21 +18,23 @@ package uk.gov.hmrc.customerprofile.mocks
 
 import org.scalamock.handlers.CallHandler
 import org.scalamock.scalatest.MockFactory
-import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
-import uk.gov.hmrc.customerprofile.domain.Shuttering
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.auth.core.authorise.Predicate
+import uk.gov.hmrc.auth.core.retrieve.Retrieval
+import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
 import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ShutteringMock extends MockFactory {
+trait AuthorisationNoNinoMock extends MockFactory {
 
-  def mockShutteringResponse(
-    response:                     Shuttering
-  )(implicit shutteringConnector: ShutteringConnector
-  ): CallHandler[Future[Shuttering]] =
-    (shutteringConnector
-      .getShutteringStatus(_: JourneyId)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(*, *, *)
+  type GrantAccessNoNino = ConfidenceLevel
+
+  def mockAuthorisationNoNinoGrantAccess(
+    response:               GrantAccessNoNino
+  )(implicit authConnector: AuthConnector
+  ): CallHandler[Future[GrantAccessNoNino]] =
+    (authConnector
+      .authorise(_: Predicate, _: Retrieval[GrantAccessNoNino])(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *, *)
       .returning(Future successful response)
 }
