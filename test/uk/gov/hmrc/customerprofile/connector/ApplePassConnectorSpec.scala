@@ -28,7 +28,7 @@ import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetApplePassConnectorSpec
+class ApplePassConnectorSpec
   extends AnyWordSpecLike
   with Matchers
   with FutureAwaits with DefaultAwaitTimeout with MockFactory {
@@ -37,7 +37,7 @@ class GetApplePassConnectorSpec
 
   val httpGet:      CoreGet = mock[CoreGet]
   val httpPost:     CorePost = mock[CorePost]
-  val connector:    GetApplePassConnector = new GetApplePassConnector(httpPost, httpGet,"someUrl")
+  val connector:    ApplePassConnector = new ApplePassConnector(httpPost, httpGet,"someUrl")
   val nino:         Nino                  = Nino("CS700100A")
   val uuid:         String = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String: String = "TXIgSm9lIEJsb2dncw=="
@@ -92,7 +92,7 @@ class GetApplePassConnectorSpec
       .expects(*, *, *, *, *, *)
       .returns(Future failed response)
 
-  "getApplePassConnector" when {
+  "ApplePassConnector" when {
     "calling the createApplePass" should {
       "return a UUID given the call is successful" in {
         performSuccessfulPOST(Future successful GetApplePass(uuid))(httpPost)
@@ -120,5 +120,4 @@ class GetApplePassConnectorSpec
       }
     }
   }
-
 }

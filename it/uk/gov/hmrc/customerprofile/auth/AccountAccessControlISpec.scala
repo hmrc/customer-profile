@@ -19,13 +19,12 @@ package uk.gov.hmrc.customerprofile.auth
 import eu.timepit.refined.auto._
 import org.scalatest.concurrent.Eventually
 import uk.gov.hmrc.auth.core.ConfidenceLevel.{L200, L50}
+import uk.gov.hmrc.customerprofile.controllers._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.stubs.AuthStub._
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.domain.{Nino, SaUtr}
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
-import uk.gov.hmrc.http.HeaderNames._
-
 class AccountAccessControlISpec extends BaseISpec with Eventually {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization("Bearer 123")))

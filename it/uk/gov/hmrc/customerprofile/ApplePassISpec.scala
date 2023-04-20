@@ -8,7 +8,7 @@ import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsF
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
 import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassUUID}
 
-class GetApplePassISpec extends CustomerProfileTests {
+class ApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="
   val uuid = "c864139e-77b5-448f-b443-17c69060870d"
   val fullName = "Mr Angus John Smith"
@@ -69,6 +69,4 @@ class GetApplePassISpec extends CustomerProfileTests {
       response.json shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
     }
   }
-
-
 }

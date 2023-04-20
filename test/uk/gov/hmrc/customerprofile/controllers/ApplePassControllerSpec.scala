@@ -21,12 +21,12 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.Helpers.{contentAsJson, status, stubControllerComponents}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
-import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, AccountWithLowCL, FailToMatchTaxIdOnAuth, NinoNotFoundOnAccount}
+import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
 import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.mocks.ShutteringMock
-import uk.gov.hmrc.customerprofile.services.GetApplePassService
+import uk.gov.hmrc.customerprofile.services.ApplePassService
 import uk.gov.hmrc.domain.Nino
 import eu.timepit.refined.auto._
 import play.api.mvc.AnyContentAsEmpty
@@ -37,7 +37,7 @@ import uk.gov.hmrc.auth.core.SessionRecordNotFound
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetApplePassControllerSpec
+class ApplePassControllerSpec
   extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
@@ -45,7 +45,7 @@ class GetApplePassControllerSpec
     with MockFactory
     with ShutteringMock {
 
-  val service: GetApplePassService = mock[GetApplePassService]
+  val service: ApplePassService = mock[ApplePassService]
   val accessControl: AccountAccessControl = mock[AccountAccessControl]
   val base64String = "TXIgSm9lIEJsb2dncw=="
   implicit val shutteringConnectorMock: ShutteringConnector =
@@ -59,8 +59,8 @@ class GetApplePassControllerSpec
     )
   val notShuttered: Shuttering = Shuttering.shutteringDisabled
 
-  val controller: GetApplePassController =
-    new GetApplePassController(
+  val controller: ApplePassController =
+    new ApplePassController(
       service,accessControl,
       citizenDetailsEnabled = true,
       stubControllerComponents(),
@@ -185,8 +185,5 @@ class GetApplePassControllerSpec
       val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 404
     }
-
-
-
   }
 }

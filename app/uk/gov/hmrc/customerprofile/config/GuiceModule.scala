@@ -42,6 +42,7 @@ class GuiceModule(
     bind(classOf[HttpClient]).to(classOf[WSHttpImpl])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
 
+    bindConfigInt("controllers.confidenceLevel")
     bind(classOf[ApiAccess]).toInstance(
       ApiAccess("PRIVATE", configuration.underlying.getStringList("api.access.white-list.applicationIds").asScala)
     )
@@ -50,7 +51,7 @@ class GuiceModule(
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
     bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
 
-    bindConfigInt("controllers.confidenceLevel")
+
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
     bind(classOf[String]).annotatedWith(named("citizen-details")).toInstance(servicesConfig.baseUrl("citizen-details"))
     bind(classOf[String]).annotatedWith(named("entity-resolver")).toInstance(servicesConfig.baseUrl("entity-resolver"))

@@ -16,15 +16,18 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-import play.api.http.Status._
-import uk.gov.hmrc.api.controllers.ErrorResponse
+import play.api.libs.json.Json
+import play.api.mvc.{Result, Results}
+import uk.gov.hmrc.customerprofile.domain.Shuttering
 
-case object ErrorUnauthorizedNoNino
-    extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
+import scala.concurrent.Future
 
-case object ErrorManualCorrespondenceIndicator
-    extends ErrorResponse(LOCKED,
-                          "MANUAL_CORRESPONDENCE_IND",
-                          "Data cannot be disclosed to the user because MCI flag is set in NPS")
 
-case object ErrorPreferenceConflict extends ErrorResponse(CONFLICT, "CONFLICT", "No existing verified or pending data")
+trait ControllerChecks extends Results{
+
+  private final val WebServerIsDown = new Status(521)
+
+  def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
+    if (shuttering.shuttered) Future.successful(WebServerIsDown(Json.toJson(shuttering))) else fn
+
+}

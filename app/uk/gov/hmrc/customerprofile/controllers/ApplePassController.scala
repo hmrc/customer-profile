@@ -28,8 +28,8 @@ import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.customerprofile.auth._
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.customerprofile.services.GetApplePassService
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.customerprofile.services.ApplePassService
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
 import uk.gov.hmrc.customerprofile.domain._
@@ -38,20 +38,18 @@ import uk.gov.hmrc.domain.Nino
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class GetApplePassController @Inject()(
-  service:                                          GetApplePassService,
-  accessControl:                                    AccountAccessControl,
-  @Named("citizen-details.enabled")   val citizenDetailsEnabled: Boolean,
-  controllerComponents:                             ControllerComponents,
-  shutteringConnector:                              ShutteringConnector
+class ApplePassController @Inject()(
+                                     service:                                          ApplePassService,
+                                     accessControl:                                    AccountAccessControl,
+                                     @Named("citizen-details.enabled")   val citizenDetailsEnabled: Boolean,
+                                     controllerComponents:                             ControllerComponents,
+                                     shutteringConnector:                              ShutteringConnector
 )(implicit val executionContext                     :ExecutionContext)
     extends BackendController(controllerComponents)
-    with HeaderValidator {
+    with HeaderValidator with ErrorHandling with ControllerChecks {
   outer =>
-  val logger: Logger = Logger(this.getClass)
+  override val logger: Logger = Logger(this.getClass)
    def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
-
-  private final val WebServerIsDown = new Status(521)
   val app                          = "Apple Pass"
 
   def invokeAuthBlock[A](
@@ -99,32 +97,6 @@ class GetApplePassController @Inject()(
         } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid)))
       override def parser:                     BodyParser[AnyContent] = outer.parser
       override protected def executionContext: ExecutionContext       = outer.executionContext
-    }
-
-   def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
-    if (shuttering.shuttered) Future.successful(WebServerIsDown(Json.toJson(shuttering))) else fn
-
-  def log(message: String): Unit = logger.info(s"$app $message")
-
-  def result(errorResponse: ErrorResponse): Result =
-    Status(errorResponse.httpStatusCode)(toJson(errorResponse))
-
-  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
-    func.recover {
-      case e: AuthorisationException =>
-        Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
-
-      case _: NotFoundException =>
-        log("Resource not found!")
-        result(ErrorNotFound)
-
-      case _: NinoNotFoundOnAccount =>
-        log("User has no NINO. Unauthorized!")
-        Forbidden(toJson[ErrorResponse](ErrorUnauthorizedNoNino))
-
-      case e: Throwable =>
-        logger.error(s"$app Internal server error: ${e.getMessage}", e)
-        Status(ErrorInternalServerError.httpStatusCode)(toJson[ErrorResponse](ErrorInternalServerError))
     }
 
   def getApplePass(journeyId: JourneyId): Action[AnyContent] =

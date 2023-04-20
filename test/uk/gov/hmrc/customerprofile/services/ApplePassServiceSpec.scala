@@ -25,7 +25,7 @@ import play.api.Configuration
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GetApplePassConnector}
+import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
 import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass, Person, PersonDetails}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,7 +37,7 @@ import uk.gov.hmrc.domain.Nino
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetApplePassServiceSpec
+class ApplePassServiceSpec
   extends AnyWordSpecLike
   with Matchers
   with FutureAwaits
@@ -124,10 +124,10 @@ class GetApplePassServiceSpec
       .returning(f)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-    val getApplePassConnector : GetApplePassConnector = mock[GetApplePassConnector]
+    val getApplePassConnector : ApplePassConnector = mock[ApplePassConnector]
     val accountAccessControl: AccountAccessControl    = mock[AccountAccessControl]
 
-  val service = new GetApplePassService(
+  val service = new ApplePassService(
     citizenDetailsConnector,
     getApplePassConnector,
     accountAccessControl,
@@ -153,7 +153,5 @@ class GetApplePassServiceSpec
       val result = await(service.getApplePass())
       result shouldBe RetrieveApplePass(base64String)
     }
-
   }
-
 }

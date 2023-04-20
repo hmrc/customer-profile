@@ -17,8 +17,9 @@
 package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.Inject
-import uk.gov.hmrc.customerprofile.auth.{AccountAccessControl, NinoNotFoundOnAccount}
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GetApplePassConnector}
+import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
+import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
+import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -28,12 +29,11 @@ import uk.gov.hmrc.service.Auditor
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnector,
-                                    createApplePassConnector: GetApplePassConnector,
-                                    accountAccessControl: AccountAccessControl,
-                                    val auditConnector: AuditConnector,
-                                    @Named("appName") val appName: String) extends Auditor {
-
+class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnector,
+                                 createApplePassConnector: ApplePassConnector,
+                                 accountAccessControl: AccountAccessControl,
+                                 val auditConnector: AuditConnector,
+                                 @Named("appName") val appName: String) extends Auditor {
   def getNino(
              )(implicit hc: HeaderCarrier,
                ex: ExecutionContext
@@ -53,5 +53,6 @@ class GetApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConne
       } yield applePass
     }
   }
+
 
 }

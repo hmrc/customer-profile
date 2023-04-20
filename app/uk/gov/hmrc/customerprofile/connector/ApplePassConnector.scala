@@ -25,7 +25,7 @@ import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GetApplePassConnector @Inject()(httpPost: CorePost, httpGet : CoreGet, @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String){
+class ApplePassConnector @Inject()(httpPost: CorePost, httpGet : CoreGet, @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String){
 
   val logger: Logger = Logger(this.getClass)
 
