@@ -30,7 +30,7 @@ class ApplePassConnector @Inject()(httpPost: CorePost, httpGet : CoreGet, @Named
   val logger: Logger = Logger(this.getClass)
 
   def createApplePass(nino : Nino, name: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[GetApplePass]  = {
-    httpPost.POST[ApplePassUUIDGenerator,GetApplePass](url = s"$findMyNinoAddToWalletUrl/create-apple-pass", ApplePassUUIDGenerator(name, nino)) recover {
+    httpPost.POST[ApplePassUUIDGenerator,GetApplePass](url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/create-apple-pass", ApplePassUUIDGenerator(name, nino)) recover {
       case e =>
         logger.info(s"Error: ${e.getMessage}")
         throw e
@@ -38,7 +38,7 @@ class ApplePassConnector @Inject()(httpPost: CorePost, httpGet : CoreGet, @Named
   }
 
   def getPass(passId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[RetrieveApplePass] = {
-    httpGet.GET[RetrieveApplePass](url = s"$findMyNinoAddToWalletUrl/get-pass-card?=$passId") recover {
+    httpGet.GET[RetrieveApplePass](url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-pass-card?=$passId") recover {
       case e =>
         logger.info(s"Error: ${e.getMessage}")
         throw e
