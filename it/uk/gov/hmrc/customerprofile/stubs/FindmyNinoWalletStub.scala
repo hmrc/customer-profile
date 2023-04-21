@@ -33,9 +33,9 @@ object FindmyNinoWalletStub {
 
     )
 
-private def urlEqualToCreateApplePass() : UrlPattern = urlEqualTo(s"/create-apple-pass")
+private def urlEqualToCreateApplePass() : UrlPattern = urlEqualTo(s"/find-my-nino-add-to-wallet/create-apple-pass")
 private def urlEqualToGetPassCard(passId: String) : UrlPattern =
-  urlEqualTo(s"/get-pass-card?=$passId")
+  urlEqualTo(s"/find-my-nino-add-to-wallet/get-pass-card?=$passId")
 
 
 
