@@ -19,7 +19,7 @@ The acceptance is based off the user being shown and agreeing to, these [Terms a
 
 a string which is included for journey tracking purposes but has no functional impact
 
-*  **Request body**
+*  **Response body**
 
 ```json
 { 
