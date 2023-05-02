@@ -39,9 +39,11 @@ class AccountAccessControl @Inject() (
 
   val ninoNotFoundOnAccount = new NinoNotFoundOnAccount("The user must have a National Insurance Number")
 
-  def retrieveNino()(implicit hc: HeaderCarrier): Future[Option[Nino]] =
-    authorised()
-      .retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
+  def retrieveNino()(implicit hc: HeaderCarrier): Future[Option[Nino]] = {
+    println("WH" + authorised().retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_))))
+    authorised().retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
+
+  }
 
   def grantAccess(taxId: Option[Nino])(implicit hc: HeaderCarrier): Future[Unit] =
     authorised()

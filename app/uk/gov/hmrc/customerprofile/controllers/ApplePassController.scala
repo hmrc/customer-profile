@@ -41,16 +41,15 @@ import scala.concurrent.{ExecutionContext, Future}
 class ApplePassController @Inject()(
                                      service:                                          ApplePassService,
                                      accessControl:                                    AccountAccessControl,
-                                     @Named("citizen-details.enabled")   val citizenDetailsEnabled: Boolean,
                                      controllerComponents:                             ControllerComponents,
                                      shutteringConnector:                              ShutteringConnector
-)(implicit val executionContext                     :ExecutionContext)
+)(implicit val executionContext                :ExecutionContext)
     extends BackendController(controllerComponents)
     with HeaderValidator with ErrorHandling with ControllerChecks {
   outer =>
   override val logger: Logger = Logger(this.getClass)
    def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
-  val app                          = "Apple Pass"
+   val app                          = "Apple Pass Controller"
 
   def invokeAuthBlock[A](
     request: Request[A],
@@ -105,11 +104,9 @@ class ApplePassController @Inject()(
       shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
         withShuttering(shuttered) {
           errorWrapper {
-            if (citizenDetailsEnabled) {
               service
                 .getApplePass()
                 .map(response => Ok(toJson(response)))
-            } else Future successful result(ErrorNotFound)
           }
         }
       }

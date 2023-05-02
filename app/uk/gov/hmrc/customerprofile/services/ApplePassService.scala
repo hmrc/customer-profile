@@ -18,11 +18,11 @@ package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.Inject
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
+import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
-import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
+import uk.gov.hmrc.customerprofile.domain.{PersonDetails, RetrieveApplePass}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.service.Auditor
 
@@ -39,18 +39,20 @@ class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnecto
                ex: ExecutionContext
              ): Future[Option[Nino]] =
     withAudit("getApplePass", Map.empty) {
+      println("WH" + accountAccessControl.retrieveNino())
       accountAccessControl.retrieveNino()
     }
 
-  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[RetrieveApplePass] = {
+  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[Some[String]] = {
     withAudit("applePass", Map.empty) {
-      for {
+      val request = for {
         nino <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        getApplePassUUID <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")), citizenDetails.person.completeName)
-        getApplePassGenerator <- createApplePassConnector.getPass(getApplePassUUID.uuid)
-        applePass: RetrieveApplePass = RetrieveApplePass(getApplePassGenerator.applePass)
-      } yield applePass
+        createApplePass <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")),
+          citizenDetails.person.fullName.getOrElse(throw new NotFoundException("No full name found on account")))
+      }
+      yield createApplePass
+      request
     }
   }
 
