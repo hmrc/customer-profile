@@ -2,7 +2,7 @@ package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json
 import play.api.libs.json.Json.parse
-import uk.gov.hmrc.customerprofile.domain.Shuttering
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
@@ -25,7 +25,8 @@ class ApplePassISpec extends CustomerProfileTests {
       getApplePass(uuid, base64String)
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
-      (response.json \ "applePass").as[String] shouldBe base64String
+      val ApplePass: RetrieveApplePass = Json.parse(response.body).as[RetrieveApplePass]
+      ApplePass.applePass shouldBe base64String
     }
 
     "return 406 if no request header is supplied" in {

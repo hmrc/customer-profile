@@ -20,27 +20,19 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import play.api.Logger
 import play.api.http.Status.OK
+import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.customerprofile.domain.{ApplePassUUIDGenerator, GetApplePass, RetrieveApplePass}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http
 import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpClient, HttpException, HttpResponse}
 
-import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplePassConnector @Inject()(http: HttpClient, httpGet : CoreGet, @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String){
+class ApplePassConnector @Inject()(http: HttpClient,  @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String){
 
   val logger: Logger = Logger(this.getClass)
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
-
-//  def createApplePass(nino : Nino, name: String)(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[GetApplePass]  = {
-//    httpPost.POST[ApplePassUUIDGenerator,GetApplePass](url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/create-apple-pass", ApplePassUUIDGenerator(name, nino)) recover {
-//      case e =>
-//        logger.info(s"Error: ${e.getMessage}")
-//        throw e
-//    }
-//  }
 
   def createApplePass(nino: Nino, fullName: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
@@ -52,7 +44,6 @@ class ApplePassConnector @Inject()(http: HttpClient, httpGet : CoreGet, @Named("
 
     http.POST[JsValue, HttpResponse](url, Json.toJson(details))
       .map { response =>
-        println("Calling this service" + response.body)
         response.status match {
           case OK => Some(response.body)
           case _ => throw new HttpException(response.body, response.status)
@@ -60,12 +51,21 @@ class ApplePassConnector @Inject()(http: HttpClient, httpGet : CoreGet, @Named("
       }
   }
 
-//  def getPass(passId: String)(implicit hc: HeaderCarrier, ec: ExecutionContext) : Future[RetrieveApplePass] = {
-//    httpGet.GET[RetrieveApplePass](url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-pass-card?=$passId") recover {
-//      case e =>
-//        logger.info(s"Error: ${e.getMessage}")
-//        throw e
-//    }
-//  }
+  def getApplePass(passId: String)
+                  (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[RetrieveApplePass] = {
+
+    val url = s"${findMyNinoAddToWalletUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
+    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
+
+    http.GET[HttpResponse](url)
+      .map { response =>
+        response.status match {
+          case OK => RetrieveApplePass(response.body)
+          case _ => throw new HttpException(response.body, response.status)
+        }
+      }
+  }
+
+
 
 }

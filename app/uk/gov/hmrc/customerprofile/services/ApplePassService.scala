@@ -22,10 +22,11 @@ import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetails
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.{PersonDetails, RetrieveApplePass}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.service.Auditor
 
+import java.util.Base64
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,20 +40,19 @@ class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnecto
                ex: ExecutionContext
              ): Future[Option[Nino]] =
     withAudit("getApplePass", Map.empty) {
-      println("WH" + accountAccessControl.retrieveNino())
       accountAccessControl.retrieveNino()
     }
 
-  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[Some[String]] = {
+  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[RetrieveApplePass] = {
     withAudit("applePass", Map.empty) {
-      val request = for {
+      for {
         nino <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         createApplePass <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")),
-          citizenDetails.person.fullName.getOrElse(throw new NotFoundException("No full name found on account")))
+          citizenDetails.person.completeName)
+        getApplePass <- createApplePassConnector.getApplePass(createApplePass.uuid.getOrElse(throw new Exception("Pass ID Not found")))
       }
-      yield createApplePass
-      request
+      yield getApplePass
     }
   }
 

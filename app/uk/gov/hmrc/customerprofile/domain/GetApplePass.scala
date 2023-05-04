@@ -18,7 +18,7 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, Json}
 
-case class GetApplePass(uuid: String)
+case class GetApplePass(uuid: Option[String])
 
 object GetApplePass {
 

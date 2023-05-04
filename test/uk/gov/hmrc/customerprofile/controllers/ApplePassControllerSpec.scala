@@ -61,8 +61,8 @@ class ApplePassControllerSpec
 
   val controller: ApplePassController =
     new ApplePassController(
-      service,accessControl,
-      citizenDetailsEnabled = true,
+      service,
+      accessControl,
       stubControllerComponents(),
       shutteringConnectorMock)
 
