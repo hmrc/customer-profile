@@ -50,7 +50,7 @@ class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnecto
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         createApplePass <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")),
           citizenDetails.person.completeName)
-        getApplePass <- createApplePassConnector.getApplePass(createApplePass.uuid.getOrElse(throw new Exception("Pass ID Not found")))
+        getApplePass <- createApplePassConnector.getApplePass(createApplePass.getOrElse(throw new Exception("Pass ID Not found")))
       }
       yield getApplePass
     }
