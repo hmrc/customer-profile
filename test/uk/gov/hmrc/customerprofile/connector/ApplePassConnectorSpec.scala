@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
@@ -30,18 +29,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassConnectorSpec
-  extends  AnyWordSpecLike
-  with Matchers
-  with FutureAwaits with DefaultAwaitTimeout with MockFactory {
+    extends AnyWordSpecLike
+    with Matchers
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with MockFactory {
 
   implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
-
-  val http: HttpClient = mock[HttpClient]
-  val connector: ApplePassConnector = new ApplePassConnector(http, "someUrl")
-  val nino: Nino = Nino("CS700100A")
-  val passKey: String = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String: String = "TXIgSm9lIEJsb2dncw=="
+  val http:         HttpClient         = mock[HttpClient]
+  val connector:    ApplePassConnector = new ApplePassConnector(http, "someUrl")
+  val nino:         Nino               = Nino("CS700100A")
+  val passKey:      String             = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String: String             = "TXIgSm9lIEJsb2dncw=="
   val fullName = "Mr Joe Bloggs"
 
   def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient): Unit =
@@ -97,10 +97,10 @@ class ApplePassConnectorSpec
   "ApplePassConnector" when {
     "calling the createApplePass" should {
       "return a UUID given the call is successful" in {
-        val successResponse: Some[String] = Some(passKey)
+        val successResponse = HttpResponse(200, passKey)
         performSuccessfulPOST(Future.successful(successResponse))(http)
         val result = await(connector.createApplePass(nino, "Mr Joe Bloggs"))
-        result shouldBe successResponse
+        result.get shouldBe successResponse.body
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulPOST(new BadRequestException(""))(http)
@@ -111,7 +111,7 @@ class ApplePassConnectorSpec
     }
     "calling the getPass" should {
       "return a base 64 encoded string given the call is successful" in {
-        performSuccessfulGET(Future successful RetrieveApplePass(base64String))(http)
+        performSuccessfulGET(Future successful HttpResponse(200, base64String))(http)
         val result = await(connector.getApplePass(passKey))
         result shouldBe RetrieveApplePass(base64String)
       }
@@ -124,4 +124,3 @@ class ApplePassConnectorSpec
     }
   }
 }
-

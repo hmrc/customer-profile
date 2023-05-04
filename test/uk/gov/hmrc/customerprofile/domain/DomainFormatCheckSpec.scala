@@ -115,7 +115,7 @@ object DomainGenerator {
   lazy val personalDetailsAsJson: JsValue = toJson(personalDetails)
   val applePass: RetrieveApplePass = RetrieveApplePass("TXIgSm9lIEJsb2dncw==")
   lazy val applePassJson: JsValue = toJson(applePass)
-  val applePassUUID: GetApplePass = GetApplePass("c864139e-77b5-448f-b443-17c69060870d")
+  val applePassUUID: GetApplePass = GetApplePass(Some("c864139e-77b5-448f-b443-17c69060870d"))
   lazy val applePassUUIDJson: JsValue = toJson(applePassUUID)
 
 }

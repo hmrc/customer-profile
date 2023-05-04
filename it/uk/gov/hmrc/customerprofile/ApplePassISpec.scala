@@ -10,8 +10,8 @@ import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, get
 
 class ApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="
-  val uuid = "c864139e-77b5-448f-b443-17c69060870d"
-  val fullName = "Mr Angus John Smith"
+  val uuid         = "c864139e-77b5-448f-b443-17c69060870d"
+  val fullName     = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
     val url = s"/apple-pass?journeyId=$journeyId"
@@ -26,7 +26,7 @@ class ApplePassISpec extends CustomerProfileTests {
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
       val ApplePass: RetrieveApplePass = Json.parse(response.body).as[RetrieveApplePass]
-      ApplePass.applePass shouldBe base64String
+      ApplePass.applePass shouldBe Json.toJson(RetrieveApplePass(base64String)).toString()
     }
 
     "return 406 if no request header is supplied" in {
@@ -56,8 +56,8 @@ class ApplePassISpec extends CustomerProfileTests {
       response.status shouldBe 521
       val shuttering: Shuttering = Json.parse(response.body).as[Shuttering]
       shuttering.shuttered shouldBe true
-      shuttering.title shouldBe Some("Shuttered")
-      shuttering.message shouldBe Some("Preferences are currently not available")
+      shuttering.title     shouldBe Some("Shuttered")
+      shuttering.message   shouldBe Some("Preferences are currently not available")
     }
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
@@ -67,7 +67,7 @@ class ApplePassISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 404
-      response.json shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
+      response.json   shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
     }
   }
 }
