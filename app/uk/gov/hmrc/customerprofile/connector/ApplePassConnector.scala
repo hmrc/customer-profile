@@ -24,7 +24,6 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http
 import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -35,17 +34,16 @@ class ApplePassConnector @Inject()(http: HttpClient,  @Named("find-my-nino-add-t
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
 
   def createApplePass(nino: Nino, fullName: String)
-                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[Some[String]] = {
+                     (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[String] = {
 
     val url = s"${findMyNinoAddToWalletUrl}/find-my-nino-add-to-wallet/create-apple-pass"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     val details = ApplePassIdGenerator(fullName, nino)
 
     http.POST[JsValue, HttpResponse](url, Json.toJson(details))
       .map { response =>
         response.status match {
-          case OK => Some(response.body)
+          case OK => response.body
           case _ => throw new HttpException(response.body, response.status)
         }
       }
@@ -55,7 +53,6 @@ class ApplePassConnector @Inject()(http: HttpClient,  @Named("find-my-nino-add-t
                   (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[RetrieveApplePass] = {
 
     val url = s"${findMyNinoAddToWalletUrl}/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
-    val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
     http.GET[HttpResponse](url)
       .map { response =>

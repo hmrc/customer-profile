@@ -66,8 +66,8 @@ trait ErrorHandling {
       case e: AuthorisationException =>
         Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
 
-      case _: NotFoundException =>
-        log("Resource not found!")
+      case e: NotFoundException =>
+        log(s"Not found! $e")
         result(ErrorNotFound)
 
       case _: NinoNotFoundOnAccount =>

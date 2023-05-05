@@ -22,8 +22,8 @@ import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.libs.json.{JsValue, Writes}
-import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, GetApplePass, RetrieveApplePass}
+import play.api.libs.json.Writes
+import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -100,7 +100,7 @@ class ApplePassConnectorSpec
         val successResponse = HttpResponse(200, passId)
         performSuccessfulPOST(Future.successful(successResponse))(http)
         val result = await(connector.createApplePass(nino, "Mr Joe Bloggs"))
-        result.get shouldBe successResponse.body
+        result shouldBe successResponse.body
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulPOST(new BadRequestException(""))(http)

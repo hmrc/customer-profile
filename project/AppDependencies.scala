@@ -40,8 +40,7 @@ object AppDependencies {
     "com.typesafe.play"      %% "play-test"          % PlayVersion.current  % scope,
     "org.scalatest"          %% "scalatest"          % scalaTestVersion     % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
-    "com.vladsch.flexmark"    % "flexmark-all"         % flexmarkAllVersion    % scope,
-    "org.scalatestplus"      %% "mockito-3-4"         % "3.2.9.0"           % scope
+    "com.vladsch.flexmark"    % "flexmark-all"         % flexmarkAllVersion    % scope
   )
 
   object Test {

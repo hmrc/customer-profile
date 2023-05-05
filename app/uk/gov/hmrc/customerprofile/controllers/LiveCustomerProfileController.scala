@@ -20,7 +20,6 @@ import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 
 import javax.inject.Named
-import play.api.libs.json.Json
 import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers._
@@ -28,10 +27,10 @@ import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.customerprofile.auth._
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, Paperless, PaperlessOptOut, Shuttering, TermsAccepted}
+import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, Paperless, PaperlessOptOut, TermsAccepted}
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
 

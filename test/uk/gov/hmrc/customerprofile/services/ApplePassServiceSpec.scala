@@ -26,7 +26,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass, Person, PersonDetails}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Person, PersonDetails}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
@@ -111,7 +111,7 @@ class ApplePassServiceSpec
       .returns(Future successful Some(nino))
   }
 
-  def mockCreateApplePass(f: Future[Some[String]]) =
+  def mockCreateApplePass(f: Future[String]) =
     (getApplePassConnector
       .createApplePass(_: Nino, _: String)(_: ExecutionContext, _: HeaderCarrier))
       .expects(nino, *, *, *)
@@ -147,7 +147,7 @@ class ApplePassServiceSpec
         .expects(nino, *, *)
         .returns(Future successful person)
 
-      mockCreateApplePass(Future.successful(Some(passId)))
+      mockCreateApplePass(Future.successful(passId))
       mockGetApplePass(Future.successful(RetrieveApplePass(base64String)))
 
       val result = await(service.getApplePass())
