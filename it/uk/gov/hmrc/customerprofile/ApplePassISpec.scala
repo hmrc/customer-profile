@@ -25,8 +25,7 @@ class ApplePassISpec extends CustomerProfileTests {
       getApplePass(uuid, base64String)
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
-      val ApplePass: RetrieveApplePass = Json.parse(response.body).as[RetrieveApplePass]
-      ApplePass.applePass shouldBe Json.toJson(RetrieveApplePass(base64String)).toString()
+      (response.json \ "applePass").as[String] shouldBe base64String
     }
 
     "return 406 if no request header is supplied" in {

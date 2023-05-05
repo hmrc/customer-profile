@@ -31,8 +31,7 @@ object FindmyNinoWalletStub {
     stubFor(
       get(urlEqualToGetPassCard(uuid))
         .willReturn(aResponse().withStatus(200)
-          .withBody(obj("applePass" -> applePass).toString))
-
+          .withBody(applePass))
     )
 
 private def urlEqualToCreateApplePass() : UrlPattern = urlEqualTo(s"/find-my-nino-add-to-wallet/create-apple-pass")
