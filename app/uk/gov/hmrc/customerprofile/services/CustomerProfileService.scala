@@ -19,7 +19,6 @@ package uk.gov.hmrc.customerprofile.services
 import com.google.inject.{Inject, Singleton}
 
 import javax.inject.Named
-import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount

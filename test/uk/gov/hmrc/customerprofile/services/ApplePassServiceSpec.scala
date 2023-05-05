@@ -26,7 +26,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, GetApplePass, Person, PersonDetails}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Person, PersonDetails}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
@@ -49,7 +49,7 @@ class ApplePassServiceSpec
   val auditConnector: AuditConnector = mock[AuditConnector]
   val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val appName: String = "customer-profile"
-  val uuid = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String = "TXIgSm9lIEJsb2dncw=="
   val nino: Nino = Nino("CS700100A")
 
@@ -111,16 +111,16 @@ class ApplePassServiceSpec
       .returns(Future successful Some(nino))
   }
 
-  def mockCreateApplePass(f: Future[GetApplePass]) =
+  def mockCreateApplePass(f: Future[String]) =
     (getApplePassConnector
-      .createApplePass(_: Nino, _: String)(_: HeaderCarrier, _: ExecutionContext))
+      .createApplePass(_: Nino, _: String)(_: ExecutionContext, _: HeaderCarrier))
       .expects(nino, *, *, *)
       .returning(f)
 
   def mockGetApplePass(f: Future[RetrieveApplePass]) =
     (getApplePassConnector
-      .getPass(_: String)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(uuid, *, *)
+      .getApplePass(_: String)(_: ExecutionContext, _: HeaderCarrier))
+      .expects(passId, *, *)
       .returning(f)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -147,7 +147,7 @@ class ApplePassServiceSpec
         .expects(nino, *, *)
         .returns(Future successful person)
 
-      mockCreateApplePass(Future.successful(GetApplePass(uuid)))
+      mockCreateApplePass(Future.successful(passId))
       mockGetApplePass(Future.successful(RetrieveApplePass(base64String)))
 
       val result = await(service.getApplePass())

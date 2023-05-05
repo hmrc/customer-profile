@@ -17,11 +17,12 @@
 package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.domain.Nino
 
-case class GetApplePass(uuid: String)
+case class ApplePassIdGenerator(fullName: String, nino: Nino)
 
-object GetApplePass {
+object ApplePassIdGenerator {
 
-  implicit val format:Format[GetApplePass] = Json.format[GetApplePass]
+  implicit val format:Format[ApplePassIdGenerator] = Json.format[ApplePassIdGenerator]
 
 }

@@ -19,6 +19,7 @@ object AppDependencies {
   private val wiremockVersion      = "2.21.0"
   private val refinedVersion       = "0.9.4"
 
+
   val compile = Seq(
     "uk.gov.hmrc"       %% "bootstrap-backend-play-28" % bootstrapPlayVersion,
     "uk.gov.hmrc"       %% "play-hmrc-api"             % playHmrcVersion,
@@ -39,7 +40,7 @@ object AppDependencies {
     "com.typesafe.play"      %% "play-test"          % PlayVersion.current  % scope,
     "org.scalatest"          %% "scalatest"          % scalaTestVersion     % scope,
     "org.scalatestplus.play" %% "scalatestplus-play" % scalaTestPlusVersion % scope,
-    "com.vladsch.flexmark"   % "flexmark-all"        % flexmarkAllVersion   % scope
+    "com.vladsch.flexmark"    % "flexmark-all"         % flexmarkAllVersion    % scope
   )
 
   object Test {

@@ -2,16 +2,16 @@ package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json
 import play.api.libs.json.Json.parse
-import uk.gov.hmrc.customerprofile.domain.Shuttering
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
-import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassUUID}
+import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassId}
 
 class ApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="
-  val uuid = "c864139e-77b5-448f-b443-17c69060870d"
-  val fullName = "Mr Angus John Smith"
+  val passId         = "c864139e-77b5-448f-b443-17c69060870d"
+  val fullName     = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
     val url = s"/apple-pass?journeyId=$journeyId"
@@ -21,8 +21,8 @@ class ApplePassISpec extends CustomerProfileTests {
       stubForShutteringDisabled
       ninoFound(nino)
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
-      getApplePassUUID(nino, fullName, uuid)
-      getApplePass(uuid, base64String)
+      getApplePassId(nino, fullName, passId)
+      getApplePass(passId, base64String)
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
       (response.json \ "applePass").as[String] shouldBe base64String
@@ -55,8 +55,8 @@ class ApplePassISpec extends CustomerProfileTests {
       response.status shouldBe 521
       val shuttering: Shuttering = Json.parse(response.body).as[Shuttering]
       shuttering.shuttered shouldBe true
-      shuttering.title shouldBe Some("Shuttered")
-      shuttering.message shouldBe Some("Preferences are currently not available")
+      shuttering.title     shouldBe Some("Shuttered")
+      shuttering.message   shouldBe Some("Preferences are currently not available")
     }
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
@@ -66,7 +66,7 @@ class ApplePassISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 404
-      response.json shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
+      response.json   shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
     }
   }
 }
