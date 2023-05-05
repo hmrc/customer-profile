@@ -11,10 +11,10 @@ import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 
 object FindmyNinoWalletStub {
 
-  def getApplePassUUID(
+  def getApplePassId(
                         nino: Nino,
                         name: String,
-                        uuid: String
+                        passId: String
                         ): StubMapping =
     stubFor(
       post(urlEqualToCreateApplePass())
@@ -24,12 +24,12 @@ object FindmyNinoWalletStub {
             |"fullName": "$name"
             |}""".stripMargin))
         .willReturn(aResponse().withStatus(200)
-          .withBody(uuid))
+          .withBody(passId))
     )
 
-  def getApplePass(uuid: String, applePass: String): StubMapping =
+  def getApplePass(passId: String, applePass: String): StubMapping =
     stubFor(
-      get(urlEqualToGetPassCard(uuid))
+      get(urlEqualToGetPassCard(passId))
         .willReturn(aResponse().withStatus(200)
           .withBody(applePass))
     )

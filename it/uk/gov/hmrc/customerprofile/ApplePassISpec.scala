@@ -6,11 +6,11 @@ import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
-import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassUUID}
+import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassId}
 
 class ApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="
-  val uuid         = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId         = "c864139e-77b5-448f-b443-17c69060870d"
   val fullName     = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
@@ -21,8 +21,8 @@ class ApplePassISpec extends CustomerProfileTests {
       stubForShutteringDisabled
       ninoFound(nino)
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
-      getApplePassUUID(nino, fullName, uuid)
-      getApplePass(uuid, base64String)
+      getApplePassId(nino, fullName, passId)
+      getApplePass(passId, base64String)
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
       (response.json \ "applePass").as[String] shouldBe base64String

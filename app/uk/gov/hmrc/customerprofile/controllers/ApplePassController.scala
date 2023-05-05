@@ -19,8 +19,6 @@ package uk.gov.hmrc.customerprofile.controllers
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 
-import javax.inject.Named
-import play.api.libs.json.Json
 import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc.{Action, ActionBuilder, AnyContent, BodyParser, ControllerComponents, Request, Result}
 import uk.gov.hmrc.api.controllers._
@@ -32,7 +30,6 @@ import uk.gov.hmrc.customerprofile.services.ApplePassService
 import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
-import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.domain.Nino
 
 import scala.concurrent.{ExecutionContext, Future}

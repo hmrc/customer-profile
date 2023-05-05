@@ -23,7 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsValue, Writes}
-import uk.gov.hmrc.customerprofile.domain.{ApplePassUUIDGenerator, GetApplePass, RetrieveApplePass}
+import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, GetApplePass, RetrieveApplePass}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
@@ -40,7 +40,7 @@ class ApplePassConnectorSpec
   val http:         HttpClient         = mock[HttpClient]
   val connector:    ApplePassConnector = new ApplePassConnector(http, "someUrl")
   val nino:         Nino               = Nino("CS700100A")
-  val passKey:      String             = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId:      String             = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String: String             = "TXIgSm9lIEJsb2dncw=="
   val fullName = "Mr Joe Bloggs"
 
@@ -97,7 +97,7 @@ class ApplePassConnectorSpec
   "ApplePassConnector" when {
     "calling the createApplePass" should {
       "return a UUID given the call is successful" in {
-        val successResponse = HttpResponse(200, passKey)
+        val successResponse = HttpResponse(200, passId)
         performSuccessfulPOST(Future.successful(successResponse))(http)
         val result = await(connector.createApplePass(nino, "Mr Joe Bloggs"))
         result.get shouldBe successResponse.body
@@ -112,13 +112,13 @@ class ApplePassConnectorSpec
     "calling the getPass" should {
       "return a base 64 encoded string given the call is successful" in {
         performSuccessfulGET(Future successful HttpResponse(200, base64String))(http)
-        val result = await(connector.getApplePass(passKey))
+        val result = await(connector.getApplePass(passId))
         result shouldBe RetrieveApplePass(base64String)
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulGET(new BadRequestException(""))(http)
         intercept[BadRequestException] {
-          await(connector.getApplePass(passKey))
+          await(connector.getApplePass(passId))
         }
       }
     }

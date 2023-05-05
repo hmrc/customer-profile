@@ -20,13 +20,12 @@ import com.google.inject.Inject
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
 import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
-import uk.gov.hmrc.customerprofile.domain.{PersonDetails, RetrieveApplePass}
+import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, InternalServerException, NotFoundException}
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.service.Auditor
 
-import java.util.Base64
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 

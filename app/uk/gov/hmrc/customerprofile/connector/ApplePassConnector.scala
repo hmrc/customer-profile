@@ -22,10 +22,10 @@ import play.api.Logger
 import play.api.http.Status.OK
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsValue, Json}
-import uk.gov.hmrc.customerprofile.domain.{ApplePassUUIDGenerator, GetApplePass, RetrieveApplePass}
+import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http
-import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -40,7 +40,7 @@ class ApplePassConnector @Inject()(http: HttpClient,  @Named("find-my-nino-add-t
     val url = s"${findMyNinoAddToWalletUrl}/find-my-nino-add-to-wallet/create-apple-pass"
     val hc: HeaderCarrier = headerCarrier.withExtraHeaders(headers: _*)
 
-    val details = ApplePassUUIDGenerator(fullName, nino)
+    val details = ApplePassIdGenerator(fullName, nino)
 
     http.POST[JsValue, HttpResponse](url, Json.toJson(details))
       .map { response =>

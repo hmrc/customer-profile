@@ -49,7 +49,7 @@ class ApplePassServiceSpec
   val auditConnector: AuditConnector = mock[AuditConnector]
   val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val appName: String = "customer-profile"
-  val passKey = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String = "TXIgSm9lIEJsb2dncw=="
   val nino: Nino = Nino("CS700100A")
 
@@ -120,7 +120,7 @@ class ApplePassServiceSpec
   def mockGetApplePass(f: Future[RetrieveApplePass]) =
     (getApplePassConnector
       .getApplePass(_: String)(_: ExecutionContext, _: HeaderCarrier))
-      .expects(passKey, *, *)
+      .expects(passId, *, *)
       .returning(f)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
@@ -147,7 +147,7 @@ class ApplePassServiceSpec
         .expects(nino, *, *)
         .returns(Future successful person)
 
-      mockCreateApplePass(Future.successful(Some(passKey)))
+      mockCreateApplePass(Future.successful(Some(passId)))
       mockGetApplePass(Future.successful(RetrieveApplePass(base64String)))
 
       val result = await(service.getApplePass())
