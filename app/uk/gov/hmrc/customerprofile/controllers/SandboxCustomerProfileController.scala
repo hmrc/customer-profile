@@ -16,14 +16,15 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-import java.time.LocalDate
 import com.google.inject.Singleton
+import play.api.Logger
 
 import javax.inject.Inject
 import play.api.libs.json.Json
 import play.api.libs.json.Json.toJson
 import play.api.mvc._
 import uk.gov.hmrc.api.controllers.HeaderValidator
+import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
@@ -39,45 +40,15 @@ class SandboxCustomerProfileController @Inject() (
 )(implicit val executionContext: ExecutionContext)
     extends BackendController(cc)
     with CustomerProfileController
-    with HeaderValidator {
+    with HeaderValidator
+    with FileResource {
   override def parser: BodyParser[AnyContent] = cc.parsers.anyContent
+
+  override val logger: Logger = Logger(this.getClass)
 
   private val SANDBOX_CONTROL_HEADER = "SANDBOX-CONTROL"
 
   private final val WebServerIsDown = new Status(521)
-
-  private val nino = Nino("CS700100A")
-
-  private val personDetailsSandbox =
-    PersonDetails(
-      Person(
-        Some("Nia"),
-        None,
-        Some("Jackson"),
-        None,
-        Some("Ms"),
-        None,
-        Some("Female"),
-        Some(LocalDate.parse("1999-01-31")),
-        Some(nino),
-        Some("Nia Jackson"),
-        Some("/")
-      ),
-      Some(
-        Address(
-          Some("999 Big Street"),
-          Some("Worthing"),
-          Some("West Sussex"),
-          None,
-          None,
-          Some("BN99 8IG"),
-          None,
-          None,
-          None,
-          Some("/")
-        )
-      )
-    )
 
   private def preferencesSandbox(
     status:   StatusName,
@@ -86,8 +57,10 @@ class SandboxCustomerProfileController @Inject() (
     Preference(
       digital      = true,
       emailAddress = Some("jt@test.com"),
-      status       = if(status == ReOptIn) Some(PaperlessStatus(status, Category.ActionRequired, Some(10))) else Some(PaperlessStatus(status, Category.ActionRequired)),
-      linkSent     = linkSent
+      status =
+        if (status == ReOptIn) Some(PaperlessStatus(status, Category.ActionRequired, Some(10)))
+        else Some(PaperlessStatus(status, Category.ActionRequired)),
+      linkSent = linkSent
     )
 
   override def withAcceptHeaderValidationAndAuthIfLive(taxId: Option[Nino] = None): ActionBuilder[Request, AnyContent] =
@@ -107,7 +80,11 @@ class SandboxCustomerProfileController @Inject() (
         case Some("ERROR-401") => Unauthorized
         case Some("ERROR-403") => Forbidden
         case Some("ERROR-500") => InternalServerError
-        case _                 => Ok(toJson(personDetailsSandbox))
+        case _ =>
+          Ok(
+            findResource(s"/sandbox/personal-details.json")
+              .getOrElse(throw new IllegalArgumentException("Resource not found!"))
+          )
       })
     }
 

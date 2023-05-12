@@ -21,7 +21,7 @@ import java.time.LocalDate
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSRequest
-import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, ReOptIn, Verified, Pending}
+import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.support.BaseISpec
@@ -66,41 +66,30 @@ class SandboxCustomerProfileISpec extends BaseISpec {
   "GET /sandbox/profile/personal-details/:nino" should {
     val url = s"/profile/personal-details/${nino.value}"
 
-    val expectedDetails =
-      PersonDetails(
-        Person(
-          Some("Nia"),
-          None,
-          Some("Jackson"),
-          None,
-          Some("Ms"),
-          None,
-          Some("Female"),
-          Option(LocalDate.parse("1999-01-31")),
-          Some(nino),
-          Some("Nia Jackson"),
-          Some("/")
-        ),
-        Some(
-          Address(
-            Some("999 Big Street"),
-            Some("Worthing"),
-            Some("West Sussex"),
-            None,
-            None,
-            Some("BN99 8IG"),
-            None,
-            None,
-            None,
-            Some("/")
-          )
-        )
-      )
+    val expectedDetails ="""{
+        |  "person" : {
+        |    "firstName" : "Nia",
+        |    "lastName" : "Jackson",
+        |    "title" : "Ms",
+        |    "sex" : "Female",
+        |    "dateOfBirth" : 917740800000,
+        |    "nino" : "QQ123456C",
+        |    "fullName" : "Nia Jackson",
+        |    "nationalInsuranceLetterUrl" : "/"
+        |  },
+        |  "address" : {
+        |    "line1" : "999 Big Street",
+        |    "line2" : "Worthing",
+        |    "line3" : "West Sussex",
+        |    "postcode" : "BN99 8IG",
+        |    "changeAddressLink" : "/"
+        |  }
+        |}""".stripMargin
 
     "return the default personal details with journey id" in {
       val response = await(request(url, None, journeyId).get())
-      response.status shouldBe 200
-      response.json   shouldBe toJson(expectedDetails)
+      response.status                 shouldBe 200
+      Json.prettyPrint(response.json) shouldBe expectedDetails
     }
 
     "return 401 for ERROR-401" in {
@@ -159,8 +148,10 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       Preference(
         digital      = true,
         emailAddress = Some("jt@test.com"),
-        status       = if(status == ReOptIn) Some(PaperlessStatus(status, Category.ActionRequired, Some(10))) else Some(PaperlessStatus(status, Category.ActionRequired)),
-        linkSent     = linkSent
+        status =
+          if (status == ReOptIn) Some(PaperlessStatus(status, Category.ActionRequired, Some(10)))
+          else Some(PaperlessStatus(status, Category.ActionRequired)),
+        linkSent = linkSent
       )
 
     "return the default preferences with a journeyId" in {
