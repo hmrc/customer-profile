@@ -1,0 +1,19 @@
+{
+  "person" : {
+    "firstName" : "Nia",
+    "lastName" : "Jackson",
+    "title" : "Ms",
+    "sex" : "Female",
+    "dateOfBirth" : 917740800000,
+    "nino" : "QQ123456C",
+    "fullName" : "Nia Jackson",
+    "nationalInsuranceLetterUrl" : "/"
+  },
+  "address" : {
+    "line1" : "999 Big Street",
+    "line2" : "Worthing",
+    "line3" : "West Sussex",
+    "postcode" : "BN99 8IG",
+    "changeAddressLink" : "/"
+  }
+}
