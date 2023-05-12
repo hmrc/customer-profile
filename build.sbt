@@ -28,14 +28,14 @@ lazy val microservice = Project(appName, file("."))
     playDefaultPort := 8233,
     libraryDependencies ++= AppDependencies(),
     dependencyOverrides ++= AppDependencies.overrides(),
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     resolvers += Resolver.jcenterRepo,
-    unmanagedResourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base =>
+     IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base =>
       Seq(base / "it-resources")
     ).value,
-    unmanagedResourceDirectories in Compile += baseDirectory.value / "resources",
-    unmanagedSourceDirectories in IntegrationTest := (baseDirectory in IntegrationTest)(base => Seq(base / "it")).value,
-    testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
+    Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
+    IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
+    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
     scalacOptions ++= Seq(
       "-deprecation",
       "-encoding",
