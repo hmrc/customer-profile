@@ -115,6 +115,12 @@ class ApplePassConnectorSpec
         val result = await(connector.getApplePass(passId))
         result shouldBe RetrieveApplePass(base64String)
       }
+      "return 429 exception if the call is unsuccessful" in {
+        performUnsuccessfulGET(new TooManyRequestException(""))(http)
+        intercept[TooManyRequestException] {
+          await(connector.getApplePass(passId))
+        }
+      }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulGET(new BadRequestException(""))(http)
         intercept[BadRequestException] {
