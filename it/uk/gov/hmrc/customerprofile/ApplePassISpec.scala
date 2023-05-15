@@ -6,7 +6,7 @@ import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
-import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassId}
+import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassId, getApplePassIdTooManyRequestsException}
 
 class ApplePassISpec extends CustomerProfileTests {
   val base64String = "TXIgSm9lIEJsb2dncw=="
@@ -26,6 +26,16 @@ class ApplePassISpec extends CustomerProfileTests {
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 200
       (response.json \ "applePass").as[String] shouldBe base64String
+    }
+
+    "return a 429 if too many calls are made to apple pass and it returns a 429" in {
+      authRecordExists(nino)
+      stubForShutteringDisabled
+      ninoFound(nino)
+      designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
+      getApplePassIdTooManyRequestsException(nino, fullName)
+      val response = await(getRequestWithAcceptHeader(url))
+      response.status shouldBe 429
     }
 
     "return 406 if no request header is supplied" in {

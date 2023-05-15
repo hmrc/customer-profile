@@ -23,7 +23,7 @@ import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.Result
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.auth.core.AuthorisationException
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException, TooManyRequestException, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -46,6 +46,8 @@ case object ErrorUnauthorizedMicroService
   }
 }
 
+case object ErrorTooManyRequests extends ErrorResponse(429, "TOO_MANY_REQUESTS","Too many requests made to customer profile please try again later")
+
 class FailToMatchTaxIdOnAuth(message: String) extends HttpException(message, 403)
 
 class NinoNotFoundOnAccount(message: String) extends HttpException(message, 403)
@@ -65,6 +67,10 @@ trait ErrorHandling {
     func.recover {
       case e: AuthorisationException =>
         Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
+
+      case e: UpstreamErrorResponse if e.statusCode == 429  =>
+        log(s"TooManyRequestException reported: ${e.getMessage}")
+        result(ErrorTooManyRequests)
 
       case e: NotFoundException =>
         log(s"Not found! $e")

@@ -6,7 +6,7 @@ import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.urlEqualToDesignatoryDetails
 import uk.gov.hmrc.domain.Nino
-import play.api.libs.json.Json.obj
+import play.api.libs.json.Json.{obj, parse}
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 
 object FindmyNinoWalletStub {
@@ -26,6 +26,26 @@ object FindmyNinoWalletStub {
         .willReturn(aResponse().withStatus(200)
           .withBody(passId))
     )
+
+  def getApplePassIdTooManyRequestsException(
+                      nino: Nino,
+                      name: String
+                    ): StubMapping =
+    stubFor(
+      post(urlEqualToCreateApplePass())
+        .withRequestBody(equalToJson(
+          s"""{
+             |"nino": "$nino",
+             |"fullName": "$name"
+             |}""".stripMargin))
+        .willReturn(aResponse().withStatus(429)
+          .withBody(
+          s"""
+             |{
+             |  "code": "TOO_MANY_REQUESTS"
+             |  "message": "Too many requests made to customer profile please try again later"
+             |}
+        """.stripMargin)))
 
   def getApplePass(passId: String, applePass: String): StubMapping =
     stubFor(
