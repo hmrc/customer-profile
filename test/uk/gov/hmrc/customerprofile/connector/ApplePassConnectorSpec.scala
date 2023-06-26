@@ -99,13 +99,13 @@ class ApplePassConnectorSpec
       "return a UUID given the call is successful" in {
         val successResponse = HttpResponse(200, passId)
         performSuccessfulPOST(Future.successful(successResponse))(http)
-        val result = await(connector.createApplePass(nino, "Mr Joe Bloggs"))
+        val result = await(connector.createApplePass(nino.formatted, "Mr Joe Bloggs"))
         result shouldBe successResponse.body
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulPOST(new BadRequestException(""))(http)
         intercept[BadRequestException] {
-          await(connector.createApplePass(nino, "Mr Joe Bloggs"))
+          await(connector.createApplePass(nino.formatted, "Mr Joe Bloggs"))
         }
       }
     }

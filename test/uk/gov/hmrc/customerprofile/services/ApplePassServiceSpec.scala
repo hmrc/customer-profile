@@ -25,8 +25,8 @@ import play.api.Configuration
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, ApplePassConnector}
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Person, PersonDetails}
+import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
+import uk.gov.hmrc.customerprofile.domain.{Person, PersonDetails, RetrieveApplePass}
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
@@ -38,18 +38,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassServiceSpec
-  extends AnyWordSpecLike
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout
-  with MockFactory {
+    extends AnyWordSpecLike
+    with Matchers
+    with FutureAwaits
+    with DefaultAwaitTimeout
+    with MockFactory {
   implicit lazy val hc: HeaderCarrier = HeaderCarrier()
 
-  val appNameConfiguration: Configuration = mock[Configuration]
-  val auditConnector: AuditConnector = mock[AuditConnector]
-  val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val appName: String = "customer-profile"
-  val passId = "c864139e-77b5-448f-b443-17c69060870d"
+  val appNameConfiguration: Configuration  = mock[Configuration]
+  val auditConnector:       AuditConnector = mock[AuditConnector]
+  val journeyId:            JourneyId      = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
+  val appName:              String         = "customer-profile"
+  val passId       = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String = "TXIgSm9lIEJsb2dncw=="
   val nino: Nino = Nino("CS700100A")
 
@@ -70,23 +70,22 @@ class ApplePassServiceSpec
     None
   )
 
-
   def mockAudit(
-                 transactionName: String,
-                 detail: Map[String, String] = Map.empty
-               ): CallHandler3[DataEvent, HeaderCarrier, ExecutionContext, Future[
+    transactionName: String,
+    detail:          Map[String, String] = Map.empty
+  ): CallHandler3[DataEvent, HeaderCarrier, ExecutionContext, Future[
     AuditResult
   ]] = {
     def dataEventWith(
-                       auditSource: String,
-                       auditType: String,
-                       tags: Map[String, String]
-                     ): MatcherBase =
+      auditSource: String,
+      auditType:   String,
+      tags:        Map[String, String]
+    ): MatcherBase =
       argThat { (dataEvent: DataEvent) =>
         dataEvent.auditSource.equals(auditSource) &&
-          dataEvent.auditType.equals(auditType) &&
-          dataEvent.tags.equals(tags) &&
-          dataEvent.detail.equals(detail)
+        dataEvent.auditType.equals(auditType) &&
+        dataEvent.tags.equals(tags) &&
+        dataEvent.detail.equals(detail)
       }
 
     (auditConnector
@@ -95,13 +94,13 @@ class ApplePassServiceSpec
         dataEventWith(
           appName,
           auditType = "ServiceResponseSent",
-          tags = Map("transactionName" -> transactionName)
+          tags      = Map("transactionName" -> transactionName)
         ),
         *,
         *
       )
       .returns(Future successful Success)
-    }
+  }
 
   def mockGetAccounts() = {
     mockAudit(transactionName = "getApplePass")
@@ -113,8 +112,8 @@ class ApplePassServiceSpec
 
   def mockCreateApplePass(f: Future[String]) =
     (getApplePassConnector
-      .createApplePass(_: Nino, _: String)(_: ExecutionContext, _: HeaderCarrier))
-      .expects(nino, *, *, *)
+      .createApplePass(_: String, _: String)(_: ExecutionContext, _: HeaderCarrier))
+      .expects(nino.formatted, *, *, *)
       .returning(f)
 
   def mockGetApplePass(f: Future[RetrieveApplePass]) =
@@ -124,8 +123,8 @@ class ApplePassServiceSpec
       .returning(f)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-    val getApplePassConnector : ApplePassConnector = mock[ApplePassConnector]
-    val accountAccessControl: AccountAccessControl    = mock[AccountAccessControl]
+  val getApplePassConnector:   ApplePassConnector      = mock[ApplePassConnector]
+  val accountAccessControl:    AccountAccessControl    = mock[AccountAccessControl]
 
   val service = new ApplePassService(
     citizenDetailsConnector,
@@ -139,8 +138,7 @@ class ApplePassServiceSpec
     "audit and return an apple pass model with a base 64 encoded string" in {
 
       mockGetAccounts()
-      mockAudit(
-        transactionName = "applePass")
+      mockAudit(transactionName = "applePass")
 
       (citizenDetailsConnector
         .personDetails(_: Nino)(_: HeaderCarrier, _: ExecutionContext))

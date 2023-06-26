@@ -33,7 +33,7 @@ class ApplePassConnector @Inject()(http: HttpClient,  @Named("find-my-nino-add-t
   val logger: Logger = Logger(this.getClass)
   private val headers: Seq[(String, String)] = Seq("Content-Type" -> "application/json")
 
-  def createApplePass(nino: Nino, fullName: String)
+  def createApplePass(nino: String, fullName: String)
                      (implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[String] = {
 
     val url = s"${findMyNinoAddToWalletUrl}/find-my-nino-add-to-wallet/create-apple-pass"

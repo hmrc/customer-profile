@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.domain
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.domain.Nino
 
-case class ApplePassIdGenerator(fullName: String, nino: Nino)
+case class ApplePassIdGenerator(fullName: String, nino: String)
 
 object ApplePassIdGenerator {
 
