@@ -47,13 +47,12 @@ class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnecto
       for {
         nino <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        createApplePass <- createApplePassConnector.createApplePass(nino.getOrElse(throw new NinoNotFoundOnAccount("")),
+        createApplePass <- createApplePassConnector.createApplePass(nino.get.formatted,
           citizenDetails.person.completeName)
         getApplePass <- createApplePassConnector.getApplePass(createApplePass)
       }
       yield getApplePass
     }
   }
-
 
 }

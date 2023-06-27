@@ -20,7 +20,7 @@ object FindmyNinoWalletStub {
       post(urlEqualToCreateApplePass())
         .withRequestBody(equalToJson(
           s"""{
-            |"nino": "$nino",
+            |"nino": "${nino.formatted}",
             |"fullName": "$name"
             |}""".stripMargin))
         .willReturn(aResponse().withStatus(200)
@@ -35,7 +35,7 @@ object FindmyNinoWalletStub {
       post(urlEqualToCreateApplePass())
         .withRequestBody(equalToJson(
           s"""{
-             |"nino": "$nino",
+             |"nino": "${nino.formatted}",
              |"fullName": "$name"
              |}""".stripMargin))
         .willReturn(aResponse().withStatus(429)
