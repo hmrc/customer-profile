@@ -64,7 +64,7 @@ class CustomerProfileService @Inject() (
           details.copy(
             person = details.person.copy(
               fullName                   = Some(details.person.shortName),
-              nationalInsuranceLetterUrl = Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
+              nationalInsuranceLetterUrl = Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
             ),
             address = Some(
               details.address
