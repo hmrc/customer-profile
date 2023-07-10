@@ -37,13 +37,14 @@ To trigger the sandbox endpoints locally, use the "X-MOBILE-USER-ID" header with
 To test different scenarios, add a header "SANDBOX-CONTROL" to specify the appropriate status code and return payload. 
 See each linked file for details:
 
-| *Task*                                                        | *Supported Methods* | *Description*                                                                                    |
-|---------------------------------------------------------------|----|--------------------------------------------------------------------------------------------------|
-| ```/sandbox/profile/personal-details/:nino```                 | GET | Acts as a stub for the related live endpoint. [More...](docs/sandbox/personalDetails.md)         |
-| ```/sandbox/profile/preferences```                            | GET | Acts as a stub for the related live endpoint. [More...](docs/sandbox/preferences.md)             |
-| ```/sandbox/profile/preferences/paperless-settings/opt-in```  | POST | Acts as a stub for the related live endpoint. [More...](docs/sandbox/paperlessSettingsOptIn.md)  |
-| ```/sandbox/profile/preferences/paperless-settings/opt-out``` | POST | Acts as a stub for the related live endpoint. [More...](docs/sandbox/paperlessSettingsOptOut.md) |
-| ```/sandbox/profile/pending-email```                          | POST | Acts as a stub for the related live endpoint. [More...](docs/pendingEmail.md)                                                                |
+| *Task*                                                       | *Supported Methods* | *Description*                                                                                    |
+|--------------------------------------------------------------|---------------------|--------------------------------------------------------------------------------------------------|
+| ```/sandbox/profile/personal-details/:nino```                | GET                 | Acts as a stub for the related live endpoint. [More...](docs/sandbox/personalDetails.md)         |
+| ```/sandbox/profile/preferences```                           | GET                 | Acts as a stub for the related live endpoint. [More...](docs/sandbox/preferences.md)             |
+| ```/sandbox/profile/preferences/paperless-settings/opt-in``` | POST                | Acts as a stub for the related live endpoint. [More...](docs/sandbox/paperlessSettingsOptIn.md)  |
+| ```/sandbox/profile/preferences/paperless-settings/opt-out``` | POST                | Acts as a stub for the related live endpoint. [More...](docs/sandbox/paperlessSettingsOptOut.md) |
+| ```/sandbox/profile/pending-email```                         | POST                | Acts as a stub for the related live endpoint. [More...](docs/pendingEmail.md)                    |
+| ```/sandbox/apple-pass```                                    | GET                  | Acts as a stub for the related live endpoint.               |
 
 
 
