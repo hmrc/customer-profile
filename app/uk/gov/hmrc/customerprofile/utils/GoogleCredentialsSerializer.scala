@@ -21,8 +21,7 @@ import com.google.auth.oauth2.GoogleCredentials
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 import java.util.Base64
 
-// $SCOVERAGE-OFF$
-
+// $COVERAGE-OFF$
 object GoogleCredentialsSerializer {
 
   def serializeToBase64String(credentials: GoogleCredentials): String = {

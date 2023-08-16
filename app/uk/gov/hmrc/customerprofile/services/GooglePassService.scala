@@ -42,7 +42,7 @@ class GooglePassService @Inject()( citizenDetailsConnector: CitizenDetailsConnec
              )(implicit hc: HeaderCarrier,
                ex: ExecutionContext
              ): Future[Option[Nino]] = {
-    withAudit("getApplePass", Map.empty) {
+    withAudit("getGooglePass", Map.empty) {
       accountAccessControl.retrieveNino()
     }
   }
