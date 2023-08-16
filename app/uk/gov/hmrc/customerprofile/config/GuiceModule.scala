@@ -50,7 +50,8 @@ class GuiceModule(
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
     bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
-
+    bindConfigString("issuerId","googlePass.issuerId")
+    bindConfigString("key","googlePass.key")
 
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
     bind(classOf[String]).annotatedWith(named("citizen-details")).toInstance(servicesConfig.baseUrl("citizen-details"))
@@ -74,4 +75,10 @@ class GuiceModule(
     path: String
   ): Unit =
     bindConstant().annotatedWith(named(name)).to(configuration.underlying.getBoolean(path))
+
+  private def bindConfigString(
+                                name: String,
+                                path: String
+                              ): Unit =
+    bindConstant().annotatedWith(named(name)).to(configuration.underlying.getString(path))
 }
