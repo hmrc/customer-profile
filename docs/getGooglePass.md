@@ -1,6 +1,6 @@
 Get GooglePass Pass
 ----
-Retrieves a url with a jwt token that can be called from the HMRC mobile app to allow a user to add their nino to a Google Wallet.
+Retrieves a url with a JWT token that can be called from the HMRC mobile app to allow a user to add their nino to a Google Wallet.
 
 The acceptance is based off the user being shown and agreeing to, these [Terms and Conditions](https://www.tax.service.gov.uk/information/terms#secure)
 
