@@ -103,8 +103,7 @@ class GooglePassController @Inject()(
           errorWrapper {
             service
               .getGooglePass()
-              .map(response =>
-                Ok(toJson(response)))
+              .map(response => Ok(toJson(response)))
           }
         }
       }

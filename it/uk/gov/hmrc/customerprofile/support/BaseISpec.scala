@@ -53,7 +53,8 @@ class BaseISpec
     "optInVersionsEnabled"                         -> false,
     "metrics.enabled"                              -> false,
     "metrics.jvm.enabled"                          -> false,
-    "microservice.services.find-my-nino-add-to-wallet.port" -> wireMockPort
+    "microservice.services.find-my-nino-add-to-wallet.port" -> wireMockPort,
+    "googlePass.key" -> "ey23xs"
   )
 
   protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
