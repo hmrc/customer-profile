@@ -50,7 +50,6 @@ class GuiceModule(
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
     bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
-    bindConfigString("issuerId","googlePass.issuerId")
     bindConfigString("key","googlePass.key")
 
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
