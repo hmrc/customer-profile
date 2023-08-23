@@ -187,11 +187,11 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/GetGooglePassResponse'
                   - example:
-                      googlePass: pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+                      googlePass: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
               examples:
                 example-1:
                   value:
-                    googlePass: pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+                    googlePass: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
       deprecated: false
       security:
         - userRestricted:
@@ -504,7 +504,7 @@ components:
         googlePass:
           type: string
       example:
-        googlePass: pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+        googlePass: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
     Generic:
       title: Generic
       required:
