@@ -47,6 +47,10 @@ class GooglePassService @Inject()( citizenDetailsConnector: CitizenDetailsConnec
     }
   }
 
+  def retrieveJwt(url: String): String = {
+    url.stripPrefix("https://pay.google.com/gp/v/save/")
+  }
+
   def getGooglePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[RetrieveGooglePass] = {
     withAudit("googlePass", Map.empty) {
       for {
@@ -54,7 +58,8 @@ class GooglePassService @Inject()( citizenDetailsConnector: CitizenDetailsConnec
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         getGooglePass <- googlePassConnector.createGooglePassWithCredentials(citizenDetails.person.completeName, nino.get.formatted, googleCredentialsHelper.createGoogleCredentials(key))
         retrievePass <- googlePassConnector.getGooglePassUrl(getGooglePass)
-      } yield retrievePass
+        retrieveGooglePass: RetrieveGooglePass = RetrieveGooglePass(retrieveJwt(retrievePass.googlePass))
+      } yield retrieveGooglePass
     }
   }
 }

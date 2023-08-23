@@ -23,7 +23,7 @@ a string which is included for journey tracking purposes but has no functional i
 
 ```json
 { 
-"googlePass": "https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+"googlePass": "pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
 }
 ```
 

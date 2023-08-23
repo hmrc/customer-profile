@@ -504,7 +504,7 @@ components:
         googlePass:
           type: string
       example:
-        googlePass: https://pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
+        googlePass: pay.google.com/gp/v/save/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9
     Generic:
       title: Generic
       required:
