@@ -47,7 +47,7 @@ class GooglePassControllerSpec extends AnyWordSpecLike
 
   val service: GooglePassService = mock[GooglePassService]
   val accessControl: AccountAccessControl = mock[AccountAccessControl]
-  val jwtToken = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val jwtToken = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
   implicit val shutteringConnectorMock: ShutteringConnector =
     mock[ShutteringConnector]
 
