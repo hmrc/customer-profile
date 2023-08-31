@@ -18,7 +18,7 @@ package uk.gov.hmrc.customerprofile.config
 
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.circuitbreaker.{CircuitBreakerConfig, UsingCircuitBreaker}
-import uk.gov.hmrc.http.{BadRequestException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse}
+import uk.gov.hmrc.http.{BadRequestException, NotFoundException, Upstream4xxResponse, Upstream5xxResponse, UpstreamErrorResponse}
 
 trait ServicesCircuitBreaker extends UsingCircuitBreaker {
 
@@ -48,8 +48,8 @@ trait ServicesCircuitBreaker extends UsingCircuitBreaker {
   override protected def breakOnException(t: Throwable): Boolean = t match {
     case _: BadRequestException => false
     case _: NotFoundException   => false
-    case _: Upstream4xxResponse => false
-    case _: Upstream5xxResponse => true
+    case e: UpstreamErrorResponse if(e.statusCode < 500) => false
+    case _: UpstreamErrorResponse => true
     case _ => true
   }
 }

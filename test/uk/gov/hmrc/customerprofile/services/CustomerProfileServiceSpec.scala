@@ -193,6 +193,7 @@ class CustomerProfileServiceSpec
           Some("Firstname Lastname"),
           Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
         ),
+        None,
         None
       )
 
@@ -228,6 +229,7 @@ class CustomerProfileServiceSpec
           Some("Firstname Middlename Lastname"),
           Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
         ),
+        None,
         None
       )
 

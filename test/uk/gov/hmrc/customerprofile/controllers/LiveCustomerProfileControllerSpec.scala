@@ -37,13 +37,13 @@ import uk.gov.hmrc.customerprofile.mocks.ShutteringMock
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class LiveCustomerProfileControllerSpec
-  extends AnyWordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
@@ -126,7 +126,8 @@ class LiveCustomerProfileControllerSpec
           Some("Firstname Lastname"),
           Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),
-        Some(Address(changeAddressLink = Some("/personal-account/your-profile")))
+        Some(Address(changeAddressLink = Some("/personal-account/your-profile"))),
+        None
       )
 
       authSuccess(Some(nino))
@@ -237,7 +238,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return Unauthorized if failed to grant access" in {
-      authError(new Upstream4xxResponse("ERROR", 403, 403))
+      authError(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401

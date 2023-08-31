@@ -24,7 +24,6 @@ import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.customerprofile.auth._
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
-import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.services.GooglePassService
 import uk.gov.hmrc.domain.Nino

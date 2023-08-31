@@ -72,15 +72,15 @@ object Address extends WriteDatesAsLongs {
 }
 
 case class Address(
-  line1:             Option[String]    = None,
-  line2:             Option[String]    = None,
-  line3:             Option[String]    = None,
-  line4:             Option[String]    = None,
-  line5:             Option[String]    = None,
-  postcode:          Option[String]    = None,
-  country:           Option[String]    = None,
+  line1:             Option[String] = None,
+  line2:             Option[String] = None,
+  line3:             Option[String] = None,
+  line4:             Option[String] = None,
+  line5:             Option[String] = None,
+  postcode:          Option[String] = None,
+  country:           Option[String] = None,
   startDate:         Option[LocalDate] = None,
-  `type`:            Option[String]    = None,
+  `type`:            Option[String] = None,
   changeAddressLink: Option[String])
 
 object PersonDetails {
@@ -88,5 +88,6 @@ object PersonDetails {
 }
 
 case class PersonDetails(
-  person:  Person,
-  address: Option[Address])
+  person:                Person,
+  address:               Option[Address],
+  correspondenceAddress: Option[Address])

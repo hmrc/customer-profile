@@ -17,13 +17,16 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import com.google.inject.{Inject, Singleton}
+
 import javax.inject.Named
-import play.api.http.Status
+import play.api.http.Status.{CREATED, GONE, NOT_FOUND, OK}
+import play.api.libs.json.{JsValue, Json}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,8 +54,7 @@ class EntityResolverConnector @Inject() (
   http:                                 CoreGet with CorePost,
   val configuration:                    Configuration,
   val environment:                      Environment)
-    extends ServicesCircuitBreaker
-    with Status {
+    extends ServicesCircuitBreaker {
 
   import Paperless.formats
 
@@ -68,7 +70,7 @@ class EntityResolverConnector @Inject() (
     withCircuitBreaker(http.GET[Option[Preference]](url(s"/preferences")))
       .recover {
         case response: UpstreamErrorResponse if response.statusCode == GONE => None
-        case _:        NotFoundException                                            => None
+        case _:        NotFoundException                                    => None
       }
 
   def paperlessSettings(
@@ -76,9 +78,12 @@ class EntityResolverConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    withCircuitBreaker(http.POST(url(s"/preferences/terms-and-conditions"), paperless)).map(_.status).map {
-      case OK      => PreferencesExists
-      case CREATED => PreferencesCreated
+    withCircuitBreaker(
+      http.POST[JsValue, HttpResponse](url(s"/preferences/terms-and-conditions"), Json.toJson(paperless))
+    ).map(_.status).map {
+      case OK        => PreferencesExists
+      case CREATED   => PreferencesCreated
+      case NOT_FOUND => NoPreferenceExists
       case _ =>
         logger.warn("Failed to update paperless settings")
         PreferencesFailure
@@ -91,7 +96,7 @@ class EntityResolverConnector @Inject() (
   ): Future[PreferencesStatus] =
     withCircuitBreaker(
       http
-        .POST(url(s"/preferences/terms-and-conditions"), paperlessOptOut)
+        .POST[JsValue, HttpResponse](url(s"/preferences/terms-and-conditions"), Json.toJson(paperlessOptOut))
     ).map(_.status)
       .map {
         case OK      => PreferencesExists

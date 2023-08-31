@@ -17,13 +17,15 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import com.google.inject.{Inject, Singleton}
+import play.api.http.Status.OK
 
 import javax.inject.Named
-import play.api.libs.json.{Json, OFormat}
+import play.api.libs.json.{JsValue, Json, OFormat}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{CoreGet, CorePut, HeaderCarrier, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -54,16 +56,22 @@ class PreferencesConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    http.PUT(url(s"/preferences/$entityId/pending-email"), changeEmail).map(_ => EmailUpdateOk).recoverWith {
-      case e: NotFoundException ⇒ log(e.message, entityId); Future(NoPreferenceExists)
-      case e: UpstreamErrorResponse ⇒
-        e.statusCode match {
-          case CONFLICT ⇒ log(e.message, entityId); Future(EmailNotExist)
-          case NOT_FOUND ⇒ log(e.message, entityId); Future(NoPreferenceExists)
-          case _ ⇒ log(e.message, entityId); Future(EmailUpdateFailed)
+    http
+      .PUT[JsValue, HttpResponse](url(s"/preferences/$entityId/pending-email"), Json.toJson(changeEmail))
+      .map { response =>
+        response.status match {
+          case OK => EmailUpdateOk
+          case NOT_FOUND ⇒
+            log(response.body, entityId)
+            NoPreferenceExists
+          case CONFLICT ⇒
+            log(response.body, entityId)
+            EmailNotExist
+          case _ ⇒
+            log("Failed to update preferences email", entityId)
+            EmailUpdateFailed
         }
-      case _ ⇒ log("Failed to update preferences email", entityId); Future(EmailUpdateFailed)
-    }
+      }
 
   def log(
     msg:      String,

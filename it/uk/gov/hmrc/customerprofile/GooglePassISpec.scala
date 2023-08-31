@@ -6,8 +6,9 @@ import uk.gov.hmrc.customerprofile.domain.Shuttering
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.designatoryDetailsWillReturnErrorResponse
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
+import uk.gov.hmrc.customerprofile.support.BaseISpec
 
-class GooglePassISpec extends CustomerProfileTests {
+class GooglePassISpec extends BaseISpec {
 
   "GET /google-pass" should {
     val url = s"/apple-pass?journeyId=$journeyId"
@@ -38,8 +39,8 @@ class GooglePassISpec extends CustomerProfileTests {
       response.status shouldBe 521
       val shuttering: Shuttering = Json.parse(response.body).as[Shuttering]
       shuttering.shuttered shouldBe true
-      shuttering.title shouldBe Some("Shuttered")
-      shuttering.message shouldBe Some("Preferences are currently not available")
+      shuttering.title     shouldBe Some("Shuttered")
+      shuttering.message   shouldBe Some("Preferences are currently not available")
     }
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
@@ -49,7 +50,7 @@ class GooglePassISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 404
-      response.json shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
+      response.json   shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
     }
   }
 }

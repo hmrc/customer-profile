@@ -20,6 +20,17 @@
     "startDate": 946684800000,
     "country": "Test Country",
     "type": "Residential",
-    "changeAddressLink" : "/personal-account/profile-and-settings"
+    "changeAddressLink": "/personal-account/profile-and-settings"
+  },
+  "correspondenceAddress": {
+    "line1": "1 Main Street",
+    "line2": "Central",
+    "line3": "Anothertown",
+    "line4": "Anothershire",
+    "line5": "Anotherline",
+    "postcode": "AA1 1AA",
+    "startDate": 1341100800000,
+    "type": "Correspondence"
   }
 }
+

@@ -19,18 +19,19 @@ package uk.gov.hmrc.customerprofile.connector
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.libs.json.Writes
+import play.api.http.Status.{CONFLICT, IM_A_TEAPOT, NOT_FOUND}
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.customerprofile.config.WSHttpImpl
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class PreferencesConnectorSpec
-  extends AnyWordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
@@ -51,36 +52,36 @@ class PreferencesConnectorSpec
   "updatePendingEmail()" should {
     def mockPUT(response: Future[HttpResponse]) =
       (http
-        .PUT(_: String, _: ChangeEmail, _: Seq[(String, String)])(_: Writes[ChangeEmail],
-                                        _: HttpReads[HttpResponse],
-                                        _: HeaderCarrier,
-                                        _: ExecutionContext))
-        .expects(s"$baseUrl/preferences/$entityId/pending-email", changeEmailRequest, *, *, *, *, *)
+        .PUT(_: String, _: JsValue, _: Seq[(String, String)])(_: Writes[JsValue],
+                                                              _: HttpReads[HttpResponse],
+                                                              _: HeaderCarrier,
+                                                              _: ExecutionContext))
+        .expects(s"$baseUrl/preferences/$entityId/pending-email", Json.toJson(changeEmailRequest), *, *, *, *, *)
         .returns(response)
 
     "return status EmailUpdateOk when the service returns an OK status" in {
-      mockPUT(Future successful HttpResponse(200))
+      mockPUT(Future successful HttpResponse(200, ""))
 
       val response = await(connector.updatePendingEmail(changeEmailRequest, entityId))
       response shouldBe EmailUpdateOk
     }
 
     "handle 404 NOT_FOUND response" in {
-      mockPUT(Future failed new NotFoundException("not found"))
+      mockPUT(Future successful HttpResponse(NOT_FOUND, ""))
 
       val response = await(connector.updatePendingEmail(changeEmailRequest, entityId))
       response shouldBe NoPreferenceExists
     }
 
     "handle 409 CONFLICT response" in {
-      mockPUT(Future failed Upstream4xxResponse("not found", 409, 409))
+      mockPUT(Future successful HttpResponse(CONFLICT, ""))
 
       val response = await(connector.updatePendingEmail(changeEmailRequest, entityId))
       response shouldBe EmailNotExist
     }
 
     "handles exceptions" in {
-      mockPUT(Future failed Upstream4xxResponse("I'm a teapot", 418, 418))
+      mockPUT(Future successful HttpResponse(IM_A_TEAPOT, ""))
 
       val response = await(connector.updatePendingEmail(changeEmailRequest, entityId))
       response shouldBe EmailUpdateFailed

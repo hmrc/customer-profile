@@ -16,23 +16,16 @@
 
 package uk.gov.hmrc.customerprofile
 
-import play.api.libs.json.Json.toJson
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSRequest
-import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
-import uk.gov.hmrc.customerprofile.domain._
+import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.emailaddress.EmailAddress
 
 class SandboxApplePassISpec extends BaseISpec {
-  private val acceptJsonHeader = "Accept" -> "application/vnd.hmrc.1.0+json"
-  private val journeyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
 
   def request(
     url:       String,
-    journeyId: String
+    journeyId: JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")
       .addHttpHeaders(
@@ -42,7 +35,7 @@ class SandboxApplePassISpec extends BaseISpec {
 
   def requestWithoutAcceptHeader(
     url:       String,
-    journeyId: String
+    journeyId: JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")
       .addHttpHeaders("X-MOBILE-USER-ID" -> "208606423740")
