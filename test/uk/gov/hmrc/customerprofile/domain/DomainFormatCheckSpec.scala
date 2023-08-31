@@ -30,11 +30,7 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 
 import scala.util.Random
 
-class DomainFormatCheckSpec
-  extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout {
+class DomainFormatCheckSpec extends AnyWordSpecLike with Matchers with FutureAwaits with DefaultAwaitTimeout {
 
   import DomainGenerator._
 
@@ -105,10 +101,10 @@ object DomainGenerator {
       Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
     )
   val address: Option[Address] = None
-  val personalDetails = PersonDetails(person, address)
-  lazy val personalDetailsAsJson: JsValue = toJson(personalDetails)
-  val applePass: RetrieveApplePass = RetrieveApplePass("TXIgSm9lIEJsb2dncw==")
-  lazy val applePassJson: JsValue = toJson(applePass)
+  val personalDetails = PersonDetails(person, address, None)
+  lazy val personalDetailsAsJson: JsValue           = toJson(personalDetails)
+  val applePass:                  RetrieveApplePass = RetrieveApplePass("TXIgSm9lIEJsb2dncw==")
+  lazy val applePassJson:         JsValue           = toJson(applePass)
 
 }
 

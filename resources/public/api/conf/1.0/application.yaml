@@ -63,6 +63,11 @@ paths:
                         line3: West Sussex
                         postcode: BN99 8IG
                         changeAddressLink: /personal-account/your-profile
+                      correspondenceAddress:
+                        line1: 1 Main Street
+                        line2: Brighton
+                        line3: East Sussex
+                        postcode: BN1 1AA
               examples:
                 example-1:
                   value:
@@ -81,6 +86,11 @@ paths:
                       line3: West Sussex
                       postcode: BN99 8IG
                       changeAddressLink: /personal-account/your-profile
+                    correspondenceAddress:
+                      line1: 1 Main Street
+                      line2: Brighton
+                      line3: East Sussex
+                      postcode: BN1 1AA
       deprecated: false
       security:
         - userRestricted:
@@ -404,6 +414,7 @@ components:
       required:
         - person
         - address
+        - correspondenceAddress
       type: object
       properties:
         person:
@@ -426,6 +437,11 @@ components:
           line3: West Sussex
           postcode: BN99 8IG
           changeAddressLink: /personal-account/your-profile
+        correspondenceAddress:
+          line1: 1 Main Street
+          line2: Brighton
+          line3: East Sussex
+          postcode: BN1 1AA
     CustomerProfileProfilePreferencesPaperlessSettingsOptInrequest:
       title: CustomerProfileProfilePreferencesPaperlessSettingsOptInrequest
       required:

@@ -39,13 +39,19 @@ Personal Details
     "nino": "CS700100A",
     "fullName": "Jennifer Thorsteinson",
     "nationalInsuranceLetterUrl": "/",
-    "changeAddressLink" : "/"
+    "changeAddressLink": "/"
   },
   "address": {
     "line1": "999 Big Street",
     "line2": "Worthing",
     "line3": "West Sussex",
     "postcode": "BN99 8IG"
+  },
+  "correspondenceAddress": {
+    "line1": "1 Main Street",
+    "line2": "Brighton",
+    "line3": "East Sussex",
+    "postcode": "BN1 1AA"
   }
 }
 ```

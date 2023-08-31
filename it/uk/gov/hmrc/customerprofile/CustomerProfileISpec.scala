@@ -16,17 +16,12 @@
 
 package uk.gov.hmrc.customerprofile
 
-import java.io.InputStream
-
-import eu.timepit.refined.auto._
 import org.joda.time.LocalDate
 import org.scalatest.concurrent.Eventually
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.Json.{parse, toJson}
-import play.api.libs.json.{JsValue, Json}
-import play.api.libs.ws.WSResponse
+import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, OptInPage, PageType, Paperless, PaperlessOptOut, Shuttering, TermsAccepted, Version}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub._
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub._
@@ -34,29 +29,9 @@ import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsF
 import uk.gov.hmrc.customerprofile.stubs.EntityResolverStub._
 import uk.gov.hmrc.customerprofile.stubs.PreferencesStub.{conflictPendingEmailUpdate, errorPendingEmailUpdate, successfulPendingEmailUpdate}
 import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 
-import scala.concurrent.Future
-import scala.io.Source.fromInputStream
-
 trait CustomerProfileTests extends BaseISpec with Eventually {
-  val nino:                    Nino             = Nino("AA000006C")
-  val acceptJsonHeader:        (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
-  val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
-  val journeyId:               JourneyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-
-  def getRequestWithAcceptHeader(url: String): Future[WSResponse] =
-    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).get()
-
-  def postRequestWithAcceptHeader(
-    url:  String,
-    form: JsValue
-  ): Future[WSResponse] =
-    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).post(form)
-
-  def postRequestWithAcceptHeader(url: String): Future[WSResponse] =
-    wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).post("")
 
   "GET /profile/preferences" should {
     val url = s"/profile/preferences?journeyId=$journeyId"
@@ -264,6 +239,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
       respondWithEntityDetailsByNino(nino.value, entityId)
       authRecordExists(nino)
+      ninoFound(nino)
       respondNoPreferences()
       stubForShutteringDisabled
 
@@ -471,28 +447,6 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     }
   }
 
-  protected def resourceAsString(resourcePath: String): Option[String] =
-    withResourceStream(resourcePath) { is =>
-      fromInputStream(is).mkString
-    }
-
-  protected def resourceAsJsValue(resourcePath: String): Option[JsValue] =
-    withResourceStream(resourcePath) { is =>
-      Json.parse(is)
-    }
-
-  protected def getResourceAsJsValue(resourcePath: String): JsValue =
-    resourceAsJsValue(resourcePath).getOrElse(throw new RuntimeException(s"Could not find resource $resourcePath"))
-
-  protected def withResourceStream[A](resourcePath: String)(f: InputStream => A): Option[A] =
-    Option(getClass.getResourceAsStream(resourcePath)) map { is =>
-      try {
-        f(is)
-      } finally {
-        is.close()
-      }
-    }
-
 }
 
 class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
@@ -553,9 +507,9 @@ class CustomerProfileCitizenDetailsDisabledISpec extends CustomerProfileTests {
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "microservice.services.citizen-details.enabled" -> false
-    )
+      Map(
+        "microservice.services.citizen-details.enabled" -> false
+      )
   )
 
   "GET /profile/personal-details/:nino - Citizen Details Disabled" should {
@@ -576,19 +530,19 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "optInVersionsEnabled" -> true
-    )
+      Map(
+        "optInVersionsEnabled" -> true
+      )
   )
 
   "POST /profile/paperless-settings/opt-in - Paperless Versions Enabled" should {
-    val url      = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
         Paperless(
           generic = TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.IosOptInPage))),
-          email   = EmailAddress("new-email@new-email.new.email"),
+          email = EmailAddress("new-email@new-email.new.email"),
           Some(English)
         )
       )
@@ -607,13 +561,13 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
   }
 
   "POST /profile/paperless-settings/opt-out - Paperless Versions Enabled" should {
-    val url      = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
         Paperless(
           generic = TermsAccepted(accepted = Some(false), Some(OptInPage(Version(1, 1), 44, PageType.IosOptOutPage))),
-          email   = EmailAddress("new-email@new-email.new.email"),
+          email = EmailAddress("new-email@new-email.new.email"),
           Some(English)
         )
       )
@@ -636,9 +590,9 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "reOptInEnabled" -> false
-    )
+      Map(
+        "reOptInEnabled" -> false
+      )
   )
 
   "GET /profile/preferences" should {
@@ -651,9 +605,9 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
 
-      response.status                                     shouldBe 200
-      (response.json \ "digital").as[Boolean]             shouldBe true
-      (response.json \ "status" \ "name").as[String]      shouldBe "verified"
+      response.status shouldBe 200
+      (response.json \ "digital").as[Boolean] shouldBe true
+      (response.json \ "status" \ "name").as[String] shouldBe "verified"
       (response.json \ "status" \ "majorVersion").as[Int] shouldBe 10
     }
 
@@ -664,9 +618,9 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
       val response = await(getRequestWithAcceptHeader(url))
 
-      response.status                                     shouldBe 200
-      (response.json \ "digital").as[Boolean]             shouldBe true
-      (response.json \ "status" \ "name").as[String]      shouldBe "verified"
+      response.status shouldBe 200
+      (response.json \ "digital").as[Boolean] shouldBe true
+      (response.json \ "status" \ "name").as[String] shouldBe "verified"
       (response.json \ "status" \ "majorVersion").as[Int] shouldBe 10
     }
 

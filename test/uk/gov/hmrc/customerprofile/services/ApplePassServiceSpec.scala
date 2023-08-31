@@ -67,6 +67,7 @@ class ApplePassServiceSpec
       Some("Firstname Lastname"),
       Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
     ),
+    None,
     None
   )
 

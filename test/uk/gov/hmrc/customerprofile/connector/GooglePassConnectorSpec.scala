@@ -23,7 +23,7 @@ import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http._
 import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, RetrieveGooglePass}
+import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}

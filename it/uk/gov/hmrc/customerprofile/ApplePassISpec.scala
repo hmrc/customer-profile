@@ -2,15 +2,16 @@ package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json
 import play.api.libs.json.Json.parse
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
+import uk.gov.hmrc.customerprofile.domain.Shuttering
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
 import uk.gov.hmrc.customerprofile.stubs.FindmyNinoWalletStub.{getApplePass, getApplePassId, getApplePassIdTooManyRequestsException}
+import uk.gov.hmrc.customerprofile.support.BaseISpec
 
-class ApplePassISpec extends CustomerProfileTests {
+class ApplePassISpec extends BaseISpec {
   val base64String = "TXIgSm9lIEJsb2dncw=="
-  val passId         = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId       = "c864139e-77b5-448f-b443-17c69060870d"
   val fullName     = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
@@ -24,7 +25,7 @@ class ApplePassISpec extends CustomerProfileTests {
       getApplePassId(nino, fullName, passId)
       getApplePass(passId, base64String)
       val response = await(getRequestWithAcceptHeader(url))
-      response.status shouldBe 200
+      response.status                          shouldBe 200
       (response.json \ "applePass").as[String] shouldBe base64String
     }
 

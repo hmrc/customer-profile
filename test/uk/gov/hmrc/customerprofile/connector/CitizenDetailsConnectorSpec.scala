@@ -54,9 +54,9 @@ class CitizenDetailsConnectorSpec
     }
 
     "throw Upstream5xxResponse when a 500 response is returned" in {
-      mockHttpGet(Upstream5xxResponse("Error", 500, 500))
+      mockHttpGet(UpstreamErrorResponse("Error", 500, 500))
 
-      intercept[Upstream5xxResponse] {
+      intercept[UpstreamErrorResponse] {
         await(connector.personDetails(nino))
       }
     }

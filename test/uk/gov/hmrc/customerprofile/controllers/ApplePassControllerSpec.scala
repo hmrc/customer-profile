@@ -30,7 +30,7 @@ import uk.gov.hmrc.customerprofile.services.ApplePassService
 import uk.gov.hmrc.domain.Nino
 import eu.timepit.refined.auto._
 import play.api.mvc.AnyContentAsEmpty
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse, UpstreamErrorResponse}
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.auth.core.SessionRecordNotFound
 
@@ -38,16 +38,17 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassControllerSpec
-  extends AnyWordSpecLike
+    extends AnyWordSpecLike
     with Matchers
     with FutureAwaits
     with DefaultAwaitTimeout
     with MockFactory
     with ShutteringMock {
 
-  val service: ApplePassService = mock[ApplePassService]
+  val service:       ApplePassService     = mock[ApplePassService]
   val accessControl: AccountAccessControl = mock[AccountAccessControl]
   val base64String = "TXIgSm9lIEJsb2dncw=="
+
   implicit val shutteringConnectorMock: ShutteringConnector =
     mock[ShutteringConnector]
 
@@ -60,15 +61,11 @@ class ApplePassControllerSpec
   val notShuttered: Shuttering = Shuttering.shutteringDisabled
 
   val controller: ApplePassController =
-    new ApplePassController(
-      service,
-      accessControl,
-      stubControllerComponents(),
-      shutteringConnectorMock)
+    new ApplePassController(service, accessControl, stubControllerComponents(), shutteringConnectorMock)
 
-  val nino: Nino = Nino("CS700100A")
-  val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val acceptheader: String = "application/vnd.hmrc.1.0+json"
+  val nino:         Nino      = Nino("CS700100A")
+  val journeyId:    JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
+  val acceptheader: String    = "application/vnd.hmrc.1.0+json"
 
   val requestWithAcceptHeader: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest().withHeaders("Accept" -> acceptheader)
@@ -84,9 +81,9 @@ class ApplePassControllerSpec
       .returns(Future.successful(()))
 
   def authError(
-                 e: Exception,
-                 maybeNino: Option[Nino] = None
-               ) =
+    e:         Exception,
+    maybeNino: Option[Nino] = None
+  ) =
     (accessControl
       .grantAccess(_: Option[Nino])(_: HeaderCarrier))
       .expects(maybeNino, *)
@@ -109,7 +106,7 @@ class ApplePassControllerSpec
       val result =
         controller.getApplePass(journeyId)(requestWithAcceptHeader)
 
-      status(result) shouldBe 200
+      status(result)        shouldBe 200
       contentAsJson(result) shouldBe toJson(applePass)
     }
 
@@ -153,13 +150,13 @@ class ApplePassControllerSpec
       status(result) shouldBe 521
       val jsonBody = contentAsJson(result)
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
-      (jsonBody \ "title").as[String] shouldBe "Shuttered"
+      (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
         .as[String] shouldBe "Get Apple Pass is currently not available"
     }
 
     "return Unauthorized if failed to grant access" in {
-      authError(new Upstream4xxResponse("ERROR", 403, 403))
+      authError(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401
@@ -181,7 +178,7 @@ class ApplePassControllerSpec
     "return 404 where the account does not exist" in {
       authSuccess()
       mockShutteringResponse(notShuttered)
-      mockGetApplePass(Future failed new  NotFoundException("No resources found"))
+      mockGetApplePass(Future failed new NotFoundException("No resources found"))
       val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 404
     }

@@ -30,9 +30,10 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, Paperless, PaperlessOptOut, TermsAccepted}
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, Upstream4xxResponse, UpstreamErrorResponse}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
+import uk.gov.hmrc.http.HttpException
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,13 +47,15 @@ class LiveCustomerProfileController @Inject() (
   @Named("optInVersionsEnabled") val optInVersionsEnabled:     Boolean
 )(implicit val executionContext:                               ExecutionContext)
     extends BackendController(controllerComponents)
-    with CustomerProfileController with ErrorHandling with ControllerChecks {
+    with CustomerProfileController
+    with ErrorHandling
+    with ControllerChecks {
   outer =>
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
   override val logger: Logger = Logger(this.getClass)
 
-  val app                           = "Live-Customer-Profile"
+  val app = "Live-Customer-Profile"
 
   def invokeAuthBlock[A](
     request: Request[A],
@@ -67,10 +70,6 @@ class LiveCustomerProfileController @Inject() (
         block(request)
       }
       .recover {
-        case _: Upstream4xxResponse =>
-          logger.info("Unauthorized! Failed to grant access since 4xx response!")
-          Unauthorized(toJson[ErrorResponse](ErrorUnauthorizedMicroService))
-
         case _: NinoNotFoundOnAccount =>
           logger.info("Unauthorized! NINO not found on account!")
           Forbidden(toJson[ErrorResponse](ErrorUnauthorizedNoNino))
@@ -85,6 +84,10 @@ class LiveCustomerProfileController @Inject() (
 
         case e: AuthorisationException =>
           Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
+
+        case _: UpstreamErrorResponse =>
+          logger.info("Unauthorized! Failed to grant access since 4xx response!")
+          Unauthorized(toJson[ErrorResponse](ErrorUnauthorizedMicroService))
       }
   }
 
@@ -97,7 +100,10 @@ class LiveCustomerProfileController @Inject() (
       ): Future[Result] =
         if (acceptHeaderValidationRules(request.headers.get("Accept"))) {
           invokeAuthBlock(request, block, taxId)
-        } else Future.successful(Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid)))
+        } else
+          Future.successful(
+            Status(ErrorAcceptHeaderInvalid.httpStatusCode)(toJson[ErrorResponse](ErrorAcceptHeaderInvalid))
+          )
       override def parser:                     BodyParser[AnyContent] = outer.parser
       override protected def executionContext: ExecutionContext       = outer.executionContext
     }
@@ -115,10 +121,6 @@ class LiveCustomerProfileController @Inject() (
               service
                 .getPersonalDetails(nino)
                 .map(as => Ok(toJson(as)))
-                .recover {
-                  case Upstream4xxResponse(_, LOCKED, _, _) =>
-                    result(ErrorManualCorrespondenceIndicator)
-                }
             } else Future successful result(ErrorNotFound)
           }
         }

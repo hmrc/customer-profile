@@ -16,28 +16,23 @@
 
 package uk.gov.hmrc.customerprofile
 
-import java.time.LocalDate
-
 import play.api.libs.json.Json.toJson
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
+import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 class SandboxCustomerProfileISpec extends BaseISpec {
-  private val acceptJsonHeader = "Accept" -> "application/vnd.hmrc.1.0+json"
-  private val nino             = Nino("CS700100A")
-  private val journeyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   private val invalidJsonBody: JsValue = Json.parse("{}")
 
   def request(
     url:            String,
     sandboxControl: Option[String] = None,
-    journeyId:      String
+    journeyId:      JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")
       .addHttpHeaders(
@@ -48,7 +43,7 @@ class SandboxCustomerProfileISpec extends BaseISpec {
 
   def requestWithoutAcceptHeader(
     url:       String,
-    journeyId: String
+    journeyId: JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")
       .addHttpHeaders("X-MOBILE-USER-ID" -> "208606423740")
@@ -66,25 +61,31 @@ class SandboxCustomerProfileISpec extends BaseISpec {
   "GET /sandbox/profile/personal-details/:nino" should {
     val url = s"/profile/personal-details/${nino.value}"
 
-    val expectedDetails ="""{
-        |  "person" : {
-        |    "firstName" : "Nia",
-        |    "lastName" : "Jackson",
-        |    "title" : "Ms",
-        |    "sex" : "Female",
-        |    "dateOfBirth" : 917740800000,
-        |    "nino" : "QQ123456C",
-        |    "fullName" : "Nia Jackson",
-        |    "nationalInsuranceLetterUrl" : "/"
-        |  },
-        |  "address" : {
-        |    "line1" : "999 Big Street",
-        |    "line2" : "Worthing",
-        |    "line3" : "West Sussex",
-        |    "postcode" : "BN99 8IG",
-        |    "changeAddressLink" : "/"
-        |  }
-        |}""".stripMargin
+    val expectedDetails = """{
+                            |  "person" : {
+                            |    "firstName" : "Nia",
+                            |    "lastName" : "Jackson",
+                            |    "title" : "Ms",
+                            |    "sex" : "Female",
+                            |    "dateOfBirth" : 917740800000,
+                            |    "nino" : "QQ123456C",
+                            |    "fullName" : "Nia Jackson",
+                            |    "nationalInsuranceLetterUrl" : "/"
+                            |  },
+                            |  "address" : {
+                            |    "line1" : "999 Big Street",
+                            |    "line2" : "Worthing",
+                            |    "line3" : "West Sussex",
+                            |    "postcode" : "BN99 8IG",
+                            |    "changeAddressLink" : "/"
+                            |  },
+                            |  "correspondenceAddress" : {
+                            |    "line1" : "1 Main Street",
+                            |    "line2" : "Brighton",
+                            |    "line3" : "East Sussex",
+                            |    "postcode" : "BN1 1AA"
+                            |  }
+                            |}""".stripMargin
 
     "return the default personal details with journey id" in {
       val response = await(request(url, None, journeyId).get())

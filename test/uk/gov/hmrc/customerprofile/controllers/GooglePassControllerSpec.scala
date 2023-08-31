@@ -33,7 +33,7 @@ import play.api.test.Helpers.{status, _}
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, Upstream4xxResponse, UpstreamErrorResponse}
 import eu.timepit.refined.auto._
 import uk.gov.hmrc.auth.core.SessionRecordNotFound
 
@@ -159,7 +159,7 @@ class GooglePassControllerSpec extends AnyWordSpecLike
     }
 
     "return Unauthorized if failed to grant access" in {
-      authError(new Upstream4xxResponse("ERROR", 403, 403))
+      authError(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = controller.getGooglePass(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401

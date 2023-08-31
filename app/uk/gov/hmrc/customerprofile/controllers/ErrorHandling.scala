@@ -23,11 +23,12 @@ import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.Result
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.auth.core.AuthorisationException
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, NotFoundException, TooManyRequestException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+
 case object ErrorUnauthorizedNoNino
     extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
 
@@ -39,14 +40,15 @@ case object ErrorManualCorrespondenceIndicator
 case object ErrorPreferenceConflict extends ErrorResponse(CONFLICT, "CONFLICT", "No existing verified or pending data")
 
 case object ErrorUnauthorizedMicroService
-  extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource") {
+    extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource") {
 
   implicit val writes: Writes[ErrorResponse] = new Writes[ErrorResponse] {
     def writes(e: ErrorResponse): JsValue = Json.obj("code" -> e.errorCode, "message" -> e.message)
   }
 }
 
-case object ErrorTooManyRequests extends ErrorResponse(429, "TOO_MANY_REQUESTS","Too many requests made to customer profile please try again later")
+case object ErrorTooManyRequests
+    extends ErrorResponse(429, "TOO_MANY_REQUESTS", "Too many requests made to customer profile please try again later")
 
 class FailToMatchTaxIdOnAuth(message: String) extends HttpException(message, 403)
 
@@ -63,18 +65,23 @@ trait ErrorHandling {
 
   def result(errorResponse: ErrorResponse): Result =
     Status(errorResponse.httpStatusCode)(toJson(errorResponse))
-  def errorWrapper(func: => Future[Result])(implicit hc: HeaderCarrier): Future[Result] =
+
+  def errorWrapper(func: => Future[Result]): Future[Result] =
     func.recover {
       case e: AuthorisationException =>
-        Unauthorized(obj("httpStatusCode" -> 401, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
+        Unauthorized(obj("httpStatusCode" -> UNAUTHORIZED, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
 
-      case e: UpstreamErrorResponse if e.statusCode == 429  =>
+      case e: HttpException if e.responseCode == TOO_MANY_REQUESTS =>
         log(s"TooManyRequestException reported: ${e.getMessage}")
         result(ErrorTooManyRequests)
 
-      case e: NotFoundException =>
+      case e: HttpException if e.responseCode == NOT_FOUND =>
         log(s"Not found! $e")
         result(ErrorNotFound)
+
+      case e: HttpException if e.responseCode == LOCKED =>
+        log(s"user locked!! $e")
+        result(ErrorManualCorrespondenceIndicator)
 
       case _: NinoNotFoundOnAccount =>
         log("User has no NINO. Unauthorized!")
