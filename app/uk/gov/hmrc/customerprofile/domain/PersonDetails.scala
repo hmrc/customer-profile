@@ -27,21 +27,6 @@ import uk.gov.hmrc.domain.Nino
   * The dates coming from `citizen-details` are formatted strings, but we want to send
   * responses with numbers (millis-since-epoch), so we need an asymmetric json formatter.
   */
-trait WriteDatesAsLongs {
-
-  val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
-
-    override def writes(o: LocalDate): JsValue =
-      JsNumber(o.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli)
-  }
-
-  implicit val localDateFormat: Format[LocalDate] = new Format[LocalDate] {
-    override def writes(o: LocalDate): JsValue = dateWrites.writes(o)
-
-    override def reads(json: JsValue): JsResult[LocalDate] =
-      DefaultLocalDateReads.reads(json)
-  }
-}
 
 object Person {
   implicit val formats: OFormat[Person] = format[Person]
