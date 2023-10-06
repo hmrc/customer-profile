@@ -43,7 +43,7 @@ trait WriteDatesAsLongs {
   }
 }
 
-object Person extends WriteDatesAsLongs {
+object Person {
   implicit val formats: OFormat[Person] = format[Person]
 }
 
@@ -67,7 +67,7 @@ case class Person(
     List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
 }
 
-object Address extends WriteDatesAsLongs {
+object Address  {
   implicit val formats: OFormat[Address] = format[Address]
 }
 

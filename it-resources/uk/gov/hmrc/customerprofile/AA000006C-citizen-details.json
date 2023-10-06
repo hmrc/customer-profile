@@ -6,7 +6,7 @@
     "title": "Mr",
     "honours": null,
     "sex": "M",
-    "dateOfBirth": -26092800000,
+    "dateOfBirth": "1969-03-05",
     "nino": "AA000006C"
   },
   "address": {
@@ -16,7 +16,7 @@
     "line4": "456",
     "line5": "55555",
     "postcode": "98765",
-    "startDate": 946684800000,
+    "startDate": "2000-01-01",
     "country": "Test Country",
     "type": "Residential"
   },
@@ -27,7 +27,7 @@
     "line4": "Anothershire",
     "line5": "Anotherline",
     "postcode": "AA1 1AA",
-    "startDate": 1341100800000,
+    "startDate": "2012-07-01",
     "country": null,
     "type": "Correspondence"
   }
