@@ -16,49 +16,49 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import java.time.{LocalDate, ZoneOffset}
-
-import play.api.libs.json.Json.format
-import play.api.libs.json.Reads.DefaultLocalDateReads
+import java.time.{Instant, LocalDate, ZoneOffset}
 import play.api.libs.json._
+import play.api.libs.json.Reads.DefaultLocalDateReads
 import uk.gov.hmrc.domain.Nino
+import play.api.libs.functional.syntax._
 
 /**
   * The dates coming from `citizen-details` are formatted strings, but we want to send
   * responses with numbers (millis-since-epoch), so we need an asymmetric json formatter.
   */
-trait WriteDatesAsLongs {
 
-  val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
-
-    override def writes(o: LocalDate): JsValue =
-      JsNumber(o.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli)
-  }
-
-  implicit val localDateFormat: Format[LocalDate] = new Format[LocalDate] {
-    override def writes(o: LocalDate): JsValue = dateWrites.writes(o)
-
-    override def reads(json: JsValue): JsResult[LocalDate] =
-      DefaultLocalDateReads.reads(json)
-  }
-}
-
-object Person extends WriteDatesAsLongs {
-  implicit val formats: OFormat[Person] = format[Person]
+object Person  {
+  implicit val writes: Writes[Person] = Json.writes[Person]
+  implicit val reads: Reads[Person] = (
+    ( JsPath \ "firstName").readNullable[String] and
+      ( JsPath \ "middleName").readNullable[String] and
+      ( JsPath \ "lastName").readNullable[String] and
+      ( JsPath \ "initials").readNullable[String] and
+      ( JsPath \ "title").readNullable[String] and
+      ( JsPath \ "honours").readNullable[String] and
+      ( JsPath \ "sex").readNullable[String] and
+      ( JsPath \ "dateOfBirth").readNullable[LocalDate].map(_.map(_.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli)) and
+      ( JsPath \ "dateOfBirth").readNullable[LocalDate] and
+      ( JsPath \ "nino").readNullable[Nino] and
+      ( JsPath \ "fullName").readNullable[String] and
+      ( JsPath \ "nationalInsuranceLetterUrl").readNullable[String]
+    )(Person.apply _)
 }
 
 case class Person(
-  firstName:                  Option[String],
-  middleName:                 Option[String],
-  lastName:                   Option[String],
-  initials:                   Option[String],
-  title:                      Option[String],
-  honours:                    Option[String],
-  sex:                        Option[String],
-  dateOfBirth:                Option[LocalDate],
-  nino:                       Option[Nino],
-  fullName:                   Option[String],
-  nationalInsuranceLetterUrl: Option[String]) {
+                   firstName:                  Option[String],
+                   middleName:                 Option[String],
+                   lastName:                   Option[String],
+                   initials:                   Option[String],
+                   title:                      Option[String],
+                   honours:                    Option[String],
+                   sex:                        Option[String],
+                   dateOfBirth:                Option[Long],
+                   personDateOfBirth:          Option[LocalDate],
+                   nino:                       Option[Nino],
+                   fullName:                   Option[String],
+                   nationalInsuranceLetterUrl: Option[String]
+                 ) {
 
   lazy val shortName: String =
     List(firstName, middleName, lastName).flatten.mkString(" ")
@@ -67,8 +67,8 @@ case class Person(
     List(title, firstName, middleName, lastName, honours).flatten.mkString(" ")
 }
 
-object Address extends WriteDatesAsLongs {
-  implicit val formats: OFormat[Address] = format[Address]
+object Address {
+  implicit val formats: OFormat[Address] = Json.format[Address]
 }
 
 case class Address(
@@ -81,10 +81,14 @@ case class Address(
   country:           Option[String] = None,
   startDate:         Option[LocalDate] = None,
   `type`:            Option[String] = None,
-  changeAddressLink: Option[String])
+  changeAddressLink: Option[String]) {
+  startDate.map(_.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli)
+}
+
+
 
 object PersonDetails {
-  implicit val formats: OFormat[PersonDetails] = format[PersonDetails]
+  implicit val formats: OFormat[PersonDetails] = Json.format[PersonDetails]
 }
 
 case class PersonDetails(
