@@ -6,6 +6,7 @@
     "title": "Mr",
     "sex": "M",
     "dateOfBirth": -26092800000,
+    "personDateOfBirth": "1969-03-05",
     "nino": "AA000006C",
     "fullName": "Angus John Smith",
     "nationalInsuranceLetterUrl": "/save-your-national-insurance-number/print-letter/save-letter-as-pdf"
@@ -17,7 +18,7 @@
     "line4": "456",
     "line5": "55555",
     "postcode": "98765",
-    "startDate": 946684800000,
+    "startDate": "2000-01-01",
     "country": "Test Country",
     "type": "Residential",
     "changeAddressLink": "/personal-account/profile-and-settings"
@@ -29,7 +30,7 @@
     "line4": "Anothershire",
     "line5": "Anotherline",
     "postcode": "AA1 1AA",
-    "startDate": 1341100800000,
+    "startDate": "2012-07-01",
     "type": "Correspondence"
   }
 }

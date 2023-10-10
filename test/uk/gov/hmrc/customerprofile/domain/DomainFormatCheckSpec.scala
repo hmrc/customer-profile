@@ -95,6 +95,7 @@ object DomainGenerator {
       Some("Mr"),
       None,
       Some("M"),
+      None,
       Some(LocalDate.now.minusYears(30)),
       Some(nino),
       Some("John Albert"),
