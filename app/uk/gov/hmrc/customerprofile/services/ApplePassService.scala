@@ -17,7 +17,7 @@
 package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.Inject
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
+import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
@@ -29,30 +29,34 @@ import uk.gov.hmrc.service.Auditor
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplePassService @Inject()(citizenDetailsConnector: CitizenDetailsConnector,
-                                 createApplePassConnector: ApplePassConnector,
-                                 accountAccessControl: AccountAccessControl,
-                                 val auditConnector: AuditConnector,
-                                 @Named("appName") val appName: String) extends Auditor {
+class ApplePassService @Inject() (
+  citizenDetailsConnector:       CitizenDetailsConnector,
+  createApplePassConnector:      ApplePassConnector,
+  authRetrievals:                AuthRetrievals,
+  val auditConnector:            AuditConnector,
+  @Named("appName") val appName: String)
+    extends Auditor {
+
   def getNino(
-             )(implicit hc: HeaderCarrier,
-               ex: ExecutionContext
-             ): Future[Option[Nino]] =
+  )(implicit hc: HeaderCarrier,
+    ex:          ExecutionContext
+  ): Future[Option[Nino]] =
     withAudit("getApplePass", Map.empty) {
-      accountAccessControl.retrieveNino()
+      authRetrievals.retrieveNino()
     }
 
-  def getApplePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext) : Future[RetrieveApplePass] = {
+  def getApplePass(
+  )(implicit hc:      HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[RetrieveApplePass] =
     withAudit("applePass", Map.empty) {
       for {
-        nino <- getNino()
+        nino           <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         createApplePass <- createApplePassConnector.createApplePass(nino.get.formatted,
-          citizenDetails.person.completeName)
+                                                                    citizenDetails.person.completeName)
         getApplePass <- createApplePassConnector.getApplePass(createApplePass)
-      }
-      yield getApplePass
+      } yield getApplePass
     }
-  }
 
 }

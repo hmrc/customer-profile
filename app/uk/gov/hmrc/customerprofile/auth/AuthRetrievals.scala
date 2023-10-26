@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.customerprofile.controllers
+package uk.gov.hmrc.customerprofile.auth
 
-import play.api.libs.json.Json
-import play.api.mvc.{Result, Results}
-import uk.gov.hmrc.customerprofile.domain.Shuttering
+import com.google.inject.Inject
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.nino
+import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
+import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.http.HeaderCarrier
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
+class AuthRetrievals @Inject()(val authConnector: AuthConnector) extends AuthorisedFunctions {
 
-trait ControllerChecks extends Results {
-
-  private final val WebServerIsDown = new Status(521)
-
-  def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result] =
-    if (shuttering.shuttered) Future.successful(WebServerIsDown(Json.toJson(shuttering))) else fn
+  def retrieveNino()(implicit hc: HeaderCarrier): Future[Option[Nino]] =
+    authorised().retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
 
 }

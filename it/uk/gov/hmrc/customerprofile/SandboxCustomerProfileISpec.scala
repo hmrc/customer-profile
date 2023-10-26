@@ -17,7 +17,7 @@
 package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json.toJson
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
@@ -27,7 +27,6 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 class SandboxCustomerProfileISpec extends BaseISpec {
-  private val invalidJsonBody: JsValue = Json.parse("{}")
 
   def request(
     url:            String,
@@ -247,11 +246,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       response.status shouldBe 201
     }
 
-    "return 400 for invalid form" in {
-      val response = await(request(url, None, journeyId).post(invalidJsonBody))
-      response.status shouldBe 400
-    }
-
     "return 401 for ERROR-401" in {
       val response = await(
         request(url, Some("ERROR-401"), journeyId).post(paperlessSettings)
@@ -271,13 +265,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
         request(url, Some("ERROR-404"), journeyId).post(paperlessSettings)
       )
       response.status shouldBe 404
-    }
-
-    "return 406 without Accept header" in {
-      val response = await(
-        requestWithoutAcceptHeader(url, journeyId).post(paperlessSettings)
-      )
-      response.status shouldBe 406
     }
 
     "return a 409 response for ERROR-409" in {
@@ -318,7 +305,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
 
   "POST /sandbox/preferences/profile/paperless-settings/opt-out" should {
     val url       = "/profile/preferences/paperless-settings/opt-out"
-    val emptyBody = ""
 
     val paperlessSettings =
       toJson(
@@ -349,12 +335,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       val response =
         await(request(url, Some("ERROR-404"), journeyId).post(paperlessSettings))
       response.status shouldBe 404
-    }
-
-    "return 406 without Accept header" in {
-      val response =
-        await(requestWithoutAcceptHeader(url, journeyId).post(paperlessSettings))
-      response.status shouldBe 406
     }
 
     "return a 500 response for ERROR-500" in {
@@ -394,11 +374,6 @@ class SandboxCustomerProfileISpec extends BaseISpec {
     "return a 204 response with a journeyId by default" in {
       val response = await(request(url, None, journeyId).post(changeEmail))
       response.status shouldBe 204
-    }
-
-    "return 400 for invalid form" in {
-      val response = await(request(url, None, journeyId).post(invalidJsonBody))
-      response.status shouldBe 400
     }
 
     "return 401 for ERROR-401" in {

@@ -16,31 +16,19 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.{JsValue, Json, Writes}
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{ConfigLoader, Configuration, Environment}
 import uk.gov.hmrc.circuitbreaker.UnhealthyServiceException
 import uk.gov.hmrc.customerprofile.config.WSHttpImpl
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain._
+import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference, TermsAccepted}
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class EntityResolverConnectorSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with ScalaFutures
-    with MockFactory {
-  implicit val hc: HeaderCarrier = new HeaderCarrier
+class EntityResolverConnectorSpec extends BaseSpec {
 
   val http:                                            WSHttpImpl    = mock[WSHttpImpl]
   val config:                                          Configuration = mock[Configuration]

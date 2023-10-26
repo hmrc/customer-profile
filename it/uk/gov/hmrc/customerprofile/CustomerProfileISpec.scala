@@ -129,7 +129,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 404)
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
@@ -143,7 +143,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     }
 
     "propagate 401" in {
-      authFailure()
+      authFailureNinoCheck()
       stubForShutteringDisabled
       await(getRequestWithAcceptHeader(url)).status shouldBe 401
     }
@@ -158,7 +158,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     "return shuttered when shuttered" in {
       stubForShutteringEnabled
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -374,7 +374,6 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     }
 
     "return a Conflict response when preferences has no existing verified or pending email" in {
-      val expectedResponse = parse("""{"code":"CONFLICT","message":"No existing verified or pending data"}""")
 
       respondWithEntityDetailsByNino(nino.value, entityId)
       respondPreferencesWithPaperlessOptedIn()
@@ -454,7 +453,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
     val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
     "return personal details for the given NINO from citizen-details" in {
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
@@ -465,7 +464,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
 
     "return a 423 response status code when the NINO is locked due to Manual Correspondence Indicator flag being set in NPS" in {
       npsDataIsLockedDueToMciFlag(nino)
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
@@ -478,7 +477,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
 
     "return 500 response status code when citizen-details returns 500 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 500)
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
@@ -489,7 +488,7 @@ class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
 
     "return shuttered when shuttered" in {
       stubForShutteringEnabled
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -515,7 +514,7 @@ class CustomerProfileCitizenDetailsDisabledISpec extends CustomerProfileTests {
   "GET /profile/personal-details/:nino - Citizen Details Disabled" should {
     val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
     "return 404 for disabled citizen-details" in {
-      authRecordExists(nino)
+      authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))

@@ -16,49 +16,31 @@
 
 package uk.gov.hmrc.customerprofile.services
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
 import play.api.Configuration
-import org.scalatest.wordspec.AnyWordSpecLike
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import eu.timepit.refined.auto._
 import org.scalamock.handlers.CallHandler3
 import org.scalamock.matchers.MatcherBase
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
+import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GooglePassConnector}
 import uk.gov.hmrc.customerprofile.domain.{Person, PersonDetails, RetrieveGooglePass}
-import uk.gov.hmrc.customerprofile.utils.GoogleCredentialsHelper
-import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.customerprofile.utils.{BaseSpec, GoogleCredentialsHelper}
 import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class GooglePassServiceSpec
-  extends AnyWordSpecLike
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout
-  with MockFactory {
+class GooglePassServiceSpec extends BaseSpec {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-
-  val appNameConfiguration: Configuration = mock[Configuration]
-  val auditConnector: AuditConnector = mock[AuditConnector]
-  val getGooglePassConnector: GooglePassConnector = mock[GooglePassConnector]
+  val appNameConfiguration:    Configuration           = mock[Configuration]
+  val auditConnector:          AuditConnector          = mock[AuditConnector]
+  val getGooglePassConnector:  GooglePassConnector     = mock[GooglePassConnector]
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val appName: String = "customer-profile"
-  val passId = "c864139e-77b5-448f-b443-17c69060870d"
-  val jwtUrl: String = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-  val googleKey: String = "123456789"
-  val nino: Nino = Nino("CS700100A")
-  val accountAccessControl: AccountAccessControl = mock[AccountAccessControl]
+  val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
   val googleCredentialsHelper: GoogleCredentialsHelper = mock[GoogleCredentialsHelper]
+  val passId:                  String                  = "c864139e-77b5-448f-b443-17c69060870d"
+  val jwtUrl:                  String                  = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val googleKey:               String                  = "123456789"
 
   val person: PersonDetails = PersonDetails(
     Person(
@@ -80,21 +62,21 @@ class GooglePassServiceSpec
   )
 
   def mockAudit(
-                 transactionName: String,
-                 detail: Map[String, String] = Map.empty
-               ): CallHandler3[DataEvent, HeaderCarrier, ExecutionContext, Future[
+    transactionName: String,
+    detail:          Map[String, String] = Map.empty
+  ): CallHandler3[DataEvent, HeaderCarrier, ExecutionContext, Future[
     AuditResult
   ]] = {
     def dataEventWith(
-                       auditSource: String,
-                       auditType: String,
-                       tags: Map[String, String]
-                     ): MatcherBase =
+      auditSource: String,
+      auditType:   String,
+      tags:        Map[String, String]
+    ): MatcherBase =
       argThat { (dataEvent: DataEvent) =>
         dataEvent.auditSource.equals(auditSource) &&
-          dataEvent.auditType.equals(auditType) &&
-          dataEvent.tags.equals(tags) &&
-          dataEvent.detail.equals(detail)
+        dataEvent.auditType.equals(auditType) &&
+        dataEvent.tags.equals(tags) &&
+        dataEvent.detail.equals(detail)
       }
 
     (auditConnector
@@ -103,7 +85,7 @@ class GooglePassServiceSpec
         dataEventWith(
           appName,
           auditType = "ServiceResponseSent",
-          tags = Map("transactionName" -> transactionName)
+          tags      = Map("transactionName" -> transactionName)
         ),
         *,
         *
@@ -134,7 +116,7 @@ class GooglePassServiceSpec
   def mockGetGooglePass(f: Future[RetrieveGooglePass]) =
     (getGooglePassConnector
       .getGooglePassUrl(_: String)(_: ExecutionContext, _: HeaderCarrier))
-      .expects(passId,*,*)
+      .expects(passId, *, *)
       .returning(f)
 
   val service = new GooglePassService(
@@ -146,6 +128,5 @@ class GooglePassServiceSpec
     "customer-profile",
     googleKey
   )
-
 
 }

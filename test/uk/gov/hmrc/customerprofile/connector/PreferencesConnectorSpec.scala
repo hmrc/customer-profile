@@ -16,27 +16,17 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.Status.{CONFLICT, IM_A_TEAPOT, NOT_FOUND}
 import play.api.libs.json.{JsValue, Json, Writes}
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.customerprofile.config.WSHttpImpl
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class PreferencesConnectorSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with MockFactory {
-  implicit val hc: HeaderCarrier = HeaderCarrier()
+class PreferencesConnectorSpec extends BaseSpec {
 
   val http:                WSHttpImpl    = mock[WSHttpImpl]
   val config:              Configuration = mock[Configuration]

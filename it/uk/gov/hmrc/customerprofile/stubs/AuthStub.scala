@@ -22,10 +22,23 @@ import play.api.libs.json.Json.obj
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser.{ENROLMENT, WWW_AUTHENTICATE}
 import uk.gov.hmrc.auth.core.ConfidenceLevel
 import uk.gov.hmrc.auth.core.ConfidenceLevel.L200
-import uk.gov.hmrc.domain.{Nino, SaUtr}
+import uk.gov.hmrc.domain.Nino
 
 object AuthStub {
   private val authUrl: String = "/auth/authorise"
+
+  private val authorisationRequestJsonNinoCheck: String =
+    """{
+      |   "authorise": [ {
+      |     "enrolment" : "HMRC-NI",
+      |     "identifiers" : [ {
+      |        "key" : "NINO",
+      |        "value" : "AA000006C"
+      |     } ],
+      |     "state" : "Activated"
+      |   } ],
+      |   "retrieve": ["nino", "confidenceLevel"]
+      |}""".stripMargin
 
   private val authorisationRequestJson: String =
     """{ "authorise": [], "retrieve": ["nino","confidenceLevel"] }""".stripMargin
@@ -47,10 +60,36 @@ object AuthStub {
         )
     )
 
+  def authRecordExistsNinoCheck (
+    nino:            Nino,
+    confidenceLevel: ConfidenceLevel = L200
+  ): StubMapping =
+    stubFor(
+      post(urlEqualTo(authUrl))
+        .withRequestBody(equalToJson(authorisationRequestJsonNinoCheck, true, false))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(obj("confidenceLevel" -> confidenceLevel.level, "nino" -> nino.nino).toString)
+        )
+    )
+
   def authFailure(): StubMapping =
     stubFor(
       post(urlEqualTo(authUrl))
         .withRequestBody(equalToJson(authorisationRequestJson, true, false))
+        .willReturn(
+          aResponse()
+            .withStatus(401)
+            .withHeader(WWW_AUTHENTICATE, """MDTP detail="BearerTokenExpired"""")
+            .withHeader(ENROLMENT, "")
+        )
+    )
+
+  def authFailureNinoCheck(): StubMapping =
+    stubFor(
+      post(urlEqualTo(authUrl))
+        .withRequestBody(equalToJson(authorisationRequestJsonNinoCheck, true, false))
         .willReturn(
           aResponse()
             .withStatus(401)
@@ -66,9 +105,7 @@ object AuthStub {
         .willReturn(aResponse().withStatus(200).withBody(obj("confidenceLevel" -> L200.level).toString))
     )
 
-  def ninoFound(
-    nino:               Nino
-  ): StubMapping =
+  def ninoFound(nino: Nino): StubMapping =
     stubFor(
       post(urlEqualTo(authUrl))
         .withRequestBody(equalToJson(ninoRequestJson, true, false))
@@ -77,7 +114,7 @@ object AuthStub {
             .withStatus(200)
             .withBody(
               obj(
-                "nino"               -> nino.nino
+                "nino" -> nino.nino
               ).toString
             )
         )
@@ -90,8 +127,11 @@ object AuthStub {
         .willReturn(
           aResponse()
             .withStatus(401)
-            .withHeader(WWW_AUTHENTICATE, """MDTP detail="BearerTokenExpired"""")
-            .withHeader(ENROLMENT, "")
+            .withBody(s"""
+                         |{
+                         |  "error": "unauthorized"
+                         |}
+          """.stripMargin)
         )
     )
 

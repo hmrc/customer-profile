@@ -19,7 +19,6 @@ package uk.gov.hmrc.customerprofile.controllers
 import play.api.Logger
 import play.api.http.Status._
 import play.api.libs.json.Json.{obj, toJson}
-import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc.Result
 import uk.gov.hmrc.api.controllers._
 import uk.gov.hmrc.auth.core.AuthorisationException
@@ -39,13 +38,10 @@ case object ErrorManualCorrespondenceIndicator
 
 case object ErrorPreferenceConflict extends ErrorResponse(CONFLICT, "CONFLICT", "No existing verified or pending data")
 
-case object ErrorUnauthorizedMicroService
-    extends ErrorResponse(401, "UNAUTHORIZED", "Unauthorized to access resource") {
+case object ErrorUnauthorizedUpstream
+    extends ErrorResponse(401, "UNAUTHORIZED", "Upstream service such as auth returned 401")
 
-  implicit val writes: Writes[ErrorResponse] = new Writes[ErrorResponse] {
-    def writes(e: ErrorResponse): JsValue = Json.obj("code" -> e.errorCode, "message" -> e.message)
-  }
-}
+case object ForbiddenAccess extends ErrorResponse(403, "UNAUTHORIZED", "Access denied!")
 
 case object ErrorTooManyRequests
     extends ErrorResponse(429, "TOO_MANY_REQUESTS", "Too many requests made to customer profile please try again later")
@@ -70,6 +66,10 @@ trait ErrorHandling {
     func.recover {
       case e: AuthorisationException =>
         Unauthorized(obj("httpStatusCode" -> UNAUTHORIZED, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))
+
+      case e: HttpException if e.responseCode == FORBIDDEN =>
+        log(s"Forbidden! $e")
+        result(ForbiddenAccess)
 
       case e: HttpException if e.responseCode == TOO_MANY_REQUESTS =>
         log(s"TooManyRequestException reported: ${e.getMessage}")

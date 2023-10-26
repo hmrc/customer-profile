@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.services
 import com.google.inject.{Inject, Singleton}
 
 import javax.inject.Named
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
+import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector._
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.Category.Info
@@ -35,13 +35,13 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CustomerProfileService @Inject() (
-  citizenDetailsConnector:                     CitizenDetailsConnector,
-  preferencesConnector:                        PreferencesConnector,
-  entityResolver:                              EntityResolverConnector,
-  val accountAccessControl:                    AccountAccessControl,
-  val auditConnector:                          AuditConnector,
-  @Named("appName") val appName:               String,
-  @Named("reOptInEnabled") val reOptInEnabled: Boolean)
+                                         citizenDetailsConnector:                     CitizenDetailsConnector,
+                                         preferencesConnector:                        PreferencesConnector,
+                                         entityResolver:                              EntityResolverConnector,
+                                         val accountAccessControl:                    AuthRetrievals,
+                                         val auditConnector:                          AuditConnector,
+                                         @Named("appName") val appName:               String,
+                                         @Named("reOptInEnabled") val reOptInEnabled: Boolean)
     extends Auditor {
 
   def getNino(

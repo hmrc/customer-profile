@@ -16,35 +16,22 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, TooManyRequestException}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplePassConnectorSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with MockFactory {
-
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+class ApplePassConnectorSpec extends BaseSpec {
 
   val http:         HttpClient         = mock[HttpClient]
   val connector:    ApplePassConnector = new ApplePassConnector(http, "someUrl")
-  val nino:         Nino               = Nino("CS700100A")
-  val passId:      String             = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId:       String             = "c864139e-77b5-448f-b443-17c69060870d"
   val base64String: String             = "TXIgSm9lIEJsb2dncw=="
   val fullName = "Mr Joe Bloggs"
 
-  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient): Unit =
+  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient) =
     (
       http
         .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
@@ -57,7 +44,7 @@ class ApplePassConnectorSpec
       .expects(*, *, *, *, *, *, *)
       .returns(response)
 
-  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient): Unit =
+  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient) =
     (
       http
         .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
@@ -70,7 +57,7 @@ class ApplePassConnectorSpec
       .expects(*, *, *, *, *, *, *)
       .returns(Future failed response)
 
-  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient): Unit =
+  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient) =
     (
       http
         .GET[O](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
@@ -82,7 +69,7 @@ class ApplePassConnectorSpec
       .expects(*, *, *, *, *, *)
       .returns(response)
 
-  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient): Unit =
+  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient) =
     (
       http
         .GET[HttpResponse](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(

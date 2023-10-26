@@ -3,11 +3,7 @@ package uk.gov.hmrc.customerprofile.stubs
 import com.github.tomakehurst.wiremock.client.WireMock.{aResponse, equalToJson, get, post, stubFor, urlEqualTo}
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import play.api.libs.json.Json
-import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.urlEqualToDesignatoryDetails
 import uk.gov.hmrc.domain.Nino
-import play.api.libs.json.Json.{obj, parse}
-import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 
 object FindmyNinoWalletStub {
 

@@ -25,7 +25,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpException, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpResponse, NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -21,10 +21,9 @@ import com.google.inject.name.Names.named
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.controllers.api.ApiAccess
-import uk.gov.hmrc.http.{CoreGet, CorePost, CorePut}
+import uk.gov.hmrc.http.{CoreGet, CorePost, CorePut, HttpClient}
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import uk.gov.hmrc.play.bootstrap.http.HttpClient
 
 import scala.collection.JavaConverters._
 
@@ -50,14 +49,18 @@ class GuiceModule(
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
     bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
-    bindConfigString("key","googlePass.key")
+    bindConfigString("key", "googlePass.key")
 
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
     bind(classOf[String]).annotatedWith(named("citizen-details")).toInstance(servicesConfig.baseUrl("citizen-details"))
     bind(classOf[String]).annotatedWith(named("entity-resolver")).toInstance(servicesConfig.baseUrl("entity-resolver"))
     bind(classOf[String]).annotatedWith(named("preferences")).toInstance(servicesConfig.baseUrl("preferences"))
-    bind(classOf[String]).annotatedWith(named("mobile-shuttering")).toInstance(servicesConfig.baseUrl("mobile-shuttering"))
-    bind(classOf[String]).annotatedWith(named("find-my-nino-add-to-wallet")).toInstance(servicesConfig.baseUrl("find-my-nino-add-to-wallet"))
+    bind(classOf[String])
+      .annotatedWith(named("mobile-shuttering"))
+      .toInstance(servicesConfig.baseUrl("mobile-shuttering"))
+    bind(classOf[String])
+      .annotatedWith(named("find-my-nino-add-to-wallet"))
+      .toInstance(servicesConfig.baseUrl("find-my-nino-add-to-wallet"))
   }
 
   /**
@@ -76,8 +79,8 @@ class GuiceModule(
     bindConstant().annotatedWith(named(name)).to(configuration.underlying.getBoolean(path))
 
   private def bindConfigString(
-                                name: String,
-                                path: String
-                              ): Unit =
+    name: String,
+    path: String
+  ): Unit =
     bindConstant().annotatedWith(named(name)).to(configuration.underlying.getString(path))
 }

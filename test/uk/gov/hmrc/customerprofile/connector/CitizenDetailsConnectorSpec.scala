@@ -16,31 +16,21 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import org.scalatest.wordspec.AnyWordSpecLike
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
+import uk.gov.hmrc.http.{BadRequestException, CoreGet, HeaderCarrier, HttpReads, HttpResponse, UpstreamErrorResponse}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class CitizenDetailsConnectorSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with MockFactory {
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+class CitizenDetailsConnectorSpec extends BaseSpec {
 
-  val nino:      Nino                    = Nino("CS700100A")
   val http:      CoreGet                 = mock[CoreGet]
   val connector: CitizenDetailsConnector = new CitizenDetailsConnector("someUrl", http)
 
   def mockHttpGet(exception: Exception) =
     (http
-      .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[HttpResponse], _: HeaderCarrier, _: ExecutionContext))
+      .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[HttpResponse],
+                                                                          _: HeaderCarrier,
+                                                                          _: ExecutionContext))
       .expects(*, *, *, *, *, *)
       .returns(Future failed exception)
 

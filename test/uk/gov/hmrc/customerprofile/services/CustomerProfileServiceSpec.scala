@@ -16,20 +16,15 @@
 
 package uk.gov.hmrc.customerprofile.services
 
-import eu.timepit.refined.auto._
 import org.scalamock.handlers.CallHandler3
 import org.scalamock.matchers.MatcherBase
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.Configuration
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
-import uk.gov.hmrc.customerprofile.connector._
+import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
+import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailUpdateOk, Entity, EntityResolverConnector, PreferencesConnector, PreferencesCreated, PreferencesExists, PreferencesStatus}
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.HeaderCarrier
@@ -37,21 +32,12 @@ import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
 import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
 import uk.gov.hmrc.play.audit.model.DataEvent
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class CustomerProfileServiceSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with MockFactory {
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
+class CustomerProfileServiceSpec extends BaseSpec {
 
   val appNameConfiguration: Configuration  = mock[Configuration]
   val auditConnector:       AuditConnector = mock[AuditConnector]
-  val journeyId:            JourneyId      = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val appName:              String         = "customer-profile"
 
   def mockAudit(
     transactionName: String,
@@ -89,7 +75,7 @@ class CustomerProfileServiceSpec
     mock[CitizenDetailsConnector]
   val preferencesConnector: PreferencesConnector    = mock[PreferencesConnector]
   val entityResolver:       EntityResolverConnector = mock[EntityResolverConnector]
-  val accountAccessControl: AccountAccessControl    = mock[AccountAccessControl]
+  val accountAccessControl: AuthRetrievals          = mock[AuthRetrievals]
 
   val service =
     new CustomerProfileService(
@@ -117,8 +103,6 @@ class CustomerProfileServiceSpec
 
   val newEmail             = EmailAddress("new@new.com")
   val newPaperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
-
-  val nino = Nino("CS700100A")
 
   def existingPreferences(
     digital: Boolean,
