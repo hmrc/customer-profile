@@ -16,93 +16,38 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-import eu.timepit.refined.auto._
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.http.HeaderNames
 import play.api.libs.json.JsValue
-import play.api.libs.json.Json.{parse, toJson}
-import play.api.mvc.AnyContentAsEmpty
+import play.api.libs.json.Json.toJson
 import play.api.test.Helpers._
-import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
-import uk.gov.hmrc.auth.core.SessionRecordNotFound
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
-import uk.gov.hmrc.customerprofile.connector._
-import uk.gov.hmrc.customerprofile.domain
+import play.api.test.FakeRequest
+import uk.gov.hmrc.auth.core.AuthConnector
+import uk.gov.hmrc.customerprofile.connector.{EmailNotExist, EmailUpdateOk, NoPreferenceExists, PreferencesCreated, PreferencesDoesNotExist, PreferencesExists, PreferencesFailure, PreferencesStatus}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.customerprofile.domain.{Paperless, _}
-import uk.gov.hmrc.customerprofile.mocks.ShutteringMock
+import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class LiveCustomerProfileControllerSpec
-    extends AnyWordSpecLike
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout
-    with MockFactory
-    with ShutteringMock {
-  val service:       CustomerProfileService = mock[CustomerProfileService]
-  val accessControl: AccountAccessControl   = mock[AccountAccessControl]
-
-  implicit val shutteringConnectorMock: ShutteringConnector =
-    mock[ShutteringConnector]
-
-  val shuttered: Shuttering =
-    Shuttering(
-      shuttered = true,
-      Some("Shuttered"),
-      Some("Preferences are currently not available")
-    )
-  val notShuttered: Shuttering = Shuttering.shutteringDisabled
+class LiveCustomerProfileControllerSpec extends BaseSpec {
+  val service:                    CustomerProfileService = mock[CustomerProfileService]
+  implicit val mockAuthConnector: AuthConnector          = mock[AuthConnector]
 
   val controller: LiveCustomerProfileController =
     new LiveCustomerProfileController(
+      mockAuthConnector,
+      200,
       service,
-      accessControl,
       citizenDetailsEnabled = true,
       stubControllerComponents(),
       shutteringConnectorMock,
       optInVersionsEnabled = false
     )
-
-  val nino:         Nino      = Nino("CS700100A")
-  val journeyId:    JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val acceptheader: String    = "application/vnd.hmrc.1.0+json"
-
-  val requestWithAcceptHeader: FakeRequest[AnyContentAsEmpty.type] =
-    FakeRequest().withHeaders("Accept" -> acceptheader)
-  val emptyRequest: FakeRequest[AnyContentAsEmpty.type] = FakeRequest()
-
-  val requestWithoutAcceptHeader: FakeRequest[AnyContentAsEmpty.type] =
-    FakeRequest().withHeaders("Authorization" -> "Some Header")
-
-  val invalidPostRequest: FakeRequest[JsValue] =
-    FakeRequest()
-      .withBody(parse("""{ "blah" : "blah" }"""))
-      .withHeaders(HeaderNames.ACCEPT → acceptheader)
-
-  def authSuccess(maybeNino: Option[Nino] = None) =
-    (accessControl
-      .grantAccess(_: Option[Nino])(_: HeaderCarrier))
-      .expects(maybeNino, *)
-      .returns(Future.successful(()))
-
-  def authError(
-    e:         Exception,
-    maybeNino: Option[Nino] = None
-  ) =
-    (accessControl
-      .grantAccess(_: Option[Nino])(_: HeaderCarrier))
-      .expects(maybeNino, *)
-      .returns(Future failed e)
 
   "getPersonalDetails" should {
     def mockGetAccounts(result: Future[PersonDetails]) =
@@ -131,7 +76,7 @@ class LiveCustomerProfileControllerSpec
         None
       )
 
-      authSuccess(Some(nino))
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockGetAccounts(Future successful person)
       mockShutteringResponse(notShuttered)
 
@@ -143,19 +88,19 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate 401" in {
-      authError(new SessionRecordNotFound, Some(nino))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result =
         controller.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401
     }
 
-    "return 403 if the user has no nino" in {
-      authError(new NinoNotFoundOnAccount("no nino"), Some(nino))
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result =
         controller.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
     "return status code 406 when the headers are invalid" in {
@@ -166,7 +111,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 500 for an unexpected error" in {
-      authSuccess(Some(nino))
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockGetAccounts(Future failed new RuntimeException())
       mockShutteringResponse(notShuttered)
 
@@ -176,7 +121,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 521 when shuttered" in {
-      authSuccess(Some(nino))
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(shuttered)
 
       val result =
@@ -187,7 +132,7 @@ class LiveCustomerProfileControllerSpec
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
       (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
+        .as[String] shouldBe "Customer-Profile is currently not available"
     }
   }
 
@@ -210,7 +155,7 @@ class LiveCustomerProfileControllerSpec
           digital = true
         )
 
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockGetPreferences(Future successful Some(preference))
       mockReOptInCheck(preference)
       mockShutteringResponse(notShuttered)
@@ -222,7 +167,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "handle no preferences found" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockGetPreferences(Future successful None)
       mockShutteringResponse(notShuttered)
 
@@ -232,38 +177,38 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate 401" in {
-      authError(new SessionRecordNotFound)
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401
     }
 
     "return Unauthorized if failed to grant access" in {
-      authError(UpstreamErrorResponse("ERROR", 403, 403))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 401
     }
 
     "return Forbidden if failed to match URL NINO against Auth NINO" in {
-      authError(new FailToMatchTaxIdOnAuth("ERROR"))
+      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) shouldBe 403
     }
 
-    "return Forbidden if Account with low CL" in {
-      authError(new AccountWithLowCL("ERROR"))
+    "return Unauthorized if Account with low CL" in {
+      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
-    "return 403 if the user has no nino" in {
-      authError(new NinoNotFoundOnAccount("no nino"))
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
     "return status code 406 when the headers are invalid" in {
@@ -273,7 +218,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 500 for an unexpected error" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockGetPreferences(Future failed new RuntimeException())
       mockShutteringResponse(notShuttered)
 
@@ -282,7 +227,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 521 when shuttered" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(shuttered)
 
       val result = controller.getPreferences(journeyId)(requestWithAcceptHeader)
@@ -292,7 +237,7 @@ class LiveCustomerProfileControllerSpec
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
       (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
+        .as[String] shouldBe "Customer-Profile is currently not available"
     }
   }
 
@@ -325,7 +270,7 @@ class LiveCustomerProfileControllerSpec
       FakeRequest().withBody(toJson(paperlessSettings))
 
     "opt in for a user with no preferences with journey id" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(
         paperlessSettings,
         Future successful PreferencesCreated
@@ -342,15 +287,16 @@ class LiveCustomerProfileControllerSpec
     "opt in with versions enabled sends version info" in {
       val controller: LiveCustomerProfileController =
         new LiveCustomerProfileController(
+          mockAuthConnector,
+          200,
           service,
-          accessControl,
           citizenDetailsEnabled = true,
           stubControllerComponents(),
           shutteringConnectorMock,
           optInVersionsEnabled = true
         )
 
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(paperlessSettingsWithVersion, Future successful PreferencesCreated)
       mockShutteringResponse(notShuttered)
 
@@ -361,7 +307,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "opt in for a user with existing preferences" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(
         paperlessSettings,
         Future successful PreferencesExists
@@ -376,7 +322,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 404 where preferences do not exist" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(
         paperlessSettings,
         Future successful NoPreferenceExists
@@ -391,7 +337,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 409 for request without email" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(paperlessSettings, Future successful EmailNotExist)
       mockShutteringResponse(notShuttered)
 
@@ -403,7 +349,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate errors from the service" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettings(
         paperlessSettings,
         Future successful PreferencesFailure
@@ -418,7 +364,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate 401 for auth failure" in {
-      authError(new SessionRecordNotFound)
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result = controller.paperlessSettingsOptIn(journeyId)(
         validPaperlessSettingsRequest
@@ -426,13 +372,13 @@ class LiveCustomerProfileControllerSpec
       status(result) shouldBe 401
     }
 
-    "return 403 if the user has no nino" in {
-      authError(new NinoNotFoundOnAccount("no nino"))
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result = controller.paperlessSettingsOptIn(journeyId)(
         validPaperlessSettingsRequest
       )
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
     "return status code 406 when no accept header is provided" in {
@@ -443,14 +389,15 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 400 for an invalid form" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
+      mockShutteringResponse(notShuttered)
       val result =
         controller.paperlessSettingsOptIn(journeyId)(invalidPostRequest)
       status(result) shouldBe 400
     }
 
     "return 500 for an unexpected error" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(notShuttered)
       mockPaperlessSettings(
         paperlessSettings,
@@ -464,7 +411,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 521 when shuttered" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(shuttered)
 
       val result = controller.paperlessSettingsOptIn(journeyId)(
@@ -476,7 +423,7 @@ class LiveCustomerProfileControllerSpec
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
       (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
+        .as[String] shouldBe "Customer-Profile is currently not available"
     }
   }
 
@@ -500,12 +447,12 @@ class LiveCustomerProfileControllerSpec
       result:          Future[PreferencesStatus]
     ) =
       (service
-        .paperlessSettingsOptOut(_: domain.PaperlessOptOut)(_: HeaderCarrier, _: ExecutionContext))
+        .paperlessSettingsOptOut(_: PaperlessOptOut)(_: HeaderCarrier, _: ExecutionContext))
         .expects(optOutPaperless, *, *)
         .returns(result)
 
     "opt out for existing preferences with journey id" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettings, Future successful PreferencesExists)
       mockShutteringResponse(notShuttered)
 
@@ -516,7 +463,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "opt out without existing preferences and journey id" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettings, Future successful PreferencesCreated)
       mockShutteringResponse(notShuttered)
 
@@ -529,15 +476,16 @@ class LiveCustomerProfileControllerSpec
     "opt out with versions enabled sends version info" in {
       val controller: LiveCustomerProfileController =
         new LiveCustomerProfileController(
+          mockAuthConnector,
+          200,
           service,
-          accessControl,
           citizenDetailsEnabled = true,
           stubControllerComponents(),
           shutteringConnectorMock,
           optInVersionsEnabled = true
         )
 
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettingsWithVersion(PageType.IosReOptOutPage),
                                   Future successful PreferencesCreated)
       mockShutteringResponse(notShuttered)
@@ -549,7 +497,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 404 where preference does not exist" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettings, Future successful PreferencesDoesNotExist)
       mockShutteringResponse(notShuttered)
 
@@ -560,7 +508,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 500 on service error" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettings, Future successful PreferencesFailure)
       mockShutteringResponse(notShuttered)
 
@@ -571,19 +519,19 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate 401 for auth failure" in {
-      authError(new SessionRecordNotFound)
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result =
         controller.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
       status(result) shouldBe 401
     }
 
-    "return 403 if the user has no nino" in {
-      authError(new NinoNotFoundOnAccount("no nino"))
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result =
         controller.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
     "return status code 406 when no accept header is provided" in {
@@ -594,7 +542,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 500 for an unexpected error" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPaperlessSettingsOptOut(optOutPaperlessSettings, Future failed new RuntimeException())
       mockShutteringResponse(notShuttered)
 
@@ -604,7 +552,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 521 when shuttered" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(shuttered)
 
       val result =
@@ -615,7 +563,7 @@ class LiveCustomerProfileControllerSpec
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
       (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
+        .as[String] shouldBe "Customer-Profile is currently not available"
     }
   }
 
@@ -644,7 +592,7 @@ class LiveCustomerProfileControllerSpec
       FakeRequest().withBody(toJson(changeEmail))
 
     "successful pending email change" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPendingEmail(changeEmail, Future successful EmailUpdateOk)
       mockShutteringResponse(notShuttered)
 
@@ -655,7 +603,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 404 where preferences do not exist" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPendingEmail(changeEmail, Future successful NoPreferenceExists)
       mockShutteringResponse(notShuttered)
 
@@ -666,7 +614,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 409 for request without email" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPendingEmail(changeEmail, Future successful EmailNotExist)
       mockShutteringResponse(notShuttered)
 
@@ -677,7 +625,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate errors from the service" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPendingEmail(changeEmail, Future successful PreferencesFailure)
       mockShutteringResponse(notShuttered)
 
@@ -688,19 +636,19 @@ class LiveCustomerProfileControllerSpec
     }
 
     "propagate 401 for auth failure" in {
-      authError(new SessionRecordNotFound)
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result =
         controller.preferencesPendingEmail(journeyId)(validPendingEmailRequest)
       status(result) shouldBe 401
     }
 
-    "return 403 if the user has no nino" in {
-      authError(new NinoNotFoundOnAccount("no nino"))
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result =
         controller.preferencesPendingEmail(journeyId)(validPendingEmailRequest)
-      status(result) shouldBe 403
+      status(result) shouldBe 401
     }
 
     "return status code 406 when no accept header is provided" in {
@@ -711,14 +659,15 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 400 for an invalid form" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
+      mockShutteringResponse(notShuttered)
       val result =
         controller.preferencesPendingEmail(journeyId)(invalidPostRequest)
       status(result) shouldBe 400
     }
 
     "return 500 for an unexpected error" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockPendingEmail(changeEmail, Future failed new RuntimeException())
       mockShutteringResponse(notShuttered)
 
@@ -728,7 +677,7 @@ class LiveCustomerProfileControllerSpec
     }
 
     "return 521 when shuttered" in {
-      authSuccess()
+      mockAuthorisationGrantAccess(grantAccessWithCL200)
       mockShutteringResponse(shuttered)
 
       val result =
@@ -739,7 +688,7 @@ class LiveCustomerProfileControllerSpec
       (jsonBody \ "shuttered").as[Boolean] shouldBe true
       (jsonBody \ "title").as[String]      shouldBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Preferences are currently not available"
+        .as[String] shouldBe "Customer-Profile is currently not available"
     }
   }
 

@@ -24,7 +24,7 @@ import play.api.libs.json.{JsValue, Json, OFormat}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http.{CoreGet, CorePut, HeaderCarrier, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{CoreGet, CorePut, HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 
 import scala.concurrent.{ExecutionContext, Future}

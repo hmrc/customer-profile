@@ -37,4 +37,10 @@ trait AuthorisationMock extends MockFactory {
       .authorise(_: Predicate, _: Retrieval[GrantAccess])(_: HeaderCarrier, _: ExecutionContext))
       .expects(*, *, *, *)
       .returning(Future successful response)
+
+  def mockAuthorisationGrantAccessFail(e: Exception)(implicit authConnector: AuthConnector) =
+    (authConnector
+      .authorise(_: Predicate, _: Retrieval[GrantAccess])(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *, *, *)
+      .returning(Future failed e)
 }

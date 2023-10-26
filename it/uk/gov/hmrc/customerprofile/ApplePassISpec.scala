@@ -1,7 +1,6 @@
 package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json
-import play.api.libs.json.Json.parse
 import uk.gov.hmrc.customerprofile.domain.Shuttering
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse}
@@ -77,7 +76,7 @@ class ApplePassISpec extends BaseISpec {
 
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 404
-      response.json   shouldBe parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
+      response.json   shouldBe Json.parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
     }
   }
 }

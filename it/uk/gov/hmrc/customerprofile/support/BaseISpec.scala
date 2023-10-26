@@ -33,7 +33,6 @@ import eu.timepit.refined.auto._
 import java.io.InputStream
 import scala.concurrent.Future
 import scala.io.Source.fromInputStream
-import scala.language.postfixOps
 
 class BaseISpec
     extends AnyWordSpecLike

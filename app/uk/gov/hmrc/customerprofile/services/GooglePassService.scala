@@ -18,7 +18,7 @@ package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.Inject
 import com.google.inject.name.Named
-import uk.gov.hmrc.customerprofile.auth.AccountAccessControl
+import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GooglePassConnector}
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
@@ -30,36 +30,42 @@ import uk.gov.hmrc.service.Auditor
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GooglePassService @Inject()( citizenDetailsConnector: CitizenDetailsConnector,
-                                   googlePassConnector: GooglePassConnector,
-                                   accountAccessControl: AccountAccessControl,
-                                   googleCredentialsHelper: GoogleCredentialsHelper,
-                                  val auditConnector: AuditConnector,
-                                  @Named("appName") val appName: String,
-                                   @Named("key") val key: String ) extends Auditor{
+class GooglePassService @Inject() (
+  citizenDetailsConnector:       CitizenDetailsConnector,
+  googlePassConnector:           GooglePassConnector,
+  authRetrievals:                AuthRetrievals,
+  googleCredentialsHelper:       GoogleCredentialsHelper,
+  val auditConnector:            AuditConnector,
+  @Named("appName") val appName: String,
+  @Named("key") val key:         String)
+    extends Auditor {
 
   def getNino(
-             )(implicit hc: HeaderCarrier,
-               ex: ExecutionContext
-             ): Future[Option[Nino]] = {
+  )(implicit hc: HeaderCarrier,
+    ex:          ExecutionContext
+  ): Future[Option[Nino]] =
     withAudit("getGooglePass", Map.empty) {
-      accountAccessControl.retrieveNino()
+      authRetrievals.retrieveNino()
     }
-  }
 
-  def retrieveJwt(url: String): String = {
+  def retrieveJwt(url: String): String =
     url.stripPrefix("https://pay.google.com/gp/v/save/")
-  }
 
-  def getGooglePass()(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[RetrieveGooglePass] = {
+  def getGooglePass(
+  )(implicit hc:      HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[RetrieveGooglePass] =
     withAudit("googlePass", Map.empty) {
       for {
-        nino <- getNino()
+        nino           <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        getGooglePass <- googlePassConnector.createGooglePassWithCredentials(citizenDetails.person.completeName, nino.get.formatted, googleCredentialsHelper.createGoogleCredentials(key))
+        getGooglePass <- googlePassConnector.createGooglePassWithCredentials(
+                          citizenDetails.person.completeName,
+                          nino.get.formatted,
+                          googleCredentialsHelper.createGoogleCredentials(key)
+                        )
         retrievePass <- googlePassConnector.getGooglePassUrl(getGooglePass)
         retrieveGooglePass: RetrieveGooglePass = RetrieveGooglePass(retrieveJwt(retrievePass.googlePass))
       } yield retrieveGooglePass
     }
-  }
 }

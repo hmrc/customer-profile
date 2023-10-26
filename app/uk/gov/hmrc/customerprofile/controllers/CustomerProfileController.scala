@@ -17,20 +17,15 @@
 package uk.gov.hmrc.customerprofile.controllers
 
 import play.api.Logger
-import play.api.libs.json._
-import play.api.mvc._
-import uk.gov.hmrc.api.controllers._
-import uk.gov.hmrc.customerprofile.domain._
+import play.api.libs.json.JsValue
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
+import uk.gov.hmrc.customerprofile.auth.AccessControl
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.http.HeaderCarrierConverter.fromRequest
 
-import scala.concurrent.Future
+trait CustomerProfileController extends AccessControl {
 
-trait CustomerProfileController extends HeaderValidator {
-
-  val logger: Logger = Logger(this.getClass)
+  override val logger: Logger = Logger(this.getClass)
 
   def controllerComponents: ControllerComponents
 
@@ -41,70 +36,10 @@ trait CustomerProfileController extends HeaderValidator {
 
   def getPreferences(journeyId: JourneyId): Action[AnyContent]
 
-  def paperlessSettingsOptOut(journeyId: JourneyId): Action[JsValue] =
-    withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromRequest(request)
-      request.body
-        .validate[PaperlessOptOut]
-        .fold(
-          errors => {
-            logger.warn("Received error with service getPaperlessSettings: " + errors)
-            Future successful BadRequest
-          },
-          settings => optOut(settings, journeyId)
-        )
-    }
+  def paperlessSettingsOptOut(journeyId: JourneyId): Action[JsValue]
 
-  def preferencesPendingEmail(journeyId: JourneyId): Action[JsValue] =
-    withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromRequest(request)
-      request.body
-        .validate[ChangeEmail]
-        .fold(
-          errors => {
-            logger.warn("Errors validating request body: " + errors)
-            Future successful BadRequest
-          },
-          changeEmail => pendingEmail(changeEmail, journeyId)
-        )
-    }
+  def preferencesPendingEmail(journeyId: JourneyId): Action[JsValue]
 
-  final def paperlessSettingsOptIn(journeyId: JourneyId): Action[JsValue] =
-    withAcceptHeaderValidationAndAuthIfLive().async(controllerComponents.parsers.json) { implicit request =>
-      implicit val hc: HeaderCarrier = fromRequest(request)
-      request.body
-        .validate[Paperless]
-        .fold(
-          errors => {
-            logger.warn("Received error with service getPaperlessSettings: " + errors)
-            Future successful BadRequest
-          },
-          settings => optIn(settings, journeyId)
-        )
-    }
+  def paperlessSettingsOptIn(journeyId: JourneyId): Action[JsValue]
 
-  def withAcceptHeaderValidationAndAuthIfLive(taxId: Option[Nino] = None): ActionBuilder[Request, AnyContent]
-
-  def withShuttering(shuttering: Shuttering)(fn: => Future[Result]): Future[Result]
-
-  def optIn(
-    settings:    Paperless,
-    journeyId:   JourneyId
-  )(implicit hc: HeaderCarrier,
-    request:     Request[_]
-  ): Future[Result]
-
-  def optOut(
-    settings:    PaperlessOptOut,
-    journeyId:   JourneyId
-  )(implicit hc: HeaderCarrier,
-    request:     Request[_]
-  ): Future[Result]
-
-  def pendingEmail(
-    changeEmail: ChangeEmail,
-    journeyId:   JourneyId
-  )(implicit hc: HeaderCarrier,
-    request:     Request[_]
-  ): Future[Result]
 }

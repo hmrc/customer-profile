@@ -16,35 +16,23 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.matchers.should.Matchers
-import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http._
-import org.scalatest.wordspec.AnyWordSpecLike
 import play.api.libs.json.Writes
 import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
+import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, TooManyRequestException}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
 
-class GooglePassConnectorSpec extends AnyWordSpecLike
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout
-  with MockFactory {
+class GooglePassConnectorSpec extends BaseSpec {
 
-  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
-
-  val http: HttpClient = mock[HttpClient]
+  val http:      HttpClient          = mock[HttpClient]
   val connector: GooglePassConnector = new GooglePassConnector(http, "someUrl")
-  val nino: Nino = Nino("CS700100A")
-  val passId: String = "c864139e-77b5-448f-b443-17c69060870d"
-  val jwtString: String = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-  val fullName = "Mr Joe Bloggs"
+  val passId:    String              = "c864139e-77b5-448f-b443-17c69060870d"
+  val jwtString: String              = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val fullName    = "Mr Joe Bloggs"
   val credentials = "dummyCredentials"
 
-  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient): Unit =
+  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient) =
     (
       http
         .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
@@ -57,7 +45,7 @@ class GooglePassConnectorSpec extends AnyWordSpecLike
       .expects(*, *, *, *, *, *, *)
       .returns(response)
 
-  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient): Unit =
+  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient) =
     (
       http
         .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
@@ -70,7 +58,7 @@ class GooglePassConnectorSpec extends AnyWordSpecLike
       .expects(*, *, *, *, *, *, *)
       .returns(Future failed response)
 
-  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient): Unit =
+  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient) =
     (
       http
         .GET[O](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
@@ -82,7 +70,7 @@ class GooglePassConnectorSpec extends AnyWordSpecLike
       .expects(*, *, *, *, *, *)
       .returns(response)
 
-  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient): Unit =
+  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient) =
     (
       http
         .GET[HttpResponse](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
@@ -99,13 +87,13 @@ class GooglePassConnectorSpec extends AnyWordSpecLike
       "return a UUID given the call is successful" in {
         val successResponse = HttpResponse(200, passId)
         performSuccessfulPOST(Future.successful(successResponse))(http)
-        val result = await(connector.createGooglePassWithCredentials(fullName,nino.formatted,credentials))
+        val result = await(connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials))
         result shouldBe successResponse.body
       }
       "return an exception if the call is unsuccessful" in {
         performUnsuccessfulPOST(new BadRequestException(""))(http)
         intercept[BadRequestException] {
-          await(connector.createGooglePassWithCredentials(fullName,nino.formatted, credentials))
+          await(connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials))
         }
       }
     }
