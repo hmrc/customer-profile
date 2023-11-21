@@ -67,6 +67,7 @@ class SandboxCustomerProfileISpec extends BaseISpec {
                             |    "title" : "Ms",
                             |    "sex" : "Female",
                             |    "dateOfBirth" : 917740800000,
+                            |    "personDateOfBirth" : "1999-01-31",
                             |    "nino" : "QQ123456C",
                             |    "fullName" : "Nia Jackson",
                             |    "nationalInsuranceLetterUrl" : "/"
