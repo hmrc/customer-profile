@@ -112,13 +112,15 @@ class ApplePassServiceSpec extends BaseSpec {
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val getApplePassConnector:   ApplePassConnector      = mock[ApplePassConnector]
   val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
+  val auditService: AuditService = new AuditService(auditConnector, "customer-profile")
 
   val service = new ApplePassService(
     citizenDetailsConnector,
     getApplePassConnector,
     accountAccessControl,
     auditConnector,
-    "customer-profile"
+    "customer-profile",
+    auditService
   )
 
   "getApplePass" should {

@@ -34,14 +34,14 @@ class ApplePassService @Inject() (
   createApplePassConnector:      ApplePassConnector,
   authRetrievals:                AuthRetrievals,
   val auditConnector:            AuditConnector,
-  @Named("appName") val appName: String)
-    extends Auditor {
+  @Named("appName") val appName: String,
+  auditService:                  AuditService) {
 
   def getNino(
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[Option[Nino]] =
-    withAudit("getApplePass", Map.empty) {
+    auditService.withAudit("getApplePass", Map.empty) {
       authRetrievals.retrieveNino()
     }
 
@@ -49,7 +49,7 @@ class ApplePassService @Inject() (
   )(implicit hc:      HeaderCarrier,
     executionContext: ExecutionContext
   ): Future[RetrieveApplePass] =
-    withAudit("applePass", Map.empty) {
+    auditService.withAudit("applePass", Map.empty) {
       for {
         nino           <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))

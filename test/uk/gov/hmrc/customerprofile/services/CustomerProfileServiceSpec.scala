@@ -76,6 +76,7 @@ class CustomerProfileServiceSpec extends BaseSpec {
   val preferencesConnector: PreferencesConnector    = mock[PreferencesConnector]
   val entityResolver:       EntityResolverConnector = mock[EntityResolverConnector]
   val accountAccessControl: AuthRetrievals          = mock[AuthRetrievals]
+  val auditService:         AuditService            = new AuditService(auditConnector, "customer-profile")
 
   val service =
     new CustomerProfileService(
@@ -85,7 +86,8 @@ class CustomerProfileServiceSpec extends BaseSpec {
       accountAccessControl,
       auditConnector,
       "customer-profile",
-      true
+      true,
+      auditService
     )
 
   def preferencesWithStatus(status: StatusName): Preference = existingPreferences(
@@ -363,7 +365,8 @@ class CustomerProfileServiceSpec extends BaseSpec {
           accountAccessControl,
           auditConnector,
           "customer-profile",
-          false
+          false,
+          auditService
         )
       val expectedPreferences = preferencesWithStatus(ReOptIn)
 

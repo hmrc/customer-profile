@@ -41,6 +41,7 @@ class GooglePassServiceSpec extends BaseSpec {
   val passId:                  String                  = "c864139e-77b5-448f-b443-17c69060870d"
   val jwtUrl:                  String                  = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
   val googleKey:               String                  = "123456789"
+  val auditService: AuditService = new AuditService(auditConnector, "customer-profile")
 
   val person: PersonDetails = PersonDetails(
     Person(
@@ -126,7 +127,8 @@ class GooglePassServiceSpec extends BaseSpec {
     googleCredentialsHelper,
     auditConnector,
     "customer-profile",
-    googleKey
+    googleKey,
+    auditService
   )
 
 }
