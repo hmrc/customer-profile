@@ -92,8 +92,8 @@ class ApplePassServiceSpec extends BaseSpec {
   def mockGetAccounts() = {
     mockAudit(transactionName = "getApplePass")
     (accountAccessControl
-      .retrieveNino()(_: HeaderCarrier))
-      .expects(*)
+      .retrieveNino()(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *)
       .returns(Future successful Some(nino))
   }
 
@@ -112,13 +112,15 @@ class ApplePassServiceSpec extends BaseSpec {
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val getApplePassConnector:   ApplePassConnector      = mock[ApplePassConnector]
   val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
+  val auditService: AuditService = new AuditService(auditConnector, "customer-profile")
 
   val service = new ApplePassService(
     citizenDetailsConnector,
     getApplePassConnector,
     accountAccessControl,
     auditConnector,
-    "customer-profile"
+    "customer-profile",
+    auditService
   )
 
   "getApplePass" should {

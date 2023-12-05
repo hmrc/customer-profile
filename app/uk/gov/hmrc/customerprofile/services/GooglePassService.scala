@@ -37,14 +37,14 @@ class GooglePassService @Inject() (
   googleCredentialsHelper:       GoogleCredentialsHelper,
   val auditConnector:            AuditConnector,
   @Named("appName") val appName: String,
-  @Named("key") val key:         String)
-    extends Auditor {
+  @Named("key") val key:         String,
+  auditService:                  AuditService) {
 
   def getNino(
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[Option[Nino]] =
-    withAudit("getGooglePass", Map.empty) {
+    auditService.withAudit("getGooglePass", Map.empty) {
       authRetrievals.retrieveNino()
     }
 
@@ -55,7 +55,7 @@ class GooglePassService @Inject() (
   )(implicit hc:      HeaderCarrier,
     executionContext: ExecutionContext
   ): Future[RetrieveGooglePass] =
-    withAudit("googlePass", Map.empty) {
+    auditService.withAudit("googlePass", Map.empty) {
       for {
         nino           <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))

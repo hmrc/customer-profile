@@ -22,9 +22,12 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{Authorization, HeaderCarrier}
 
+import scala.concurrent.ExecutionContext
+
 class AccountAccessControlISpec extends BaseISpec with Eventually {
 
   implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization("Bearer 123")))
+  implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val testAuthRetrievals: AuthRetrievals = app.injector.instanceOf[AuthRetrievals]
 
@@ -32,7 +35,7 @@ class AccountAccessControlISpec extends BaseISpec with Eventually {
     "be found and routeToIV and routeToTwoFactor should be true" in {
       ninoFound(nino)
 
-      val foundNino: Option[Nino] = await(testAuthRetrievals.retrieveNino()(hc))
+      val foundNino: Option[Nino] = await(testAuthRetrievals.retrieveNino()(hc, ec))
       foundNino.get shouldBe nino
     }
 

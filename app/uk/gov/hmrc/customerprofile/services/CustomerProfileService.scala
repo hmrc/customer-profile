@@ -35,20 +35,20 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CustomerProfileService @Inject() (
-                                         citizenDetailsConnector:                     CitizenDetailsConnector,
-                                         preferencesConnector:                        PreferencesConnector,
-                                         entityResolver:                              EntityResolverConnector,
-                                         val accountAccessControl:                    AuthRetrievals,
-                                         val auditConnector:                          AuditConnector,
-                                         @Named("appName") val appName:               String,
-                                         @Named("reOptInEnabled") val reOptInEnabled: Boolean)
-    extends Auditor {
+  citizenDetailsConnector:                     CitizenDetailsConnector,
+  preferencesConnector:                        PreferencesConnector,
+  entityResolver:                              EntityResolverConnector,
+  val accountAccessControl:                    AuthRetrievals,
+  val auditConnector:                          AuditConnector,
+  @Named("appName") val appName:               String,
+  @Named("reOptInEnabled") val reOptInEnabled: Boolean,
+  auditService:                                AuditService) {
 
   def getNino(
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[Option[Nino]] =
-    withAudit("getAccounts", Map.empty) {
+    auditService.withAudit("getAccounts", Map.empty) {
       accountAccessControl.retrieveNino()
     }
 
@@ -57,7 +57,7 @@ class CustomerProfileService @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PersonDetails] =
-    withAudit("getPersonalDetails", Map("nino" -> nino.value)) {
+    auditService.withAudit("getPersonalDetails", Map("nino" -> nino.value)) {
       citizenDetailsConnector
         .personDetails(nino)
         .map(details =>
@@ -81,7 +81,7 @@ class CustomerProfileService @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    withAudit("paperlessSettings", Map("accepted" -> settings.generic.accepted.toString)) {
+    auditService.withAudit("paperlessSettings", Map("accepted" -> settings.generic.accepted.toString)) {
       for {
         preferences ← entityResolver.getPreferences()
         status ← preferences.fold(paperlessOptIn(settings)) { preference =>
@@ -98,7 +98,7 @@ class CustomerProfileService @Inject() (
   )(implicit hc:     HeaderCarrier,
     ex:              ExecutionContext
   ): Future[PreferencesStatus] =
-    withAudit("paperlessSettingsOptOut", Map.empty) {
+    auditService.withAudit("paperlessSettingsOptOut", Map.empty) {
       val genericOptOut = paperlessOptOut.generic.getOrElse(TermsAccepted(Some(false))).copy(accepted = Some(false))
       entityResolver.paperlessOptOut(
         paperlessOptOut.copy(generic = Some(genericOptOut))
@@ -109,7 +109,7 @@ class CustomerProfileService @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[Option[Preference]] =
-    withAudit("getPreferences", Map.empty) {
+    auditService.withAudit("getPreferences", Map.empty) {
       copyToResponsePayload(entityResolver.getPreferences())
     }
 
@@ -118,7 +118,7 @@ class CustomerProfileService @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    withAudit("updatePendingEmailPreference", Map("email" → changeEmail.email)) {
+    auditService.withAudit("updatePendingEmailPreference", Map("email" → changeEmail.email)) {
       for {
         nino ← getNino()
         entity ← entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))

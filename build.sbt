@@ -22,7 +22,7 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     majorVersion := 1,
-    scalaVersion := "2.12.15",
+    scalaVersion := "2.13.8",
     playDefaultPort := 8233,
     libraryDependencies ++= AppDependencies(),
     dependencyOverrides ++= AppDependencies.overrides(),
@@ -41,16 +41,9 @@ lazy val microservice = Project(appName, file("."))
       "-language:higherKinds",
       "-language:postfixOps",
       "-feature",
-      "-Ypartial-unification",
       "-Ywarn-dead-code",
       "-Ywarn-value-discard",
-      "-Ywarn-inaccessible",
-      "-Ywarn-infer-any",
-      "-Ywarn-nullary-override",
-      "-Ywarn-nullary-unit",
       "-Ywarn-numeric-widen",
-      //"-Ywarn-unused-import", - does not work well with fatal-warnings because of play-generated sources
-      //"-Xfatal-warnings",
       "-Xlint"
     ),
     coverageMinimumStmtTotal := 89,
