@@ -92,8 +92,8 @@ class ApplePassServiceSpec extends BaseSpec {
   def mockGetAccounts() = {
     mockAudit(transactionName = "getApplePass")
     (accountAccessControl
-      .retrieveNino()(_: HeaderCarrier))
-      .expects(*)
+      .retrieveNino()(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *)
       .returns(Future successful Some(nino))
   }
 

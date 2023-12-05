@@ -22,12 +22,14 @@ import uk.gov.hmrc.auth.core.{AuthConnector, AuthorisedFunctions}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class AuthRetrievals @Inject()(val authConnector: AuthConnector) extends AuthorisedFunctions {
+class AuthRetrievals @Inject() (val authConnector: AuthConnector) extends AuthorisedFunctions {
 
-  def retrieveNino()(implicit hc: HeaderCarrier): Future[Option[Nino]] =
+  def retrieveNino(
+  )(implicit hc: HeaderCarrier,
+    ec:          ExecutionContext
+  ): Future[Option[Nino]] =
     authorised().retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
 
 }

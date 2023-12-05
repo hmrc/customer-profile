@@ -25,8 +25,7 @@ import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 case object ErrorUnauthorizedNoNino
     extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
@@ -62,7 +61,7 @@ trait ErrorHandling {
   def result(errorResponse: ErrorResponse): Result =
     Status(errorResponse.httpStatusCode)(toJson(errorResponse))
 
-  def errorWrapper(func: => Future[Result]): Future[Result] =
+  def errorWrapper(func: => Future[Result])(implicit ec: ExecutionContext): Future[Result] =
     func.recover {
       case e: AuthorisationException =>
         Unauthorized(obj("httpStatusCode" -> UNAUTHORIZED, "errorCode" -> "UNAUTHORIZED", "message" -> e.getMessage))

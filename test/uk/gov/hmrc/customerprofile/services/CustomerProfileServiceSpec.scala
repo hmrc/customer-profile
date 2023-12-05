@@ -119,8 +119,8 @@ class CustomerProfileServiceSpec extends BaseSpec {
   def mockGetAccounts() = {
     mockAudit(transactionName = "getAccounts")
     (accountAccessControl
-      .retrieveNino()(_: HeaderCarrier))
-      .expects(*)
+      .retrieveNino()(_: HeaderCarrier, _: ExecutionContext))
+      .expects(*, *)
       .returns(Future successful Some(nino))
   }
 
