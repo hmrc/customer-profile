@@ -35,7 +35,7 @@ Personal Details
     "lastName": "Thorsteinson",
     "title": "Ms",
     "sex": "Female",
-    "dateOfBirth": 513774181935,
+    "personDateOfBirth": "1969-03-05",
     "nino": "CS700100A",
     "fullName": "Jennifer Thorsteinson",
     "nationalInsuranceLetterUrl": "/",

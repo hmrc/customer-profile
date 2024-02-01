@@ -53,7 +53,7 @@ paths:
                         lastName: Thorsteinson
                         title: Ms
                         sex: Female
-                        dateOfBirth: 513774181935
+                        personDateOfBirth: 1999-01-31
                         nino: CS700100A
                         fullName: Angus Smith
                         nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
@@ -76,7 +76,7 @@ paths:
                       lastName: Thorsteinson
                       title: Ms
                       sex: Female
-                      dateOfBirth: 513774181935
+                      personDateOfBirth: 1999-01-31
                       nino: CS700100A
                       fullName: Angus Smith
                       nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
@@ -427,7 +427,7 @@ components:
           lastName: Thorsteinson
           title: Ms
           sex: Female
-          dateOfBirth: 513774181935
+          personDateOfBirth: 1999-01-31
           nino: CS700100A
           fullName: Angus Smith
           nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
@@ -584,7 +584,7 @@ components:
         - lastName
         - title
         - sex
-        - dateOfBirth
+        - personDateOfBirth
         - nino
         - fullName
         - nationalInsuranceLetterUrl
@@ -598,7 +598,7 @@ components:
           type: string
         sex:
           type: string
-        dateOfBirth:
+        personDateOfBirth:
           type: integer
           format: int64
         nino:
@@ -612,7 +612,7 @@ components:
         lastName: Thorsteinson
         title: Ms
         sex: Female
-        dateOfBirth: 513774181935
+        personDateOfBirth: 1999-01-31
         nino: CS700100A
         fullName: Angus Smith
         nationalInsuranceLetterUrl: /personal-account/national-insurance-summary/save-letter-as-pdf
