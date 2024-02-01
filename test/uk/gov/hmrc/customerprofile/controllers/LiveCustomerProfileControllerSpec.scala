@@ -68,7 +68,6 @@ class LiveCustomerProfileControllerSpec extends BaseSpec {
           Some("sex"),
           None,
           None,
-          None,
           Some("Firstname Lastname"),
           Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
         ),

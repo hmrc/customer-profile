@@ -176,7 +176,6 @@ class CustomerProfileServiceSpec extends BaseSpec {
           Some("sex"),
           None,
           None,
-          None,
           Some("Firstname Lastname"),
           Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
         ),
@@ -211,7 +210,6 @@ class CustomerProfileServiceSpec extends BaseSpec {
           Some("Title"),
           Some("Honours"),
           Some("sex"),
-          None,
           None,
           None,
           Some("Firstname Middlename Lastname"),

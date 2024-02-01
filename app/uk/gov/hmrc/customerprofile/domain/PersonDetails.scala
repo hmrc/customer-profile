@@ -33,9 +33,6 @@ object Person {
     (JsPath \ "title").readNullable[String] and
     (JsPath \ "honours").readNullable[String] and
     (JsPath \ "sex").readNullable[String] and
-    (JsPath \ "dateOfBirth")
-      .readNullable[LocalDate]
-      .map(_.map(_.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli)) and
     (JsPath \ "dateOfBirth").readNullable[LocalDate] and
     (JsPath \ "nino").readNullable[Nino] and
     (JsPath \ "fullName").readNullable[String] and
@@ -51,7 +48,6 @@ case class Person(
   title:                      Option[String],
   honours:                    Option[String],
   sex:                        Option[String],
-  dateOfBirth:                Option[Long],
   personDateOfBirth:          Option[LocalDate],
   nino:                       Option[Nino],
   fullName:                   Option[String],
