@@ -3,12 +3,13 @@ package uk.gov.hmrc.customerprofile.stubs
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.joda.time.LocalDate
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, Verified}
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.emailaddress.EmailAddress
+
+import java.time.LocalDate
 
 object EntityResolverStub {
 

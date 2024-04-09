@@ -61,13 +61,13 @@ class PreferencesConnector @Inject() (
       .map { response =>
         response.status match {
           case OK => EmailUpdateOk
-          case NOT_FOUND ⇒
+          case NOT_FOUND =>
             log(response.body, entityId)
             NoPreferenceExists
-          case CONFLICT ⇒
+          case CONFLICT =>
             log(response.body, entityId)
             EmailNotExist
-          case _ ⇒
+          case _ =>
             log("Failed to update preferences email", entityId)
             EmailUpdateFailed
         }

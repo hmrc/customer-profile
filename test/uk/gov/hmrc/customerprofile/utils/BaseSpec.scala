@@ -72,6 +72,6 @@ trait BaseSpec
   val invalidPostRequest: FakeRequest[JsValue] =
     FakeRequest()
       .withBody(Json.parse("""{ "blah" : "blah" }"""))
-      .withHeaders(HeaderNames.ACCEPT → acceptheader)
+      .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
 }

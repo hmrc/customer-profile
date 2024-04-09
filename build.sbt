@@ -22,10 +22,9 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     majorVersion := 1,
-    scalaVersion := "2.13.8",
+    scalaVersion := "2.13.12",
     playDefaultPort := 8233,
     libraryDependencies ++= AppDependencies(),
-    dependencyOverrides ++= AppDependencies.overrides(),
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     resolvers += Resolver.jcenterRepo,
      IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base =>
@@ -46,7 +45,7 @@ lazy val microservice = Project(appName, file("."))
       "-Ywarn-numeric-widen",
       "-Xlint"
     ),
-    coverageMinimumStmtTotal := 89,
+    coverageMinimumStmtTotal := 90,
     coverageFailOnMinimum := true,
     coverageHighlighting := true,
     coverageExcludedPackages := "<empty>;.*Routes.*;app.*;.*prod;.*definition;.*testOnlyDoNotUseInAppConf;.*com.kenshoo.*;.*javascript.*;.*BuildInfo;.*Reverse.*;.*Binders.*;"
