@@ -24,7 +24,6 @@ import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.service.Auditor
 
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}

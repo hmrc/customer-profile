@@ -30,6 +30,6 @@ class AuthRetrievals @Inject() (val authConnector: AuthConnector) extends Author
   )(implicit hc: HeaderCarrier,
     ec:          ExecutionContext
   ): Future[Option[Nino]] =
-    authorised().retrieve(nino)(foundNino ⇒ Future successful foundNino.map(Nino(_)))
+    authorised().retrieve(nino)(foundNino => Future successful foundNino.map(Nino(_)))
 
 }

@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{confidenceLevel, nino}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.customerprofile.controllers.{AccountWithLowCL, ErrorUnauthorizedNoNino, ErrorUnauthorizedUpstream, FailToMatchTaxIdOnAuth, ForbiddenAccess, NinoNotFoundOnAccount}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.http.{HeaderCarrier, UpstreamErrorResponse}
 import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -80,10 +80,6 @@ trait Authorisation extends Results with AuthorisedFunctions {
         block(request)
       }
       .recover {
-        case _: uk.gov.hmrc.http.Upstream4xxResponse =>
-          logger.info("Unauthorized! Failed to grant access since 4xx response!")
-          Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedUpstream))
-
         case _: NinoNotFoundOnAccount =>
           logger.info("Unauthorized! NINO not found on account!")
           Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedNoNino))
@@ -95,6 +91,10 @@ trait Authorisation extends Results with AuthorisedFunctions {
         case _: AccountWithLowCL =>
           logger.info("Unauthorized! Account with low CL!")
           Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedLowCL))
+
+        case ex: UpstreamErrorResponse if (ex.statusCode < 500) =>
+          logger.info("Unauthorized! Failed to grant access since 4xx response!")
+          Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedUpstream))
       }
   }
 }

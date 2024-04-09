@@ -29,7 +29,6 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
-import uk.gov.hmrc.service.Auditor
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -83,8 +82,8 @@ class CustomerProfileService @Inject() (
   ): Future[PreferencesStatus] =
     auditService.withAudit("paperlessSettings", Map("accepted" -> settings.generic.accepted.toString)) {
       for {
-        preferences ← entityResolver.getPreferences()
-        status ← preferences.fold(paperlessOptIn(settings)) { preference =>
+        preferences <- entityResolver.getPreferences()
+        status <- preferences.fold(paperlessOptIn(settings)) { preference =>
                   if (preference.digital && preference.status
                         .getOrElse(PaperlessStatus(Verified, Info))
                         .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
@@ -118,11 +117,11 @@ class CustomerProfileService @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    auditService.withAudit("updatePendingEmailPreference", Map("email" → changeEmail.email)) {
+    auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
-        nino ← getNino()
-        entity ← entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        response ← preferencesConnector.updatePendingEmail(changeEmail, entity._id)
+        nino <- getNino()
+        entity <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        response <- preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }
 

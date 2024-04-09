@@ -263,7 +263,7 @@ class LiveCustomerProfileControllerSpec extends BaseSpec {
     val validPaperlessSettingsRequest: FakeRequest[JsValue] =
       FakeRequest()
         .withBody(toJson(paperlessSettingsWithVersion))
-        .withHeaders(HeaderNames.ACCEPT → acceptheader)
+        .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
     val paperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
       FakeRequest().withBody(toJson(paperlessSettings))
@@ -436,7 +436,7 @@ class LiveCustomerProfileControllerSpec extends BaseSpec {
     def validPaperlessOptOutRequest(pageType: PageType): FakeRequest[JsValue] =
       FakeRequest()
         .withBody(toJson(optOutPaperlessSettingsWithVersion(pageType)))
-        .withHeaders(HeaderNames.ACCEPT → acceptheader)
+        .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
     val optOutPaperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
       FakeRequest().withBody(toJson(optOutPaperlessSettings))
@@ -586,7 +586,7 @@ class LiveCustomerProfileControllerSpec extends BaseSpec {
     val validPendingEmailRequest: FakeRequest[JsValue] =
       FakeRequest()
         .withBody(toJson(changeEmail))
-        .withHeaders(HeaderNames.ACCEPT → acceptheader)
+        .withHeaders(HeaderNames.ACCEPT -> acceptheader)
     val changeEmailRequestWithoutAcceptHeader: FakeRequest[JsValue] =
       FakeRequest().withBody(toJson(changeEmail))
 

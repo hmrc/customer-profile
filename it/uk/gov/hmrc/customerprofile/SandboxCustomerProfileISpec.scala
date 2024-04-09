@@ -26,6 +26,8 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.emailaddress.EmailAddress
 
+import java.time.LocalDate
+
 class SandboxCustomerProfileISpec extends BaseISpec {
 
   def request(
@@ -143,7 +145,7 @@ class SandboxCustomerProfileISpec extends BaseISpec {
 
     def preferencesSandbox(
       status:   StatusName,
-      linkSent: Option[org.joda.time.LocalDate] = None
+      linkSent: Option[LocalDate] = None
     ) =
       Preference(
         digital      = true,
@@ -155,31 +157,31 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       )
 
     "return the default preferences with a journeyId" in {
-      val response = await(request(url, None, journeyId).get)
+      val response = await(request(url, None, journeyId).get())
       response.status shouldBe 200
       response.json   shouldBe toJson(expectedPreference)
     }
 
     "return the verified preferences for VERIFIED" in {
-      val response = await(request(url, Some("VERIFIED"), journeyId).get)
+      val response = await(request(url, Some("VERIFIED"), journeyId).get())
       response.status shouldBe 200
       response.json   shouldBe toJson(preferencesSandbox(Verified))
     }
 
     "return the unverified preferences for UNVERIFIED" in {
-      val response = await(request(url, Some("UNVERIFIED"), journeyId).get)
+      val response = await(request(url, Some("UNVERIFIED"), journeyId).get())
       response.status shouldBe 200
-      response.json   shouldBe toJson(preferencesSandbox(Pending, Some(org.joda.time.LocalDate.now())))
+      response.json   shouldBe toJson(preferencesSandbox(Pending, Some(LocalDate.now())))
     }
 
     "return the bounced preferences for BOUNCED" in {
-      val response = await(request(url, Some("BOUNCED"), journeyId).get)
+      val response = await(request(url, Some("BOUNCED"), journeyId).get())
       response.status shouldBe 200
       response.json   shouldBe toJson(preferencesSandbox(Bounced))
     }
 
     "return the reOptIn preferences for REOPTIN" in {
-      val response = await(request(url, Some("REOPTIN"), journeyId).get)
+      val response = await(request(url, Some("REOPTIN"), journeyId).get())
       response.status shouldBe 200
       response.json   shouldBe toJson(preferencesSandbox(ReOptIn))
     }
@@ -304,7 +306,7 @@ class SandboxCustomerProfileISpec extends BaseISpec {
   }
 
   "POST /sandbox/preferences/profile/paperless-settings/opt-out" should {
-    val url       = "/profile/preferences/paperless-settings/opt-out"
+    val url = "/profile/preferences/paperless-settings/opt-out"
 
     val paperlessSettings =
       toJson(

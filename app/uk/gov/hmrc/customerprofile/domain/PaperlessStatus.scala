@@ -31,8 +31,8 @@ object PaperlessStatus {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
 
     override def writes(o: Option[T]): JsValue = o match {
-      case Some(t) ⇒ implicitly[Writes[T]].writes(t)
-      case None ⇒ JsNull
+      case Some(t) => implicitly[Writes[T]].writes(t)
+      case None => JsNull
     }
   }
 

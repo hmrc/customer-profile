@@ -33,6 +33,7 @@ import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.LocalDate
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -53,7 +54,7 @@ class SandboxCustomerProfileController @Inject() (
 
   private def preferencesSandbox(
     status:   StatusName,
-    linkSent: Option[org.joda.time.LocalDate] = None
+    linkSent: Option[LocalDate] = None
   ) =
     Preference(
       digital      = true,
@@ -97,7 +98,7 @@ class SandboxCustomerProfileController @Inject() (
         case Some("UNVERIFIED") =>
           Ok(
             toJson(
-              preferencesSandbox(Pending, Some(org.joda.time.LocalDate.now()))
+              preferencesSandbox(Pending, Some(LocalDate.now()))
             )
           )
         case Some("BOUNCED") =>
