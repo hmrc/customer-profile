@@ -38,14 +38,14 @@ Personal Details
     "personDateOfBirth": "1969-03-05",
     "nino": "CS700100A",
     "fullName": "Jennifer Thorsteinson",
-    "nationalInsuranceLetterUrl": "/",
-    "changeAddressLink": "/"
+    "nationalInsuranceLetterUrl": "/"
   },
   "address": {
     "line1": "999 Big Street",
     "line2": "Worthing",
     "line3": "West Sussex",
-    "postcode": "BN99 8IG"
+    "postcode": "BN99 8IG",
+    "changeAddressLink": "/"
   },
   "correspondenceAddress": {
     "line1": "1 Main Street",
