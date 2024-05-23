@@ -27,7 +27,8 @@ User Preferences
   "digital" : true,
   "emailAddress": "name@email.co.uk",
   "status": {
-      "name": "verified"
+      "name": "verified",
+      "category": "Info"
   }
 }
 ```
