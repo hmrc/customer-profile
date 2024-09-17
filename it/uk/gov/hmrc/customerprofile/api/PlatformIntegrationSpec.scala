@@ -18,15 +18,7 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
   */
 class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners {
 
-  private val appId1: String = "00010002-0003-0004-0005-000600070008"
-  private val appId2: String = "00090002-0003-0004-0005-000600070008"
-
-  override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
-    config ++
-    Map(
-      "api.access.white-list.applicationIds" -> Seq(appId1, appId2)
-    )
-  )
+  override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(config)
 
   "microservice" should {
     "provide definition with configurable whitelist" in {
@@ -41,9 +33,7 @@ class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners
       (versionJson \ "version").as[String] shouldBe "1.0"
 
       val accessDetails: JsValue = (versionJson \\ "access").head
-      (accessDetails \ "type").as[String]                           shouldBe "PRIVATE"
-      (accessDetails \ "whitelistedApplicationIds").head.as[String] shouldBe appId1
-      (accessDetails \ "whitelistedApplicationIds")(1).as[String]   shouldBe appId2
+      (accessDetails \ "type").as[String] shouldBe "PRIVATE"
     }
 
     "provide YAML conf endpoint" in {

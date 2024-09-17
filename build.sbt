@@ -1,5 +1,5 @@
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
-import sbt.Tests.{Group, SubProcess}
+import uk.gov.hmrc.DefaultBuildSettings.oneForkedJvmPerTest
 
 val appName: String = "customer-profile"
 
@@ -50,8 +50,3 @@ lazy val microservice = Project(appName, file("."))
     coverageHighlighting := true,
     coverageExcludedPackages := "<empty>;.*Routes.*;app.*;.*prod;.*definition;.*testOnlyDoNotUseInAppConf;.*com.kenshoo.*;.*javascript.*;.*BuildInfo;.*Reverse.*;.*Binders.*;"
   )
-
-def oneForkedJvmPerTest(tests: Seq[TestDefinition]): Seq[Group] =
-  tests map { test =>
-    Group(test.name, Seq(test), SubProcess(ForkOptions().withRunJVMOptions(Vector(s"-Dtest.name=${test.name}"))))
-  }

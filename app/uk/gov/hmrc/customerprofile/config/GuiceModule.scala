@@ -42,7 +42,7 @@ class GuiceModule(
 
     bindConfigInt("controllers.confidenceLevel")
     bind(classOf[ApiAccess]).toInstance(
-      ApiAccess("PRIVATE", configuration.underlying.getStringList("api.access.white-list.applicationIds").asScala)
+      ApiAccess("PRIVATE")
     )
 
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
