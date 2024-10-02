@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import com.google.inject.name.Names.named
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.controllers.api.ApiAccess
-import uk.gov.hmrc.http.{CoreGet, CorePost, CorePut, HttpClient}
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
-import scala.jdk.CollectionConverters._
+
 
 class GuiceModule(
   environment:   Environment,
@@ -34,10 +33,6 @@ class GuiceModule(
   val servicesConfig = new ServicesConfig(configuration)
 
   override def configure(): Unit = {
-    bind(classOf[CoreGet]).to(classOf[WSHttpImpl])
-    bind(classOf[CorePut]).to(classOf[WSHttpImpl])
-    bind(classOf[CorePost]).to(classOf[WSHttpImpl])
-    bind(classOf[HttpClient]).to(classOf[WSHttpImpl])
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
 
     bindConfigInt("controllers.confidenceLevel")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,18 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import com.google.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, HttpException, HttpResponse}
 import com.google.inject.name.Named
 import play.api.http.Status.OK
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{GooglePassDetailsWithCredentials, RetrieveGooglePass}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class GooglePassConnector @Inject() (
-  http:                                                          HttpClient,
+  http:                                                          HttpClientV2,
   @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
 
   def createGooglePassWithCredentials(
@@ -43,7 +44,9 @@ class GooglePassConnector @Inject() (
     val details = GooglePassDetailsWithCredentials(fullName, nino, credentials)
 
     http
-      .POST[JsValue, HttpResponse](url, Json.toJson(details))
+      .post(url"$url")
+      .withBody(Json.toJson(details))
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => response.body
@@ -61,7 +64,8 @@ class GooglePassConnector @Inject() (
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
 
     http
-      .GET[HttpResponse](url)
+      .get(url"$url")
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK =>

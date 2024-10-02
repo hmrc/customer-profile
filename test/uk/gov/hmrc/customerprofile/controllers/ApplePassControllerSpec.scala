@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,118 +16,136 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-import play.api.test.Helpers.{contentAsJson, status, stubControllerComponents}
-import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
+
+import org.mockito.ArgumentMatchers.any
+import play.api.test.Helpers.{contentAsJson, status}
+import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
 import uk.gov.hmrc.customerprofile.services.ApplePassService
-import uk.gov.hmrc.http.{HeaderCarrier, NotFoundException, UpstreamErrorResponse}
-import play.api.libs.json.Json.toJson
-import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.customerprofile.utils.BaseSpec
+import org.mockito.Mockito.when
+import play.api.libs.json.Json
+import play.api.test.Helpers._
+import uk.gov.hmrc.customerprofile.connector.{HttpClientV2Helper, ShutteringConnector}
+import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-class ApplePassControllerSpec extends BaseSpec {
+class ApplePassControllerSpec extends  HttpClientV2Helper {
 
-  implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  implicit val shutteringConnectorMock: ShutteringConnector = new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
 
-  val service: ApplePassService = mock[ApplePassService]
+  val appleService: ApplePassService = mock[ApplePassService]
   val base64String = "TXIgSm9lIEJsb2dncw=="
 
-  val controller: ApplePassController =
-    new ApplePassController(mockAuthConnector, 200, service, stubControllerComponents(), shutteringConnectorMock)
+  val applePassController: ApplePassController = new ApplePassController(mockAuthConnector, 200, appleService, components, shutteringConnectorMock)
+
 
   "getApplePass" should {
 
-    def mockGetApplePass(result: Future[RetrieveApplePass]) =
-      (service
-        .getApplePass()(_: HeaderCarrier, _: ExecutionContext))
-        .expects(*, *)
-        .returns(result)
-
     "return an apple base 64 encoded string" in {
       val applePass = RetrieveApplePass(base64String)
-      mockAuthorisationGrantAccess(grantAccessWithCL200)
-      mockGetApplePass(Future successful applePass)
-      mockShutteringResponse(notShuttered)
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(appleService.getApplePass()(any(), any())).thenReturn(Future.successful(applePass))
 
-      val result =
-        controller.getApplePass(journeyId)(requestWithAcceptHeader)
 
-      status(result)        shouldBe 200
-      contentAsJson(result) shouldBe toJson(applePass)
+      val response = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe OK
+      contentAsJson(response) mustBe Json.toJson(applePass)
+
     }
 
     "propagate 401" in {
-      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
-      val result =
-        controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 401
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+              .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+
+      val response = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe UNAUTHORIZED
     }
 
     "return 401 if the user has no nino" in {
-      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
-      val result =
-        controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 401
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+      val response = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe UNAUTHORIZED
+
     }
 
     "return status code 406 when the headers are invalid" in {
-      val result = controller.getApplePass(journeyId)(requestWithoutAcceptHeader)
-      status(result) shouldBe 406
+      val result = applePassController.getApplePass(journeyId)(requestWithoutAcceptHeader)
+      status(result) mustBe NOT_ACCEPTABLE
     }
 
     "return 500 for an unexpected error" in {
-      mockAuthorisationGrantAccess(grantAccessWithCL200)
-      mockGetApplePass(Future failed new RuntimeException())
-      mockShutteringResponse(notShuttered)
+
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+             .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(appleService.getApplePass()(any(), any())).thenReturn(Future.failed(new RuntimeException()))
 
       val result =
-        controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 500
+        applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 500
     }
     "return 521 when shuttered" in {
-      mockAuthorisationGrantAccess(grantAccessWithCL200)
-      mockShutteringResponse(shuttered)
+
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(shuttered))
 
       val result =
-        controller.getApplePass(journeyId)(requestWithAcceptHeader)
+        applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
 
-      status(result) shouldBe 521
+      status(result) mustBe 521
       val jsonBody = contentAsJson(result)
-      (jsonBody \ "shuttered").as[Boolean] shouldBe true
-      (jsonBody \ "title").as[String]      shouldBe "Shuttered"
+      (jsonBody \ "shuttered").as[Boolean] mustBe true
+      (jsonBody \ "title").as[String]      mustBe "Shuttered"
       (jsonBody \ "message")
-        .as[String] shouldBe "Customer-Profile is currently not available"
+        .as[String] mustBe "Customer-Profile is currently not available"
     }
 
     "return Unauthorized if failed to grant access" in {
-      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
 
-      val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 401
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 403, 403)))
+
+      val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe UNAUTHORIZED
     }
 
     "return Forbidden if failed to match URL NINO against Auth NINO" in {
-      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
 
-      val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 403
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new FailToMatchTaxIdOnAuth("ERROR")))
+
+      val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe FORBIDDEN
     }
 
     "return Unauthorised if Account with low CL" in {
-      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
 
-      val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 401
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new AccountWithLowCL("ERROR")))
+
+      val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe UNAUTHORIZED
     }
+
     "return 404 where the account does not exist" in {
-      mockAuthorisationGrantAccess(grantAccessWithCL200)
-      mockShutteringResponse(notShuttered)
-      mockGetApplePass(Future failed new NotFoundException("No resources found"))
-      val result = controller.getApplePass(journeyId)(requestWithAcceptHeader)
-      status(result) shouldBe 404
-    }
+
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(appleService.getApplePass()(any(), any())).thenReturn(Future.failed(new NotFoundException("No resources found")))
+
+      val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 404
+   }
   }
 }

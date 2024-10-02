@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ class CustomerProfileService @Inject() (
   preferencesConnector:                        PreferencesConnector,
   entityResolver:                              EntityResolverConnector,
   val accountAccessControl:                    AuthRetrievals,
-  val auditConnector:                          AuditConnector,
   @Named("appName") val appName:               String,
   @Named("reOptInEnabled") val reOptInEnabled: Boolean,
   auditService:                                AuditService) {
@@ -120,7 +119,9 @@ class CustomerProfileService @Inject() (
     auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
         nino <- getNino()
+        _ <- Future.successful(println(" nino is ::"+nino))
         entity <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        _ <- Future.successful(println(" entity is ::"+entity))
         response <- preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }

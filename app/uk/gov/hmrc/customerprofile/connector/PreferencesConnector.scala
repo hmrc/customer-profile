@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,12 +20,13 @@ import com.google.inject.{Inject, Singleton}
 import play.api.http.Status.OK
 
 import javax.inject.Named
-import play.api.libs.json.{JsValue, Json, OFormat}
+import play.api.libs.json.{Json, OFormat}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http.{CoreGet, CorePut, HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{StringContextOps, HeaderCarrier, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -37,7 +38,7 @@ object Entity {
 
 @Singleton
 class PreferencesConnector @Inject() (
-  http:                             CorePut with CoreGet,
+  http:                             HttpClientV2,
   @Named("preferences") serviceUrl: String,
   override val externalServiceName: String,
   val configuration:                Configuration,
@@ -56,8 +57,9 @@ class PreferencesConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    http
-      .PUT[JsValue, HttpResponse](url(s"/preferences/$entityId/pending-email"), Json.toJson(changeEmail))
+    http.put(url"${url(s"/preferences/$entityId/pending-email")}")
+      .withBody(Json.toJson(changeEmail))
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => EmailUpdateOk

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,19 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, HttpException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps, UpstreamErrorResponse}
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.customerprofile.domain.PersonDetails
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CitizenDetailsConnector @Inject() (
   @Named("citizen-details") citizenDetailsConnectorUrl: String,
-  http:                                                 CoreGet) {
+  http:                                                 HttpClientV2) {
 
   val logger: Logger = Logger(this.getClass)
 
@@ -39,7 +40,10 @@ class CitizenDetailsConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ec:          ExecutionContext
   ): Future[PersonDetails] =
-    http.GET[PersonDetails](s"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details") recover {
+
+    http.get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
+      .execute[PersonDetails]
+      .recover {
       case e: UpstreamErrorResponse if e.statusCode == LOCKED =>
         logger.info("Person details are hidden")
         throw new HttpException(e.getMessage(), LOCKED)

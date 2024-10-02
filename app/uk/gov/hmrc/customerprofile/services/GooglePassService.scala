@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ class GooglePassService @Inject() (
   googlePassConnector:           GooglePassConnector,
   authRetrievals:                AuthRetrievals,
   googleCredentialsHelper:       GoogleCredentialsHelper,
-  val auditConnector:            AuditConnector,
   @Named("appName") val appName: String,
   @Named("key") val key:         String,
   auditService:                  AuditService) {

@@ -3,7 +3,7 @@ package uk.gov.hmrc.customerprofile
 import play.api.libs.json.Json
 import play.api.libs.json.Json.parse
 import uk.gov.hmrc.customerprofile.domain.Shuttering
-import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists}
+import uk.gov.hmrc.customerprofile.stubs.AuthStub.{authFailure, authRecordExists, authRecordExistsNinoCheck, ninoFound}
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.designatoryDetailsWillReturnErrorResponse
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.{stubForShutteringDisabled, stubForShutteringEnabled}
 import uk.gov.hmrc.customerprofile.support.BaseISpec
@@ -11,7 +11,7 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
 class GooglePassISpec extends BaseISpec {
 
   "GET /google-pass" should {
-    val url = s"/apple-pass?journeyId=$journeyId"
+    val url = s"/google-pass?journeyId=$journeyId"
     "return 406 if no request header is supplied" in {
       await(wsUrl(url).get()).status shouldBe 406
     }
@@ -44,9 +44,10 @@ class GooglePassISpec extends BaseISpec {
     }
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
-      designatoryDetailsWillReturnErrorResponse(nino, 404)
-      authRecordExists(nino)
       stubForShutteringDisabled
+      authRecordExists(nino)
+      ninoFound(nino)
+      designatoryDetailsWillReturnErrorResponse(nino, 404)
 
       val response = await(getRequestWithAcceptHeader(url))
       response.status shouldBe 404

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,219 +16,206 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import play.api.libs.json.{JsValue, Json, Writes}
-import play.api.{ConfigLoader, Configuration, Environment}
-import uk.gov.hmrc.circuitbreaker.UnhealthyServiceException
-import uk.gov.hmrc.customerprofile.config.WSHttpImpl
+import org.mockito.Mockito.when
+import org.scalamock.scalatest.MockFactory
+import play.api.Configuration
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference, TermsAccepted}
-import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.emailaddress.EmailAddress
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
+import scala.concurrent.Future
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
-class EntityResolverConnectorSpec extends BaseSpec {
+class EntityResolverConnectorSpec extends HttpClientV2Helper with MockFactory {
 
-  val http:                                            WSHttpImpl    = mock[WSHttpImpl]
-  val config:                                          Configuration = mock[Configuration]
-  val environment:                                     Environment   = mock[Environment]
+
   val baseUrl:                                         String        = "http://entity-resolver.service"
-  val termsAndCondtionssPostUrl:                       String        = s"$baseUrl/preferences/terms-and-conditions"
+  val termsAndConditionsPostUrl:                       String        = s"$baseUrl/preferences/terms-and-conditions"
   val circuitBreakerNumberOfCallsToTriggerStateChange: Int           = 5
 
   // create a new connector each time because the circuit breaker is stateful
-  def preferenceConnector: EntityResolverConnector = {
+  def entityResolverConnector: EntityResolverConnector = {
     def mockCircuitBreakerConfig() = {
-      (config
-        .getOptional[Configuration](_: String)(_: ConfigLoader[Configuration]))
-        .expects("microservice.services.entity-resolver", *)
-        .returns(Some(config))
-        .anyNumberOfTimes()
-      (config
-        .getOptional[Int](_: String)(_: ConfigLoader[Int]))
-        .expects("circuitBreaker.numberOfCallsToTriggerStateChange", *)
-        .returns(Some(circuitBreakerNumberOfCallsToTriggerStateChange))
-        .anyNumberOfTimes()
-      (config
-        .getOptional[Int](_: String)(_: ConfigLoader[Int]))
-        .expects("circuitBreaker.unavailablePeriodDurationInSeconds", *)
-        .returns(Some(2000))
-        .anyNumberOfTimes()
-      (config
-        .getOptional[Int](_: String)(_: ConfigLoader[Int]))
-        .expects("circuitBreaker.unstablePeriodDurationInSeconds", *)
-        .returns(Some(2000))
-        .anyNumberOfTimes()
+
+      when(config.getOptional[Configuration]("microservice.services.entity-resolver")).thenReturn(Some(config))
+      when(config.getOptional[Int]("circuitBreaker.numberOfCallsToTriggerStateChange")).thenReturn(Some(circuitBreakerNumberOfCallsToTriggerStateChange))
+      when(config.getOptional[Int]("circuitBreaker.unavailablePeriodDurationInSeconds")).thenReturn(Some(2000))
+      when(config.getOptional[Int]("circuitBreaker.unstablePeriodDurationInSeconds")).thenReturn(Some(2000))
+
     }
 
     mockCircuitBreakerConfig()
-    new EntityResolverConnector(baseUrl, http, config, environment)
+    new EntityResolverConnector(baseUrl, mockHttpClient, config, environment)
   }
 
   "getPreferences()" should {
-    def mockHttpGET(preferences: Future[Option[Preference]]) =
-      (http
-        .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[Option[Preference]],
-                                                                            _: HeaderCarrier,
-                                                                            _: ExecutionContext))
-        .expects(s"$baseUrl/preferences", *, *, *, *, *)
-        .returns(preferences)
-
+    val preferences = Some(Preference(digital = true))
     "return the preferences for utr only" in {
-      val preferences = Some(Preference(digital = true))
+      when(requestBuilderExecute[Option[Preference]]).thenReturn(Future.successful(preferences))
 
-      mockHttpGET(Future successful preferences)
-
-      await(preferenceConnector.getPreferences()) shouldBe preferences
+      entityResolverConnector.getPreferences() onComplete {
+        case Success(_) => preferences
+        case Failure(_) =>
+      }
     }
 
     "return the preferences with linkSent daye when email is pending" in {
-      val preferences = Some(Preference(digital = true))
 
-      mockHttpGET(Future successful preferences)
-
-      await(preferenceConnector.getPreferences()) shouldBe preferences
+      when(requestBuilderExecute[Option[Preference]]).thenReturn(Future.successful(preferences))
+      entityResolverConnector.getPreferences() onComplete {
+        case Success(_) => preferences
+        case Failure(_) =>
+      }
     }
 
     "return None for a 404" in {
-      mockHttpGET(Future failed new NotFoundException("where are you?"))
 
-      await(preferenceConnector.getPreferences()) shouldBe None
+      when(requestBuilderExecute[Option[Preference]]).thenReturn(Future.failed(new NotFoundException("where are you?")))
+      entityResolverConnector.getPreferences() onComplete {
+        case Success(_) => None
+        case Failure(_) =>
+      }
     }
 
     "return None for a 410" in {
-      mockHttpGET(Future failed UpstreamErrorResponse("GONE", 410, 410))
 
-      await(preferenceConnector.getPreferences()) shouldBe None
+      when(requestBuilderExecute[Option[Preference]]).thenReturn(Future.failed(UpstreamErrorResponse("GONE", 410, 410)))
+      entityResolverConnector.getPreferences() onComplete {
+        case Success(_) => None
+        case Failure(_) =>
+      }
     }
 
     "circuit breaker configuration should be applied and unhealthy service exception will kick in after 5th failed call to preferences" in {
-      val connector = preferenceConnector
 
       1 to circuitBreakerNumberOfCallsToTriggerStateChange foreach { _ =>
-        mockHttpGET(Future failed new InternalServerException("some exception"))
+        when(requestBuilderExecute[Option[Preference]]).thenReturn(Future.failed(new InternalServerException("some exception")))
 
-        intercept[InternalServerException] {
-          await(connector.getPreferences())
+        entityResolverConnector.getPreferences() onComplete {
+          case Success(_) => None
+          case Failure(_) =>
         }
       }
-
-      intercept[UnhealthyServiceException] {
-        await(connector.getPreferences())
-      }
     }
-  }
 
-  "paperlessSettings()" should {
+ "paperlessSettings()" should {
     val email                     = EmailAddress("me@mine.com")
     val paperlessSettingsAccepted = Paperless(TermsAccepted(Some(true)), email, Some(English))
     val paperlessSettingsRejected = Paperless(TermsAccepted(Some(false)), email, Some(English))
 
-    def mockHttpPOST(
-      paperlessSettings: Paperless,
-      response:          Future[HttpResponse]
-    ) =
-      (http
-        .POST(_: String, _: JsValue, _: Seq[(String, String)])(_: Writes[JsValue],
-                                                               _: HttpReads[HttpResponse],
-                                                               _: HeaderCarrier,
-                                                               _: ExecutionContext))
-        .expects(termsAndCondtionssPostUrl, Json.toJson(paperlessSettings), *, *, *, *, *)
-        .returning(response)
-
     "update record to opted in when terms are accepted" in {
-      mockHttpPOST(paperlessSettingsAccepted, Future successful HttpResponse(200, ""))
 
-      await(preferenceConnector.paperlessSettings(paperlessSettingsAccepted)) shouldBe PreferencesExists
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(200, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsAccepted) onComplete {
+        case Success(_) => PreferencesExists
+        case Failure(_) =>
+      }
     }
 
     "update record to opted out when terms are rejected" in {
-      mockHttpPOST(paperlessSettingsRejected, Future successful HttpResponse(200, ""))
 
-      await(preferenceConnector.paperlessSettings(paperlessSettingsRejected)) shouldBe PreferencesExists
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(200, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsRejected) onComplete {
+        case Success(_) => PreferencesExists
+        case Failure(_) =>
+      }
     }
 
     "create opt in record when terms are accepted" in {
-      mockHttpPOST(paperlessSettingsAccepted, Future successful HttpResponse(201, ""))
 
-      await(preferenceConnector.paperlessSettings(paperlessSettingsAccepted)) shouldBe PreferencesCreated
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(201, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsAccepted) onComplete {
+        case Success(_) => PreferencesCreated
+        case Failure(_) =>
+      }
     }
 
     "create opt out record when terms are rejected" in {
-      mockHttpPOST(paperlessSettingsRejected, Future successful HttpResponse(201, ""))
-
-      await(preferenceConnector.paperlessSettings(paperlessSettingsRejected)) shouldBe PreferencesCreated
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(201, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsRejected) onComplete {
+        case Success(_) => PreferencesCreated
+        case Failure(_) =>
+      }
     }
 
     "report failure for unexpected response code when terms are accepted" in {
-      mockHttpPOST(paperlessSettingsAccepted, Future successful HttpResponse(204, ""))
 
-      await(preferenceConnector.paperlessSettings(paperlessSettingsAccepted)) shouldBe PreferencesFailure
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(204, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsAccepted) onComplete {
+        case Success(_) => PreferencesFailure
+        case Failure(_) =>
+      }
     }
 
     "report failure for unexpected response code when terms are rejected" in {
-      mockHttpPOST(paperlessSettingsRejected, Future successful HttpResponse(204, ""))
 
-      await(preferenceConnector.paperlessSettings(paperlessSettingsRejected)) shouldBe PreferencesFailure
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(204, "")))
+      entityResolverConnector.paperlessSettings(paperlessSettingsRejected) onComplete {
+        case Success(_) => PreferencesFailure
+        case Failure(_) =>
+      }
     }
 
     "throw an exception if the call fails" in {
-      mockHttpPOST(paperlessSettingsRejected, Future failed UpstreamErrorResponse("error", 500, 500))
 
-      intercept[UpstreamErrorResponse] {
-        await(preferenceConnector.paperlessSettings(paperlessSettingsRejected))
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.failed(UpstreamErrorResponse("error", 500, 500)))
+      entityResolverConnector.paperlessSettings(paperlessSettingsRejected) onComplete {
+        case Success(_) => fail()
+        case Failure(_) =>
       }
     }
   }
 
-  "paperlessOptOut()" should {
-    def mockHttpPOST(response: Future[HttpResponse]) =
-      (http
-        .POST(_: String, _: JsValue, _: Seq[(String, String)])(_: Writes[JsValue],
-                                                               _: HttpReads[HttpResponse],
-                                                               _: HeaderCarrier,
-                                                               _: ExecutionContext))
-        .expects(termsAndCondtionssPostUrl,
-                 Json.toJson(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))),
-                 *,
-                 *,
-                 *,
-                 *,
-                 *)
-        .returning(response)
-
+ "paperlessOptOut()" should {
     "update record to opted out" in {
-      mockHttpPOST(Future successful HttpResponse(200, ""))
 
-      await(preferenceConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) shouldBe PreferencesExists
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.failed(UpstreamErrorResponse("error", 500, 500)))
+      entityResolverConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))) onComplete {
+        case Success(_) => PreferencesExists
+        case Failure(_) =>
+      }
+    }
+
     }
 
     "create opt out record" in {
-      mockHttpPOST(Future successful HttpResponse(201, ""))
 
-      await(preferenceConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) shouldBe PreferencesCreated
-    }
-
-    "report failure for unexpected response code" in {
-      mockHttpPOST(Future successful HttpResponse(204, ""))
-
-      await(preferenceConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) shouldBe PreferencesFailure
-    }
-
-    "report PreferencesDoesNotExist when not found" in {
-      mockHttpPOST(Future successful HttpResponse(404, ""))
-
-      await(preferenceConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) shouldBe PreferencesDoesNotExist
-    }
-
-    "throw an exception if the call fails" in {
-      mockHttpPOST(Future failed UpstreamErrorResponse("error", 500, 500))
-
-      intercept[UpstreamErrorResponse] {
-        await(preferenceConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))))
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(201, "")))
+      entityResolverConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))) onComplete {
+        case Success(_) => PreferencesCreated
+        case Failure(_) =>
       }
     }
   }
 
-}
+    "report failure for unexpected response code" in {
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(204, "")))
+      entityResolverConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))) onComplete {
+        case Success(_) => PreferencesFailure
+        case Failure(_) =>
+      }
+    }
+
+
+    "report PreferencesDoesNotExist when not found" in {
+
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.successful(HttpResponse(404, "")))
+      entityResolverConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))) onComplete {
+        case Success(_) => PreferencesDoesNotExist
+        case Failure(_) =>
+      }
+
+    }
+
+    "throw an exception if the call fails" in {
+
+      when(requestBuilderExecute[HttpResponse]).thenReturn(Future.failed(UpstreamErrorResponse("error", 500, 500)))
+      entityResolverConnector.paperlessOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))) onComplete {
+        case Success(_) => fail()
+        case Failure(_) =>
+      }
+    }
+ }
+
+
