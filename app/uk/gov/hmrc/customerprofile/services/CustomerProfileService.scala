@@ -119,9 +119,7 @@ class CustomerProfileService @Inject() (
     auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
         nino <- getNino()
-        _ <- Future.successful(println(" nino is ::"+nino))
         entity <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        _ <- Future.successful(println(" entity is ::"+entity))
         response <- preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }
