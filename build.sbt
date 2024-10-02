@@ -32,7 +32,7 @@ lazy val microservice = Project(appName, file("."))
     ).value,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-    IntegrationTest / testGrouping := oneForkedJvmPerTest((IntegrationTest / definedTests).value),
+
     scalacOptions ++= Seq(
       "-deprecation",
       "-encoding",

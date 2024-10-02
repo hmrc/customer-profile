@@ -17,9 +17,10 @@
 package uk.gov.hmrc.customerprofile.services
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{reset, when}
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
+
 import scala.concurrent.duration._
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailUpdateOk, Entity, EntityResolverConnector, PreferencesConnector, PreferencesCreated, PreferencesExists, PreferencesStatus}
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
@@ -27,7 +28,6 @@ import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
-
 
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
@@ -181,6 +181,8 @@ class CustomerProfileServiceSpec extends BaseSpec {
     }
 
     "set the digital preference to true and update the email for a user who already has a defined non-digital preference" in {
+      reset(mockEntityResolver)
+      reset(mockAuditService)
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesExists))
       when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(Some(existingDigitalPreference)))
