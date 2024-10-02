@@ -1,5 +1,4 @@
 import play.sbt.PlayImport.PlayKeys.playDefaultPort
-import uk.gov.hmrc.DefaultBuildSettings.oneForkedJvmPerTest
 
 val appName: String = "customer-profile"
 
