@@ -24,7 +24,7 @@ import play.api.libs.json.{Json, OFormat}
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http.{StringContextOps, HeaderCarrier, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 
@@ -57,7 +57,8 @@ class PreferencesConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
-    http.put(url"${url(s"/preferences/$entityId/pending-email")}")
+    http
+      .put(url"${url(s"/preferences/$entityId/pending-email")}")
       .withBody(Json.toJson(changeEmail))
       .execute[HttpResponse]
       .map { response =>

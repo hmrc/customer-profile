@@ -25,7 +25,6 @@ import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
 
-
 import java.net.URL
 import scala.concurrent.ExecutionContext
 

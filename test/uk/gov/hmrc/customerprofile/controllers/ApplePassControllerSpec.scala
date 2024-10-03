@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-
 import org.mockito.ArgumentMatchers.any
 import play.api.test.Helpers.{contentAsJson, status}
 import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass, Shuttering}
@@ -29,15 +28,16 @@ import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 
 import scala.concurrent.Future
 
-class ApplePassControllerSpec extends  HttpClientV2Helper {
+class ApplePassControllerSpec extends HttpClientV2Helper {
 
-  implicit val shutteringConnectorMock: ShutteringConnector = new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
+  implicit val shutteringConnectorMock: ShutteringConnector =
+    new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
 
   val appleService: ApplePassService = mock[ApplePassService]
   val base64String = "TXIgSm9lIEJsb2dncw=="
 
-  val applePassController: ApplePassController = new ApplePassController(mockAuthConnector, 200, appleService, components, shutteringConnectorMock)
-
+  val applePassController: ApplePassController =
+    new ApplePassController(mockAuthConnector, 200, appleService, components, shutteringConnectorMock)
 
   "getApplePass" should {
 
@@ -49,7 +49,6 @@ class ApplePassControllerSpec extends  HttpClientV2Helper {
         .thenReturn(Future.successful(notShuttered))
       when(appleService.getApplePass()(any(), any())).thenReturn(Future.successful(applePass))
 
-
       val response = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
       status(response) mustBe OK
       contentAsJson(response) mustBe Json.toJson(applePass)
@@ -59,7 +58,7 @@ class ApplePassControllerSpec extends  HttpClientV2Helper {
     "propagate 401" in {
 
       when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-              .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
 
       val response = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
       status(response) mustBe UNAUTHORIZED
@@ -82,7 +81,7 @@ class ApplePassControllerSpec extends  HttpClientV2Helper {
     "return 500 for an unexpected error" in {
 
       when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-             .thenReturn(Future.successful(grantAccessWithCL200))
+        .thenReturn(Future.successful(grantAccessWithCL200))
       when(requestBuilderExecute[Shuttering])
         .thenReturn(Future.successful(notShuttered))
       when(appleService.getApplePass()(any(), any())).thenReturn(Future.failed(new RuntimeException()))
@@ -104,7 +103,7 @@ class ApplePassControllerSpec extends  HttpClientV2Helper {
       status(result) mustBe 521
       val jsonBody = contentAsJson(result)
       (jsonBody \ "shuttered").as[Boolean] mustBe true
-      (jsonBody \ "title").as[String]      mustBe "Shuttered"
+      (jsonBody \ "title").as[String] mustBe "Shuttered"
       (jsonBody \ "message")
         .as[String] mustBe "Customer-Profile is currently not available"
     }
@@ -142,10 +141,11 @@ class ApplePassControllerSpec extends  HttpClientV2Helper {
         .thenReturn(Future.successful(grantAccessWithCL200))
       when(requestBuilderExecute[Shuttering])
         .thenReturn(Future.successful(notShuttered))
-      when(appleService.getApplePass()(any(), any())).thenReturn(Future.failed(new NotFoundException("No resources found")))
+      when(appleService.getApplePass()(any(), any()))
+        .thenReturn(Future.failed(new NotFoundException("No resources found")))
 
       val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 404
-   }
+    }
   }
 }

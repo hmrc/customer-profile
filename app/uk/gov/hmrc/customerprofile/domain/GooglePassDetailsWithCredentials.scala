@@ -18,7 +18,10 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, Json}
 
-case class GooglePassDetailsWithCredentials(fullName: String, nino: String, credentials: String)
+case class GooglePassDetailsWithCredentials(
+  fullName:    String,
+  nino:        String,
+  credentials: String)
 
 object GooglePassDetailsWithCredentials {
 

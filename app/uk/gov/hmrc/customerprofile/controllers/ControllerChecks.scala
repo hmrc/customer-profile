@@ -22,7 +22,6 @@ import uk.gov.hmrc.customerprofile.domain.Shuttering
 
 import scala.concurrent.Future
 
-
 trait ControllerChecks extends Results {
 
   private final val WebServerIsDown = new Status(521)

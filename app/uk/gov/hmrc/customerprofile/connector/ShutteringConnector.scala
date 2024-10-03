@@ -45,13 +45,13 @@ class ShutteringConnector @Inject() (
       .get(url"${url(s"/mobile-shuttering/service/customer-profile/shuttered-status?journeyId=$journeyId")}")
       .execute[Shuttering]
       .recover {
-      case e: UpstreamErrorResponse =>
-        logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
-        Shuttering.shutteringDisabled
+        case e: UpstreamErrorResponse =>
+          logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
+          Shuttering.shutteringDisabled
 
-      case e =>
-        logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
-        Shuttering.shutteringDisabled
-    }
+        case e =>
+          logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
+          Shuttering.shutteringDisabled
+      }
   }
 }

@@ -40,15 +40,15 @@ class CitizenDetailsConnector @Inject() (
   )(implicit hc: HeaderCarrier,
     ec:          ExecutionContext
   ): Future[PersonDetails] =
-
-    http.get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
+    http
+      .get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
       .execute[PersonDetails]
       .recover {
-      case e: UpstreamErrorResponse if e.statusCode == LOCKED =>
-        logger.info("Person details are hidden")
-        throw new HttpException(e.getMessage(), LOCKED)
-      case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND =>
-        logger.info(s"No details found for nino '$nino'")
-        throw new HttpException(e.getMessage(), NOT_FOUND)
-    }
+        case e: UpstreamErrorResponse if e.statusCode == LOCKED =>
+          logger.info("Person details are hidden")
+          throw new HttpException(e.getMessage(), LOCKED)
+        case e: UpstreamErrorResponse if e.statusCode == NOT_FOUND =>
+          logger.info(s"No details found for nino '$nino'")
+          throw new HttpException(e.getMessage(), NOT_FOUND)
+      }
 }

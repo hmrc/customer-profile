@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.utils
 
-
 import play.api.http.HeaderNames
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
@@ -45,85 +44,81 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext
 
-trait BaseSpec
-    extends PlaySpec
-     with GuiceOneAppPerSuite with MockitoSugar
-   {
+trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
 
-     val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
-     val config:   Configuration = mock[Configuration]
-     val environment: Environment   = mock[Environment]
-     val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
+  val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
+  val config:             Configuration  = mock[Configuration]
+  val environment:        Environment    = mock[Environment]
+  val mockHttpClient:     HttpClientV2   = mock[HttpClientV2]
 
   type GrantAccess = Option[String] ~ ConfidenceLevel
 
-  implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
-     lazy val components: ControllerComponents = app.injector.instanceOf[ControllerComponents]
+  implicit val mockAuthConnector: AuthConnector        = mock[AuthConnector]
+  lazy val components:            ControllerComponents = app.injector.instanceOf[ControllerComponents]
 
-
-  implicit lazy val hc:                 HeaderCarrier       = HeaderCarrier()
-  implicit lazy val ec:                 ExecutionContext    = scala.concurrent.ExecutionContext.Implicits.global
-
+  implicit lazy val hc: HeaderCarrier    = HeaderCarrier()
+  implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val appName:              String      = "customer-profile"
   val nino:                 Nino        = Nino("CS700100A")
   val journeyId:            JourneyId   = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val acceptheader:         String      = "application/vnd.hmrc.1.0+json"
   val grantAccessWithCL200: GrantAccess = Some(nino.nino) and L200
-     val entity: Entity = Entity("entityId")
+  val entity:               Entity      = Entity("entityId")
 
-     val person = PersonDetails(
-       Person(
-         Some("Firstname"),
-         Some("Middle"),
-         Some("Lastname"),
-         Some("Intial"),
-         Some("Title"),
-         Some("Honours"),
-         Some("sex"),
-         None,
-         None,
-         Some("Firstname Lastname"),
-         Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
-       ),
-       Some(Address(changeAddressLink = Some("/personal-account/your-profile"))),
-       None
-     )
-     val person2: PersonDetails = PersonDetails(
-       Person(
-         Some("Firstname"),
-         None,
-         Some("Lastname"),
-         Some("Intial"),
-         Some("Title"),
-         Some("Honours"),
-         Some("sex"),
-         None,
-         None,
-         Some("Firstname Lastname"),
-         Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
-       ),
-       None,
-       None
-     )
+  val person = PersonDetails(
+    Person(
+      Some("Firstname"),
+      Some("Middle"),
+      Some("Lastname"),
+      Some("Intial"),
+      Some("Title"),
+      Some("Honours"),
+      Some("sex"),
+      None,
+      None,
+      Some("Firstname Lastname"),
+      Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
+    ),
+    Some(Address(changeAddressLink = Some("/personal-account/your-profile"))),
+    None
+  )
 
-     val person3 = PersonDetails(
-       Person(
-         Some("Firstname"),
-         Some("Middlename"),
-         Some("Lastname"),
-         Some("Intial"),
-         Some("Title"),
-         Some("Honours"),
-         Some("sex"),
-         None,
-         None,
-         Some("Firstname Middlename Lastname"),
-         Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
-       ),
-       None,
-       None
-     )
+  val person2: PersonDetails = PersonDetails(
+    Person(
+      Some("Firstname"),
+      None,
+      Some("Lastname"),
+      Some("Intial"),
+      Some("Title"),
+      Some("Honours"),
+      Some("sex"),
+      None,
+      None,
+      Some("Firstname Lastname"),
+      Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
+    ),
+    None,
+    None
+  )
+
+  val person3 = PersonDetails(
+    Person(
+      Some("Firstname"),
+      Some("Middlename"),
+      Some("Lastname"),
+      Some("Intial"),
+      Some("Title"),
+      Some("Honours"),
+      Some("sex"),
+      None,
+      None,
+      Some("Firstname Middlename Lastname"),
+      Some("/save-your-national-insurance-number/print-letter/save-letter-as-pdf")
+    ),
+    None,
+    None
+  )
 
   val shuttered: Shuttering =
     Shuttering(
@@ -145,44 +140,45 @@ trait BaseSpec
       .withBody(Json.parse("""{ "blah" : "blah" }"""))
       .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
-     val newEmail          = EmailAddress("new@new.com")
-     val paperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
-     val paperlessSettingsWithVersion =
-       Paperless(TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.AndroidOptInPage))),
-         newEmail,
-         Some(English))
+  val newEmail          = EmailAddress("new@new.com")
+  val paperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
 
-     val validPaperlessSettingsRequest: FakeRequest[JsValue] =
-       FakeRequest()
-         .withBody(toJson(paperlessSettingsWithVersion))
-         .withHeaders(HeaderNames.ACCEPT -> acceptheader)
+  val paperlessSettingsWithVersion =
+    Paperless(TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.AndroidOptInPage))),
+              newEmail,
+              Some(English))
 
-     val paperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
-       FakeRequest().withBody(toJson(paperlessSettings))
+  val validPaperlessSettingsRequest: FakeRequest[JsValue] =
+    FakeRequest()
+      .withBody(toJson(paperlessSettingsWithVersion))
+      .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
-     def preferencesWithStatus(status: StatusName): Preference = existingPreferences(
-       digital = true,
-       status
-     )
+  val paperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
+    FakeRequest().withBody(toJson(paperlessSettings))
 
-     val existingDigitalPreference: Preference = existingPreferences(
-       digital = true
-     )
+  def preferencesWithStatus(status: StatusName): Preference = existingPreferences(
+    digital = true,
+    status
+  )
 
-     val existingNonDigitalPreference: Preference = existingPreferences(
-       digital = false
-     )
+  val existingDigitalPreference: Preference = existingPreferences(
+    digital = true
+  )
 
-     val newPaperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
+  val existingNonDigitalPreference: Preference = existingPreferences(
+    digital = false
+  )
 
-     def existingPreferences(
-                              digital: Boolean,
-                              status:  StatusName = Verified
-                            ): Preference =
-       Preference(
-         digital = digital,
-         email   = Some(EmailPreference(EmailAddress("old@old.com"), status)),
-         status  = Some(PaperlessStatus(name = status, category = Category.Info))
-       )
+  val newPaperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
+
+  def existingPreferences(
+    digital: Boolean,
+    status:  StatusName = Verified
+  ): Preference =
+    Preference(
+      digital = digital,
+      email   = Some(EmailPreference(EmailAddress("old@old.com"), status)),
+      status  = Some(PaperlessStatus(name = status, category = Category.Info))
+    )
 
 }

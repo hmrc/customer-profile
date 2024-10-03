@@ -17,7 +17,7 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import com.google.inject.Inject
-import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, HttpException, HttpResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 import com.google.inject.name.Named
 import play.api.http.Status.OK
 import play.api.libs.json.Json

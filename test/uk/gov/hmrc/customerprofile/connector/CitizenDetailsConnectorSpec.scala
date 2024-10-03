@@ -25,7 +25,7 @@ import scala.util.{Failure, Success}
 
 class CitizenDetailsConnectorSpec extends HttpClientV2Helper {
 
-    val connector = app.injector.instanceOf[CitizenDetailsConnector]
+  val connector = app.injector.instanceOf[CitizenDetailsConnector]
 
   "citizenDetailsConnector" should {
     "throw BadRequestException when a 400 response is returned" in {

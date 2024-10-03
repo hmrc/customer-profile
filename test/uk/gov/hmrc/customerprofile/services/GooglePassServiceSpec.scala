@@ -39,11 +39,9 @@ class GooglePassServiceSpec extends BaseSpec {
   val passId:                  String                  = "c864139e-77b5-448f-b443-17c69060870d"
   val jwtUrl:                  String                  = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
   val googleKey:               String                  = "123456789"
-  val auditService: AuditService = mock[AuditService]
-  implicit val defaultTimeout: FiniteDuration = 5 seconds
+  val auditService:            AuditService            = mock[AuditService]
+  implicit val defaultTimeout: FiniteDuration          = 5 seconds
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
-
-
 
   val googlePassService = new GooglePassService(
     citizenDetailsConnector,
@@ -57,15 +55,17 @@ class GooglePassServiceSpec extends BaseSpec {
   "GOOGLE pass" should {
     "audit and return a  google pass model with a base 64 encoded string" in {
       when(accountAccessControl.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
-      when(auditService.withAudit[RetrieveGooglePass](any(),any())(any())(any(), any())).thenReturn(Future.successful(RetrieveGooglePass(googleKey)))
+      when(auditService.withAudit[RetrieveGooglePass](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(RetrieveGooglePass(googleKey)))
       when(citizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person2))
-      when(getGooglePassConnector.createGooglePassWithCredentials(any(), any(), any())(any(), any())).thenReturn(Future.successful(passId))
-      when(getGooglePassConnector.getGooglePassUrl(any())(any(), any())).thenReturn(Future.successful(RetrieveGooglePass(googleKey)))
+      when(getGooglePassConnector.createGooglePassWithCredentials(any(), any(), any())(any(), any()))
+        .thenReturn(Future.successful(passId))
+      when(getGooglePassConnector.getGooglePassUrl(any())(any(), any()))
+        .thenReturn(Future.successful(RetrieveGooglePass(googleKey)))
       val result = await(googlePassService.getGooglePass())
       result mustBe RetrieveGooglePass(googleKey)
     }
 
   }
-
 
 }

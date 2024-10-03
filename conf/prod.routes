@@ -1,5 +1,5 @@
-->         /sandbox              sandbox.Routes
-->         /                     live.Routes
+->        /sandbox        sandbox.Routes
+->        /               live.Routes
 
-->         /                     health.Routes
-->         /                     definition.Routes
+->        /               health.Routes
+->        /               definition.Routes

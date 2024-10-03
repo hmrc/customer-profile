@@ -18,20 +18,17 @@ package uk.gov.hmrc.customerprofile.connector
 
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import org.mockito.Mockito.when
-import uk.gov.hmrc.http.{BadRequestException,HttpResponse, TooManyRequestException}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, TooManyRequestException}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class ApplePassConnectorSpec extends HttpClientV2Helper {
 
-
   val connector = app.injector.instanceOf[ApplePassConnector]
-  val passId:       String             = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String: String             = "TXIgSm9lIEJsb2dncw=="
+  val passId:       String = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String: String = "TXIgSm9lIEJsb2dncw=="
   val fullName = "Mr Joe Bloggs"
-
-
 
   "ApplePassConnector" when {
     "calling the createApplePass" should {
@@ -57,7 +54,7 @@ class ApplePassConnectorSpec extends HttpClientV2Helper {
 
       }
     }
-   "calling the getPass" should {
+    "calling the getPass" should {
       "return a base 64 encoded string given the call is successful" in {
 
         when(requestBuilderExecute[HttpResponse])

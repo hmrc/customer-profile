@@ -23,14 +23,14 @@ import play.api.http.Status.OK
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassConnector @Inject() (
-                                     http: HttpClientV2,
+  http:                                                          HttpClientV2,
   @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
 
   val logger: Logger = Logger(this.getClass)
@@ -46,7 +46,8 @@ class ApplePassConnector @Inject() (
 
     val details = ApplePassIdGenerator(fullName, nino)
 
-    http.post(url"$url")
+    http
+      .post(url"$url")
       .withBody(Json.toJson(details))
       .execute[HttpResponse]
       .map { response =>
@@ -65,8 +66,8 @@ class ApplePassConnector @Inject() (
 
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
 
-
-    http.get(url"$url")
+    http
+      .get(url"$url")
       .execute[HttpResponse]
       .map { response =>
         response.status match {

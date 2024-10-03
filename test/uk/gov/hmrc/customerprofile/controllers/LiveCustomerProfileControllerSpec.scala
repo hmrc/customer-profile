@@ -35,9 +35,11 @@ import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
 
-class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeAndAfterEach {
-  val customerProfileService:                    CustomerProfileService = mock[CustomerProfileService]
-  implicit val shutteringConnectorMock: ShutteringConnector = new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
+class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAndAfterEach {
+  val customerProfileService: CustomerProfileService = mock[CustomerProfileService]
+
+  implicit val shutteringConnectorMock: ShutteringConnector =
+    new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
 
   val liveCustomerProfileController: LiveCustomerProfileController =
     new LiveCustomerProfileController(
@@ -49,6 +51,7 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       shutteringConnectorMock,
       optInVersionsEnabled = false
     )
+
   override def beforeEach(): Unit = {
     reset(customerProfileService)
     reset(mockAuthConnector)
@@ -60,6 +63,7 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
     when(requestBuilderExecute[Shuttering])
       .thenReturn(Future.successful(notShuttered))
   }
+
   def mockAuthAccessAndShuttered() = {
     when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
       .thenReturn(Future.successful(grantAccessWithCL200))
@@ -69,13 +73,11 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
 
   "getPersonalDetails" should {
 
-
     "return personal details with journey id" in {
 
       mockAuthAccessAndNotShuttered()
       when(customerProfileService.getPersonalDetails(any())(any(), any()))
         .thenReturn(Future.successful(person))
-
 
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
@@ -115,7 +117,6 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       when(customerProfileService.getPersonalDetails(any())(any(), any()))
         .thenReturn(Future.failed(new RuntimeException()))
 
-
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
       status(result) mustBe 500
@@ -145,12 +146,11 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       when(customerProfileService.getPreferences()(any(), any()))
         .thenReturn(Future.successful(Some(preference)))
       when(customerProfileService.reOptInEnabledCheck(any()))
-          .thenReturn(preference)
-
+        .thenReturn(preference)
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
 
-      status(result)        mustBe 200
+      status(result) mustBe 200
       contentAsJson(result) mustBe toJson(preference)
     }
 
@@ -231,7 +231,7 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       status(result) mustBe 521
       val jsonBody = contentAsJson(result)
       (jsonBody \ "shuttered").as[Boolean] mustBe true
-      (jsonBody \ "title").as[String]      mustBe "Shuttered"
+      (jsonBody \ "title").as[String] mustBe "Shuttered"
       (jsonBody \ "message")
         .as[String] mustBe "Customer-Profile is currently not available"
     }
@@ -242,10 +242,10 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
 
     val mockCitizenDetailsConnector: CitizenDetailsConnector =
       mock[CitizenDetailsConnector]
-    val mockPreferencesConnector: PreferencesConnector = mock[PreferencesConnector]
-    val mockEntityResolver: EntityResolverConnector = mock[EntityResolverConnector]
-    val mockAuthRetrievals: AuthRetrievals = mock[AuthRetrievals]
-    val mockAuditService: AuditService = mock[AuditService]
+    val mockPreferencesConnector: PreferencesConnector    = mock[PreferencesConnector]
+    val mockEntityResolver:       EntityResolverConnector = mock[EntityResolverConnector]
+    val mockAuthRetrievals:       AuthRetrievals          = mock[AuthRetrievals]
+    val mockAuditService:         AuditService            = mock[AuditService]
 
     val service =
       new CustomerProfileService(
@@ -268,7 +268,10 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         optInVersionsEnabled = false
       )
 
-    def mockPaperlessSettingOptIn(updatedPref: Option[Preference] ,result: Future[PreferencesStatus]) = {
+    def mockPaperlessSettingOptIn(
+      updatedPref: Option[Preference],
+      result:      Future[PreferencesStatus]
+    ) = {
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(result)
       when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(updatedPref))
@@ -293,14 +296,14 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       "opt in with versions enabled sends version info" in {
 
         val controller = new LiveCustomerProfileController(
-            mockAuthConnector,
-            200,
-            service,
-            citizenDetailsEnabled = true,
-            components,
-            shutteringConnectorMock,
-            optInVersionsEnabled = true
-          )
+          mockAuthConnector,
+          200,
+          service,
+          citizenDetailsEnabled = true,
+          components,
+          shutteringConnectorMock,
+          optInVersionsEnabled = true
+        )
 
         val updatedPref = Some(
           existingDigitalPreference.copy(status = Some(PaperlessStatus(StatusName.ReOptIn, Category.ReOptInRequired)))
@@ -308,12 +311,10 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         mockAuthAccessAndNotShuttered()
         mockPaperlessSettingOptIn(updatedPref, Future.successful(PreferencesCreated))
 
-
         val result =
           controller.paperlessSettingsOptIn(journeyId)(validPaperlessSettingsRequest)
-            status(result) mustBe 201
-          }
-
+        status(result) mustBe 201
+      }
 
       "opt in for a user with existing preferences" in {
 
@@ -336,7 +337,7 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
           validPaperlessSettingsRequest
         )
 
-        status(result) mustBe  404
+        status(result) mustBe 404
       }
 
       "return 409 for request without email" in {
@@ -348,21 +349,19 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
           validPaperlessSettingsRequest
         )
 
-        status(result) mustBe  409
+        status(result) mustBe 409
       }
-
 
       "propagate errors from the service" in {
 
         mockAuthAccessAndNotShuttered()
         mockPaperlessSettingOptIn(Some(existingDigitalPreference), Future.successful(PreferencesFailure))
 
-
         val result = liveCustomerProfileControllerNew.paperlessSettingsOptIn(journeyId)(
           validPaperlessSettingsRequest
         )
 
-        status(result) mustBe  500
+        status(result) mustBe 500
       }
 
       "propagate 401 for auth failure" in {
@@ -421,7 +420,7 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         status(result) mustBe 521
         val jsonBody = contentAsJson(result)
         (jsonBody \ "shuttered").as[Boolean] mustBe true
-        (jsonBody \ "title").as[String]      mustBe "Shuttered"
+        (jsonBody \ "title").as[String] mustBe "Shuttered"
         (jsonBody \ "message")
           .as[String] mustBe "Customer-Profile is currently not available"
       }
@@ -441,21 +440,21 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       val optOutPaperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
         FakeRequest().withBody(toJson(optOutPaperlessSettings))
 
-      def mockPaperlessSettingsOptOut(
-                                       result:          Future[PreferencesStatus]
-                                     ) = {
+      def mockPaperlessSettingsOptOut(result: Future[PreferencesStatus]) = {
         when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
           .thenReturn(result)
-        when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(Some(existingDigitalPreference)))
+        when(mockEntityResolver.getPreferences()(any(), any()))
+          .thenReturn(Future.successful(Some(existingDigitalPreference)))
         when(mockEntityResolver.paperlessSettings(any())(any(), any())).thenReturn(result)
       }
-
 
       "opt out for existing preferences with journey id" in {
         mockAuthAccessAndNotShuttered()
         mockPaperlessSettingsOptOut(Future successful PreferencesExists)
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidReOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidReOptOutPage)
+          )
 
         status(result) mustBe 204
       }
@@ -464,11 +463,12 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         mockAuthAccessAndNotShuttered()
         mockPaperlessSettingsOptOut(Future successful PreferencesCreated)
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
 
         status(result) mustBe 201
       }
-
 
       "opt out with versions enabled sends version info" in {
         val controller: LiveCustomerProfileController =
@@ -491,13 +491,14 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         status(result) mustBe 201
       }
 
-
       "return 404 where preference does not exist" in {
         mockAuthAccessAndNotShuttered()
         mockPaperlessSettingsOptOut(Future successful PreferencesDoesNotExist)
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
 
         status(result) mustBe 404
       }
@@ -507,7 +508,9 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         mockPaperlessSettingsOptOut(Future successful PreferencesFailure)
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
 
         status(result) mustBe 500
       }
@@ -518,7 +521,9 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
           .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
         status(result) mustBe 401
       }
 
@@ -527,7 +532,9 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
           .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
         status(result) mustBe 401
       }
 
@@ -543,20 +550,24 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         mockPaperlessSettingsOptOut(Future failed new RuntimeException())
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
         status(result) mustBe 500
       }
 
       "return 521 when shuttered" in {
-       mockAuthAccessAndShuttered()
+        mockAuthAccessAndShuttered()
 
         val result =
-          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(validPaperlessOptOutRequest(PageType.AndroidOptOutPage))
+          liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
+            validPaperlessOptOutRequest(PageType.AndroidOptOutPage)
+          )
 
         status(result) mustBe 521
         val jsonBody = contentAsJson(result)
         (jsonBody \ "shuttered").as[Boolean] mustBe true
-        (jsonBody \ "title").as[String]      mustBe "Shuttered"
+        (jsonBody \ "title").as[String] mustBe "Shuttered"
         (jsonBody \ "message")
           .as[String] mustBe "Customer-Profile is currently not available"
       }
@@ -574,16 +585,13 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
       val changeEmailRequestWithoutAcceptHeader: FakeRequest[JsValue] =
         FakeRequest().withBody(toJson(changeEmail))
 
-      def mockGetNiNo(result: Future[Option[Nino]])=
-        {
-          when(mockAuditService.withAudit[Option[Nino]](any(), any())(any())(any(), any()))
-            .thenReturn(result)
-          when(mockAuthRetrievals.retrieveNino()(any(), any())).thenReturn(result)
-        }
+      def mockGetNiNo(result: Future[Option[Nino]]) = {
+        when(mockAuditService.withAudit[Option[Nino]](any(), any())(any())(any(), any()))
+          .thenReturn(result)
+        when(mockAuthRetrievals.retrieveNino()(any(), any())).thenReturn(result)
+      }
 
-      def mockPendingEmail(
-                            result:      Future[PreferencesStatus]
-                          ) = {
+      def mockPendingEmail(result: Future[PreferencesStatus]) = {
         mockGetNiNo(Future.successful(Some(nino)))
         when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
           .thenReturn(result)
@@ -667,7 +675,6 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         mockAuthAccessAndNotShuttered()
         mockPendingEmail(Future failed new RuntimeException())
 
-
         val result =
           liveCustomerProfileControllerNew.preferencesPendingEmail(journeyId)(validPendingEmailRequest)
         status(result) mustBe 500
@@ -682,12 +689,12 @@ class LiveCustomerProfileControllerSpec extends  HttpClientV2Helper with BeforeA
         status(result) mustBe 521
         val jsonBody = contentAsJson(result)
         (jsonBody \ "shuttered").as[Boolean] mustBe true
-        (jsonBody \ "title").as[String]      mustBe "Shuttered"
+        (jsonBody \ "title").as[String] mustBe "Shuttered"
         (jsonBody \ "message")
           .as[String] mustBe "Customer-Profile is currently not available"
       }
-     }
-
     }
+
+  }
 
 }

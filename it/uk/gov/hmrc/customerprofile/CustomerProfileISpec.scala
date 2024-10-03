@@ -387,7 +387,6 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
       response.status shouldBe 409
     }
 
-
     "return a Internal Server Error response when unable update pending email preference for an entity" in {
       val expectedResponse = parse("""{"code":"PREFERENCE_SETTINGS_ERROR","message":"Failed to set preferences"}""")
 

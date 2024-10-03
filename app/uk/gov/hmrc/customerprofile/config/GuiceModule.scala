@@ -24,7 +24,6 @@ import uk.gov.hmrc.customerprofile.controllers.api.ApiAccess
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-
 class GuiceModule(
   environment:   Environment,
   configuration: Configuration)

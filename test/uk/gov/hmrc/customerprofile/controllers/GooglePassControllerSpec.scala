@@ -27,121 +27,120 @@ import uk.gov.hmrc.customerprofile.connector.{HttpClientV2Helper, ShutteringConn
 
 import scala.concurrent.Future
 
-class GooglePassControllerSpec extends  HttpClientV2Helper  {
+class GooglePassControllerSpec extends HttpClientV2Helper {
 
-
-  implicit val shutteringConnectorMock: ShutteringConnector = new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
-  val googleService:  GooglePassService = mock[GooglePassService]
-  val jwtToken: String            = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  implicit val shutteringConnectorMock: ShutteringConnector =
+    new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
+  val googleService: GooglePassService = mock[GooglePassService]
+  val jwtToken:      String            = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
 
   val googlePassController: GooglePassController =
     new GooglePassController(mockAuthConnector, 200, googleService, components, shutteringConnectorMock)
 
-
   "getGooglePass" should {
 
-        "return a google pass url with a jwt token" in {
-          val googlePass = RetrieveGooglePass(jwtToken)
+    "return a google pass url with a jwt token" in {
+      val googlePass = RetrieveGooglePass(jwtToken)
 
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.successful(grantAccessWithCL200))
-          when(requestBuilderExecute[Shuttering])
-            .thenReturn(Future.successful(notShuttered))
-          when(googleService.getGooglePass()(any(), any())).thenReturn(Future.successful(googlePass))
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(googleService.getGooglePass()(any(), any())).thenReturn(Future.successful(googlePass))
 
-          val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
 
-          status(result) mustBe  200
-          contentAsJson(result) mustBe toJson(googlePass)
-        }
+      status(result) mustBe 200
+      contentAsJson(result) mustBe toJson(googlePass)
+    }
 
+    "propagate 401" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
 
-      "propagate 401" in {
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+      val result =
+        googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
 
-        val result =
-          googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-        status(result) mustBe 401
-      }
+    "return 401 if the user has no nino" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
 
-        "return 401 if the user has no nino" in {
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+      val result =
+        googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+    "return status code 406 when the headers are invalid" in {
+      val result = googlePassController.getGooglePass(journeyId)(requestWithoutAcceptHeader)
+      status(result) mustBe 406
+    }
 
-          val result =
-            googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 401
-        }
-        "return status code 406 when the headers are invalid" in {
-          val result = googlePassController.getGooglePass(journeyId)(requestWithoutAcceptHeader)
-          status(result) mustBe 406
-        }
+    "return 500 for an unexpected error" in {
 
-        "return 500 for an unexpected error" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(googleService.getGooglePass()(any(), any())).thenReturn(Future.failed(new RuntimeException()))
 
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.successful(grantAccessWithCL200))
-          when(requestBuilderExecute[Shuttering])
-            .thenReturn(Future.successful(notShuttered))
-          when(googleService.getGooglePass()(any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      val result =
+        googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 500
+    }
+    "return 521 when shuttered" in {
 
-          val result =
-            googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 500
-        }
-        "return 521 when shuttered" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(shuttered))
 
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.successful(grantAccessWithCL200))
-          when(requestBuilderExecute[Shuttering])
-            .thenReturn(Future.successful(shuttered))
+      val result =
+        googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
 
-          val result =
-            googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 521
+      val jsonBody = contentAsJson(result)
+      (jsonBody \ "shuttered").as[Boolean] mustBe true
+      (jsonBody \ "title").as[String] mustBe "Shuttered"
+      (jsonBody \ "message")
+        .as[String] mustBe "Customer-Profile is currently not available"
+    }
 
-          status(result) mustBe 521
-          val jsonBody = contentAsJson(result)
-          (jsonBody \ "shuttered").as[Boolean] mustBe true
-          (jsonBody \ "title").as[String]      mustBe "Shuttered"
-          (jsonBody \ "message")
-            .as[String] mustBe "Customer-Profile is currently not available"
-        }
+    "return Unauthorized if failed to grant access" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 403, 403)))
 
-        "return Unauthorized if failed to grant access" in {
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 403, 403)))
+      val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
 
-          val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 401
-        }
+    "return Forbidden if failed to match URL NINO against Auth NINO" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new FailToMatchTaxIdOnAuth("ERROR")))
 
-        "return Forbidden if failed to match URL NINO against Auth NINO" in {
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.failed(new FailToMatchTaxIdOnAuth("ERROR")))
+      val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 403
+    }
 
-          val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 403
-        }
+    "return Unauthorised if Account with low CL" in {
 
-        "return Unauthorised if Account with low CL" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.failed(new AccountWithLowCL("ERROR")))
 
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.failed(new AccountWithLowCL("ERROR")))
+      val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+    "return 404 where the account does not exist" in {
 
-          val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 401
-        }
-        "return 404 where the account does not exist" in {
+      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
+        .thenReturn(Future.successful(grantAccessWithCL200))
+      when(requestBuilderExecute[Shuttering])
+        .thenReturn(Future.successful(notShuttered))
+      when(googleService.getGooglePass()(any(), any()))
+        .thenReturn(Future.failed(new NotFoundException("No resources found")))
 
-          when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-            .thenReturn(Future.successful(grantAccessWithCL200))
-          when(requestBuilderExecute[Shuttering])
-            .thenReturn(Future.successful(notShuttered))
-          when(googleService.getGooglePass()(any(), any())).thenReturn(Future.failed(new NotFoundException("No resources found")))
-
-          val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
-          status(result) mustBe 404
-        }
-      }
+      val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 404
+    }
+  }
 }

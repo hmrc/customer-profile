@@ -24,9 +24,7 @@ import play.api.libs.json.{Json, OWrites}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.customerprofile.views.txt
 
-
-case class ApiAccess(
-  `type`:                    String)
+case class ApiAccess(`type`: String)
 
 object ApiAccess {
   implicit val writes: OWrites[ApiAccess] = Json.writes[ApiAccess]

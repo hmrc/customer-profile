@@ -83,11 +83,11 @@ class CustomerProfileService @Inject() (
       for {
         preferences <- entityResolver.getPreferences()
         status <- preferences.fold(paperlessOptIn(settings)) { preference =>
-                  if (preference.digital && preference.status
-                        .getOrElse(PaperlessStatus(Verified, Info))
-                        .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
-                  else paperlessOptIn(settings)
-                }
+                   if (preference.digital && preference.status
+                         .getOrElse(PaperlessStatus(Verified, Info))
+                         .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
+                   else paperlessOptIn(settings)
+                 }
       } yield status
     }
 
@@ -118,8 +118,8 @@ class CustomerProfileService @Inject() (
   ): Future[PreferencesStatus] =
     auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
-        nino <- getNino()
-        entity <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        nino     <- getNino()
+        entity   <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         response <- preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }

@@ -60,7 +60,7 @@ object AuthStub {
         )
     )
 
-  def authRecordExistsNinoCheck (
+  def authRecordExistsNinoCheck(
     nino:            Nino,
     confidenceLevel: ConfidenceLevel = L200
   ): StubMapping =

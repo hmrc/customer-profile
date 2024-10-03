@@ -23,12 +23,12 @@ import uk.gov.hmrc.http.{BadRequestException, HttpResponse, TooManyRequestExcept
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class GooglePassConnectorSpec extends  HttpClientV2Helper {
+class GooglePassConnectorSpec extends HttpClientV2Helper {
 
   val connector = app.injector.instanceOf[GooglePassConnector]
-  val passId: String = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId:    String = "c864139e-77b5-448f-b443-17c69060870d"
   val jwtString: String = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-  val fullName = "Mr Joe Bloggs"
+  val fullName    = "Mr Joe Bloggs"
   val credentials = "dummyCredentials"
 
   "GooglePassConnector" when {
@@ -55,36 +55,36 @@ class GooglePassConnectorSpec extends  HttpClientV2Helper {
         }
       }
     }
-        "calling the getGooglePass" should {
-          "return a base 64 encoded string given the call is successful" in {
-            when(requestBuilderExecute[HttpResponse])
-              .thenReturn(Future.successful(HttpResponse(200, jwtString)))
+    "calling the getGooglePass" should {
+      "return a base 64 encoded string given the call is successful" in {
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(HttpResponse(200, jwtString)))
 
-            connector.getGooglePassUrl(passId) onComplete {
-              case Success(_) => RetrieveGooglePass(jwtString)
-              case Failure(_) =>
-            }
-          }
-          "return 429 exception if the call is unsuccessful" in {
-            when(requestBuilderExecute[HttpResponse])
-              .thenReturn(Future.failed(new TooManyRequestException("")))
-
-            connector.getGooglePassUrl(passId) onComplete {
-              case Success(_) => fail()
-              case Failure(_) =>
-            }
-          }
-          "return an exception if the call is unsuccessful" in {
-
-            when(requestBuilderExecute[HttpResponse])
-              .thenReturn(Future.failed(new BadRequestException("")))
-
-            connector.getGooglePassUrl(passId) onComplete {
-              case Success(_) => fail()
-              case Failure(_) =>
-            }
-          }
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => RetrieveGooglePass(jwtString)
+          case Failure(_) =>
         }
       }
+      "return 429 exception if the call is unsuccessful" in {
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new TooManyRequestException("")))
+
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+      "return an exception if the call is unsuccessful" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+    }
+  }
 
 }

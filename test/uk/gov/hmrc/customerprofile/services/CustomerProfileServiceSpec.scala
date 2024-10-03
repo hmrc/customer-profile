@@ -18,11 +18,12 @@ package uk.gov.hmrc.customerprofile.services
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{reset, when}
+import org.scalatest.BeforeAndAfterEach
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 
 import scala.concurrent.duration._
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailUpdateOk, Entity, EntityResolverConnector, PreferencesConnector, PreferencesCreated, PreferencesExists, PreferencesStatus}
+import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailUpdateOk, EntityResolverConnector, PreferencesConnector, PreferencesCreated, PreferencesExists, PreferencesStatus}
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
@@ -32,14 +33,15 @@ import uk.gov.hmrc.domain.Nino
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
-class CustomerProfileServiceSpec extends BaseSpec {
+class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
-  val appNameConfiguration: Configuration  = mock[Configuration]
+  val appNameConfiguration: Configuration = mock[Configuration]
+
   val mockCitizenDetailsConnector: CitizenDetailsConnector =
     mock[CitizenDetailsConnector]
   val mockPreferencesConnector: PreferencesConnector    = mock[PreferencesConnector]
   val mockEntityResolver:       EntityResolverConnector = mock[EntityResolverConnector]
-  val mockAuthRetrievals: AuthRetrievals          = mock[AuthRetrievals]
+  val mockAuthRetrievals:       AuthRetrievals          = mock[AuthRetrievals]
   val mockAuditService:         AuditService            = mock[AuditService]
 
   val service =
@@ -53,22 +55,27 @@ class CustomerProfileServiceSpec extends BaseSpec {
       mockAuditService
     )
 
+  override def beforeEach(): Unit = {
+    reset(mockEntityResolver)
+    reset(mockAuditService)
+  }
+
   implicit val defaultTimeout: FiniteDuration = 5 seconds
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
 
-
-    def mockGetAccounts() = {
-      when(mockAuditService.withAudit[Option[Nino]](any(), any())(any())(any(), any()))
-        .thenReturn(Future.successful(Some(nino)))
-      when(mockAuthRetrievals.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
+  def mockGetAccounts() = {
+    when(mockAuditService.withAudit[Option[Nino]](any(), any())(any())(any(), any()))
+      .thenReturn(Future.successful(Some(nino)))
+    when(mockAuthRetrievals.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
   }
 
   def mockGetEntityIdAndUpdatePendingEmailWithAudit() = {
 
     when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
       .thenReturn(Future.successful(EmailUpdateOk))
-    when(mockEntityResolver.getEntityIdByNino(any())(any(),any())).thenReturn(Future.successful(entity))
-    when(mockPreferencesConnector.updatePendingEmail(any(), any())(any(), any())).thenReturn(Future.successful(EmailUpdateOk))
+    when(mockEntityResolver.getEntityIdByNino(any())(any(), any())).thenReturn(Future.successful(entity))
+    when(mockPreferencesConnector.updatePendingEmail(any(), any())(any(), any()))
+      .thenReturn(Future.successful(EmailUpdateOk))
   }
 
   "getPersonalDetails" should {
@@ -91,11 +98,11 @@ class CustomerProfileServiceSpec extends BaseSpec {
         None
       )
 
-      val updatedPerson = person.copy(address =
-        Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings")))
-      )
+      val updatedPerson =
+        person.copy(address = Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings"))))
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person))
-      when(mockAuditService.withAudit[PersonDetails](any(), any())(any())(any(), any())).thenReturn(Future.successful(updatedPerson))
+      when(mockAuditService.withAudit[PersonDetails](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(updatedPerson))
 
       val personalDetails = await(service.getPersonalDetails(nino))
 
@@ -108,11 +115,11 @@ class CustomerProfileServiceSpec extends BaseSpec {
 
     "return middle name if present" in {
 
-      val updatedPerson = person3.copy(address =
-        Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings")))
-      )
+      val updatedPerson =
+        person3.copy(address = Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings"))))
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person3))
-      when(mockAuditService.withAudit[PersonDetails](any(), any())(any())(any(), any())).thenReturn(Future.successful(updatedPerson))
+      when(mockAuditService.withAudit[PersonDetails](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(updatedPerson))
 
       val personalDetails = await(service.getPersonalDetails(nino))
       personalDetails mustBe updatedPerson
@@ -124,7 +131,7 @@ class CustomerProfileServiceSpec extends BaseSpec {
   "getPreferences" should {
     "audit and return preferences" in {
 
-      val updatedPref =  existingDigitalPreference.copy(
+      val updatedPref = existingDigitalPreference.copy(
         emailAddress = existingDigitalPreference.email.map(_.email.value),
         status = Some(
           PaperlessStatus(existingDigitalPreference.status.get.name, category = Category.Info)
@@ -134,25 +141,28 @@ class CustomerProfileServiceSpec extends BaseSpec {
 
       when(mockAuditService.withAudit[Option[Preference]](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(Some(updatedPref)))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(Some(existingDigitalPreference)))
+      when(mockEntityResolver.getPreferences()(any(), any()))
+        .thenReturn(Future.successful(Some(existingDigitalPreference)))
 
       await(service.getPreferences()) mustBe Some(updatedPref)
     }
     "audit and return preferences if signed out" in {
       val preferences = existingDigitalPreference.copy(digital = false)
 
-      val updatedPref = Some(preferences.copy(
-        emailAddress = preferences.email.map(_.email.value),
-        email        = None
-      ))
+      val updatedPref = Some(
+        preferences.copy(
+          emailAddress = preferences.email.map(_.email.value),
+          email        = None
+        )
+      )
       when(mockAuditService.withAudit[Option[Preference]](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(updatedPref))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(Some(preferences)))
+      when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(Some(preferences)))
 
       await(service.getPreferences()) mustBe updatedPref
 
     }
- }
+  }
 
   "paperlessSettings" should {
 
@@ -163,21 +173,22 @@ class CustomerProfileServiceSpec extends BaseSpec {
       )
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesExists))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(updatedPref))
-      when(mockEntityResolver.paperlessSettings(any())(any(),any())).thenReturn(Future.successful(PreferencesExists))
+      when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(updatedPref))
+      when(mockEntityResolver.paperlessSettings(any())(any(), any())).thenReturn(Future.successful(PreferencesExists))
       val result = await(service.paperlessSettings(newPaperlessSettings, journeyId))
-      result  mustBe PreferencesExists
+      result mustBe PreferencesExists
     }
 
     "update the email for a user who already has a defined digital preference" in {
 
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(EmailUpdateOk))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(Some(existingDigitalPreference)))
+      when(mockEntityResolver.getPreferences()(any(), any()))
+        .thenReturn(Future.successful(Some(existingDigitalPreference)))
       mockGetAccounts()
       mockGetEntityIdAndUpdatePendingEmailWithAudit()
 
-      await(service.paperlessSettings(newPaperlessSettings, journeyId)) mustBe  EmailUpdateOk
+      await(service.paperlessSettings(newPaperlessSettings, journeyId)) mustBe EmailUpdateOk
     }
 
     "set the digital preference to true and update the email for a user who already has a defined non-digital preference" in {
@@ -185,8 +196,9 @@ class CustomerProfileServiceSpec extends BaseSpec {
       reset(mockAuditService)
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesExists))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(Some(existingDigitalPreference)))
-      when(mockEntityResolver.paperlessSettings(any())(any(),any())).thenReturn(Future.successful(PreferencesExists))
+      when(mockEntityResolver.getPreferences()(any(), any()))
+        .thenReturn(Future.successful(Some(existingDigitalPreference)))
+      when(mockEntityResolver.paperlessSettings(any())(any(), any())).thenReturn(Future.successful(PreferencesExists))
 
       await(service.paperlessSettings(newPaperlessSettings, journeyId)) mustBe PreferencesExists
     }
@@ -194,17 +206,17 @@ class CustomerProfileServiceSpec extends BaseSpec {
     "set the digital preference to true and set the email for a user who has no defined preference" in {
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesCreated))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(None))
-      when(mockEntityResolver.paperlessSettings(any())(any(),any())).thenReturn(Future.successful(PreferencesCreated))
+      when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(None))
+      when(mockEntityResolver.paperlessSettings(any())(any(), any())).thenReturn(Future.successful(PreferencesCreated))
 
-      await(service.paperlessSettings(newPaperlessSettings, journeyId)) mustBe  PreferencesCreated
+      await(service.paperlessSettings(newPaperlessSettings, journeyId)) mustBe PreferencesCreated
     }
 
     "If sent, override the accepted value to 'true' when opting in" in {
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesCreated))
-      when(mockEntityResolver.getPreferences()(any(),any())).thenReturn(Future.successful(None))
-      when(mockEntityResolver.paperlessSettings(any())(any(),any())).thenReturn(Future.successful(PreferencesCreated))
+      when(mockEntityResolver.getPreferences()(any(), any())).thenReturn(Future.successful(None))
+      when(mockEntityResolver.paperlessSettings(any())(any(), any())).thenReturn(Future.successful(PreferencesCreated))
 
       await(
         service.paperlessSettings(newPaperlessSettings
@@ -219,7 +231,7 @@ class CustomerProfileServiceSpec extends BaseSpec {
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesExists))
       when(mockEntityResolver.paperlessOptOut(any())(any(), any())).thenReturn(Future.successful(PreferencesExists))
-      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) mustBe  PreferencesExists
+      await(service.paperlessSettingsOptOut(PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English)))) mustBe PreferencesExists
     }
 
     "If sent, override the accepted value to 'false' when opting out" in {
@@ -237,11 +249,11 @@ class CustomerProfileServiceSpec extends BaseSpec {
       val expectedPreferences = preferencesWithStatus(ReOptIn)
 
       service.reOptInEnabledCheck(expectedPreferences) mustBe
-        expectedPreferences.copy(
-          status = Some(
-            PaperlessStatus(ReOptIn, category = Category.Info)
-          )
+      expectedPreferences.copy(
+        status = Some(
+          PaperlessStatus(ReOptIn, category = Category.Info)
         )
+      )
     }
     "replace ReOptIn status with Verified if disabled" in {
       val service =
@@ -257,11 +269,11 @@ class CustomerProfileServiceSpec extends BaseSpec {
       val expectedPreferences = preferencesWithStatus(ReOptIn)
 
       service.reOptInEnabledCheck(expectedPreferences) mustBe
-        expectedPreferences.copy(
-          status = Some(
-            PaperlessStatus(Verified, category = Category.Info)
-          )
+      expectedPreferences.copy(
+        status = Some(
+          PaperlessStatus(Verified, category = Category.Info)
         )
+      )
     }
   }
 

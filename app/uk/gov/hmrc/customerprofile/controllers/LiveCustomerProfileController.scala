@@ -61,36 +61,34 @@ class LiveCustomerProfileController @Inject() (
     nino:      Nino,
     journeyId: JourneyId
   ): Action[AnyContent] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromRequest(request)
-        shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-          withShuttering(shuttered) {
-            errorWrapper {
-              if (citizenDetailsEnabled) {
-                service
-                  .getPersonalDetails(nino)
-                  .map(as => Ok(toJson(as)))
-              } else Future successful result(ErrorNotFound)
-            }
+    validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          errorWrapper {
+            if (citizenDetailsEnabled) {
+              service
+                .getPersonalDetails(nino)
+                .map(as => Ok(toJson(as)))
+            } else Future successful result(ErrorNotFound)
           }
         }
+      }
     }
 
   override def getPreferences(journeyId: JourneyId): Action[AnyContent] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, None).async {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromRequest(request)
-        shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-          withShuttering(shuttered) {
-            errorWrapper(
-              service.getPreferences().map {
-                case Some(response) => Ok(toJson(service.reOptInEnabledCheck(response)))
-                case _              => NotFound
-              }
-            )
-          }
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          errorWrapper(
+            service.getPreferences().map {
+              case Some(response) => Ok(toJson(service.reOptInEnabledCheck(response)))
+              case _              => NotFound
+            }
+          )
         }
+      }
     }
 
   override def paperlessSettingsOptIn(journeyId: JourneyId): Action[JsValue] =

@@ -74,14 +74,14 @@ class EntityResolverConnector @Inject() (
         case _:        NotFoundException                                    => None
       }
 
-
   def paperlessSettings(
     paperless:   Paperless
   )(implicit hc: HeaderCarrier,
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
     withCircuitBreaker(
-      http.post(url"${url(s"/preferences/terms-and-conditions")}")
+      http
+        .post(url"${url(s"/preferences/terms-and-conditions")}")
         .withBody(Json.toJson(paperless))
         .execute[HttpResponse]
     ).map(_.status).map {
