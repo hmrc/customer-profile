@@ -192,8 +192,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
     }
 
     "set the digital preference to true and update the email for a user who already has a defined non-digital preference" in {
-      reset(mockEntityResolver)
-      reset(mockAuditService)
+
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(PreferencesExists))
       when(mockEntityResolver.getPreferences()(any(), any()))
