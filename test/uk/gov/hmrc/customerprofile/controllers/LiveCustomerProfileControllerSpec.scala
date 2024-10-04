@@ -29,13 +29,14 @@ import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailNotE
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain._
 import uk.gov.hmrc.customerprofile.services.{AuditService, CustomerProfileService}
+import uk.gov.hmrc.customerprofile.utils.AuthAndShutterMock
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
 
-class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAndAfterEach {
+class LiveCustomerProfileControllerSpec extends AuthAndShutterMock with BeforeAndAfterEach {
   val customerProfileService: CustomerProfileService = mock[CustomerProfileService]
 
   implicit val shutteringConnectorMock: ShutteringConnector =
@@ -52,23 +53,21 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
       optInVersionsEnabled = false
     )
 
+  def mockGetPersonalDetails(response: Future[PersonDetails]) =
+    when(customerProfileService.getPersonalDetails(any())(any(), any()))
+      .thenReturn(response)
+
+  def mockGetPreferences(response: Future[Option[Preference]]) =
+    when(customerProfileService.getPreferences()(any(), any()))
+      .thenReturn(response)
+
+  def mockReOptInEnabledCheck(response: Preference) =
+    when(customerProfileService.reOptInEnabledCheck(any()))
+      .thenReturn(response)
+
   override def beforeEach(): Unit = {
     reset(customerProfileService)
     reset(mockAuthConnector)
-  }
-
-  def mockAuthAccessAndNotShuttered() = {
-    when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-      .thenReturn(Future.successful(grantAccessWithCL200))
-    when(requestBuilderExecute[Shuttering])
-      .thenReturn(Future.successful(notShuttered))
-  }
-
-  def mockAuthAccessAndShuttered() = {
-    when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-      .thenReturn(Future.successful(grantAccessWithCL200))
-    when(requestBuilderExecute[Shuttering])
-      .thenReturn(Future.successful(shuttered))
   }
 
   "getPersonalDetails" should {
@@ -76,8 +75,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     "return personal details with journey id" in {
 
       mockAuthAccessAndNotShuttered()
-      when(customerProfileService.getPersonalDetails(any())(any(), any()))
-        .thenReturn(Future.successful(person))
+      mockGetPersonalDetails(Future.successful(person))
 
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
@@ -87,8 +85,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     }
 
     "propagate 401" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
@@ -96,8 +93,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     }
 
     "return 401 if the user has no nino" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
@@ -114,8 +110,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     "return 500 for an unexpected error" in {
 
       mockAuthAccessAndNotShuttered()
-      when(customerProfileService.getPersonalDetails(any())(any(), any()))
-        .thenReturn(Future.failed(new RuntimeException()))
+      mockGetPersonalDetails(Future.failed(new RuntimeException()))
 
       val result =
         liveCustomerProfileController.getPersonalDetails(nino, journeyId)(requestWithAcceptHeader)
@@ -143,10 +138,8 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
       val preference: Preference = Preference(digital = true)
 
       mockAuthAccessAndNotShuttered()
-      when(customerProfileService.getPreferences()(any(), any()))
-        .thenReturn(Future.successful(Some(preference)))
-      when(customerProfileService.reOptInEnabledCheck(any()))
-        .thenReturn(preference)
+      mockGetPreferences(Future.successful(Some(preference)))
+      mockReOptInEnabledCheck(preference)
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
 
@@ -157,8 +150,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     "handle no preferences found" in {
 
       mockAuthAccessAndNotShuttered()
-      when(customerProfileService.getPreferences()(any(), any()))
-        .thenReturn(Future.successful(None))
+      mockGetPreferences(Future.successful(None))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
 
@@ -166,16 +158,14 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     }
 
     "propagate 401" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
     }
 
     "return Unauthorized if failed to grant access" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 403, 403)))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
@@ -183,24 +173,21 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
 
     "return Forbidden if failed to match URL NINO against Auth NINO" in {
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new FailToMatchTaxIdOnAuth("ERROR")))
+      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 403
     }
 
     "return Unauthorized if Account with low CL" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new AccountWithLowCL("ERROR")))
+      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
     }
 
     "return 401 if the user has no nino" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
@@ -215,8 +202,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
     "return 500 for an unexpected error" in {
 
       mockAuthAccessAndNotShuttered()
-      when(customerProfileService.getPreferences()(any(), any()))
-        .thenReturn(Future.failed(new RuntimeException()))
+      mockGetPreferences(Future.failed(new RuntimeException()))
 
       val result = liveCustomerProfileController.getPreferences(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 500
@@ -365,8 +351,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
       }
 
       "propagate 401 for auth failure" in {
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+        mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
         val result = liveCustomerProfileControllerNew.paperlessSettingsOptIn(journeyId)(
           validPaperlessSettingsRequest
@@ -375,8 +360,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
       }
 
       "return 401 if the user has no nino" in {
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+        mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
         val result = liveCustomerProfileControllerNew.paperlessSettingsOptIn(journeyId)(
           validPaperlessSettingsRequest
@@ -517,8 +501,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
 
       "propagate 401 for auth failure" in {
 
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+        mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
         val result =
           liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
@@ -528,8 +511,7 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
       }
 
       "return 401 if the user has no nino" in {
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+        mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
         val result =
           liveCustomerProfileControllerNew.paperlessSettingsOptOut(journeyId)(
@@ -641,16 +623,14 @@ class LiveCustomerProfileControllerSpec extends HttpClientV2Helper with BeforeAn
 
       "propagate 401 for auth failure" in {
 
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+        mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
         val result =
           liveCustomerProfileControllerNew.preferencesPendingEmail(journeyId)(validPendingEmailRequest)
         status(result) mustBe 401
       }
 
       "return 401 if the user has no nino" in {
-        when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-          .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+        mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
         val result =
           liveCustomerProfileControllerNew.preferencesPendingEmail(journeyId)(validPendingEmailRequest)

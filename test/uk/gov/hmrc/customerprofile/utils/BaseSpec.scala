@@ -27,7 +27,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import eu.timepit.refined.auto._
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
-import org.scalatestplus.play.guice.{GuiceOneAppPerSuite}
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.libs.json.Json.toJson
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
@@ -37,7 +37,6 @@ import uk.gov.hmrc.customerprofile.connector.Entity
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.StatusName.Verified
 import uk.gov.hmrc.customerprofile.domain.{Address, Category, EmailPreference, OptInPage, PageType, Paperless, PaperlessStatus, Person, PersonDetails, Preference, Shuttering, StatusName, TermsAccepted, Version}
-
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig

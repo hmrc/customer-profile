@@ -23,11 +23,12 @@ import uk.gov.hmrc.customerprofile.domain._
 import play.api.test.Helpers._
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
-import uk.gov.hmrc.customerprofile.connector.{HttpClientV2Helper, ShutteringConnector}
+import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
+import uk.gov.hmrc.customerprofile.utils.AuthAndShutterMock
 
 import scala.concurrent.Future
 
-class GooglePassControllerSpec extends HttpClientV2Helper {
+class GooglePassControllerSpec extends AuthAndShutterMock {
 
   implicit val shutteringConnectorMock: ShutteringConnector =
     new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
@@ -37,16 +38,16 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
   val googlePassController: GooglePassController =
     new GooglePassController(mockAuthConnector, 200, googleService, components, shutteringConnectorMock)
 
+  def mockGoogleServiceDef(response: Future[RetrieveGooglePass]) =
+    when(googleService.getGooglePass()(any(), any())).thenReturn(response)
+
   "getGooglePass" should {
 
     "return a google pass url with a jwt token" in {
       val googlePass = RetrieveGooglePass(jwtToken)
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.successful(grantAccessWithCL200))
-      when(requestBuilderExecute[Shuttering])
-        .thenReturn(Future.successful(notShuttered))
-      when(googleService.getGooglePass()(any(), any())).thenReturn(Future.successful(googlePass))
+      mockAuthAccessAndNotShuttered()
+      mockGoogleServiceDef(Future.successful(googlePass))
 
       val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
 
@@ -55,8 +56,8 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
     }
 
     "propagate 401" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 401, 401)))
+
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
 
       val result =
         googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
@@ -64,8 +65,7 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
     }
 
     "return 401 if the user has no nino" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new NinoNotFoundOnAccount("no nino")))
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
 
       val result =
         googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
@@ -78,11 +78,8 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
 
     "return 500 for an unexpected error" in {
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.successful(grantAccessWithCL200))
-      when(requestBuilderExecute[Shuttering])
-        .thenReturn(Future.successful(notShuttered))
-      when(googleService.getGooglePass()(any(), any())).thenReturn(Future.failed(new RuntimeException()))
+      mockAuthAccessAndNotShuttered()
+      mockGoogleServiceDef(Future.failed(new RuntimeException()))
 
       val result =
         googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
@@ -90,10 +87,7 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
     }
     "return 521 when shuttered" in {
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.successful(grantAccessWithCL200))
-      when(requestBuilderExecute[Shuttering])
-        .thenReturn(Future.successful(shuttered))
+      mockAuthAccessAndShuttered()
 
       val result =
         googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
@@ -107,16 +101,14 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
     }
 
     "return Unauthorized if failed to grant access" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(UpstreamErrorResponse("ERROR", 403, 403)))
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
 
       val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
     }
 
     "return Forbidden if failed to match URL NINO against Auth NINO" in {
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new FailToMatchTaxIdOnAuth("ERROR")))
+      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
 
       val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 403
@@ -124,20 +116,15 @@ class GooglePassControllerSpec extends HttpClientV2Helper {
 
     "return Unauthorised if Account with low CL" in {
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.failed(new AccountWithLowCL("ERROR")))
+      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
 
       val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 401
     }
     "return 404 where the account does not exist" in {
 
-      when(mockAuthConnector.authorise[GrantAccess](any(), any())(any(), any()))
-        .thenReturn(Future.successful(grantAccessWithCL200))
-      when(requestBuilderExecute[Shuttering])
-        .thenReturn(Future.successful(notShuttered))
-      when(googleService.getGooglePass()(any(), any()))
-        .thenReturn(Future.failed(new NotFoundException("No resources found")))
+      mockAuthAccessAndNotShuttered()
+      mockGoogleServiceDef(Future.failed(new NotFoundException("No resources found")))
 
       val result = googlePassController.getGooglePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 404
