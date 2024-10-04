@@ -25,7 +25,7 @@ import java.util.Base64
 object GoogleCredentialsSerializer {
 
   def serializeToBase64String(credentials: GoogleCredentials): String = {
-    val outputStream = new ByteArrayOutputStream()
+    val outputStream       = new ByteArrayOutputStream()
     val objectOutputStream = new ObjectOutputStream(outputStream)
     objectOutputStream.writeObject(credentials)
     objectOutputStream.flush()

@@ -18,10 +18,12 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, Json}
 
-case class ApplePassIdGenerator(fullName: String, nino: String)
+case class ApplePassIdGenerator(
+  fullName: String,
+  nino:     String)
 
 object ApplePassIdGenerator {
 
-  implicit val format:Format[ApplePassIdGenerator] = Json.format[ApplePassIdGenerator]
+  implicit val format: Format[ApplePassIdGenerator] = Json.format[ApplePassIdGenerator]
 
 }

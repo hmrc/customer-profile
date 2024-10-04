@@ -19,17 +19,17 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.customerprofile.domain.Shuttering
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
-import uk.gov.hmrc.http.{CoreGet, HeaderCarrier, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ShutteringConnector @Inject() (
-  http:                                   CoreGet,
+  http:                                   HttpClientV2,
   @Named("mobile-shuttering") serviceUrl: String) {
 
   val logger: Logger = Logger(this.getClass)
@@ -38,18 +38,20 @@ class ShutteringConnector @Inject() (
     journeyId:              JourneyId
   )(implicit headerCarrier: HeaderCarrier,
     ex:                     ExecutionContext
-  ): Future[Shuttering] =
-    http
-      .GET[JsValue](s"$serviceUrl/mobile-shuttering/service/customer-profile/shuttered-status?journeyId=$journeyId")
-      .map { json =>
-        (json).as[Shuttering]
-      } recover {
-      case e: UpstreamErrorResponse =>
-        logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
-        Shuttering.shutteringDisabled
+  ): Future[Shuttering] = {
 
-      case e =>
-        logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
-        Shuttering.shutteringDisabled
-    }
+    def url(path: String): String = s"$serviceUrl$path"
+    http
+      .get(url"${url(s"/mobile-shuttering/service/customer-profile/shuttered-status?journeyId=$journeyId")}")
+      .execute[Shuttering]
+      .recover {
+        case e: UpstreamErrorResponse =>
+          logger.warn(s"Internal Server Error received from mobile-shuttering:\n $e \nAssuming unshuttered.")
+          Shuttering.shutteringDisabled
+
+        case e =>
+          logger.warn(s"Call to mobile-shuttering failed:\n $e \nAssuming unshuttered.")
+          Shuttering.shutteringDisabled
+      }
+  }
 }

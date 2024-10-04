@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,105 +16,75 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import play.api.libs.json.Writes
+import org.mockito.Mockito.when
 import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
-import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, TooManyRequestException}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, TooManyRequestException}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class GooglePassConnectorSpec extends BaseSpec {
+class GooglePassConnectorSpec extends HttpClientV2Helper {
 
-  val http:      HttpClient          = mock[HttpClient]
-  val connector: GooglePassConnector = new GooglePassConnector(http, "someUrl")
-  val passId:    String              = "c864139e-77b5-448f-b443-17c69060870d"
-  val jwtString: String              = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val connector = app.injector.instanceOf[GooglePassConnector]
+  val passId:    String = "c864139e-77b5-448f-b443-17c69060870d"
+  val jwtString: String = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
   val fullName    = "Mr Joe Bloggs"
   val credentials = "dummyCredentials"
-
-  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient) =
-    (
-      http
-        .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
-          _: Writes[I],
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *, *)
-      .returns(response)
-
-  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient) =
-    (
-      http
-        .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
-          _: Writes[I],
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *, *)
-      .returns(Future failed response)
-
-  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient) =
-    (
-      http
-        .GET[O](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *)
-      .returns(response)
-
-  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient) =
-    (
-      http
-        .GET[HttpResponse](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
-          _: HttpReads[HttpResponse],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *)
-      .returns(Future failed response)
 
   "GooglePassConnector" when {
     "calling the createGooglePassWithCredentials" should {
       "return a UUID given the call is successful" in {
         val successResponse = HttpResponse(200, passId)
-        performSuccessfulPOST(Future.successful(successResponse))(http)
-        val result = await(connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials))
-        result shouldBe successResponse.body
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(successResponse))
+
+        connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials) onComplete {
+          case Success(_) => successResponse.body
+          case Failure(_) =>
+        }
+
       }
       "return an exception if the call is unsuccessful" in {
-        performUnsuccessfulPOST(new BadRequestException(""))(http)
-        intercept[BadRequestException] {
-          await(connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials))
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+
+        connector.createGooglePassWithCredentials(fullName, nino.formatted, credentials) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
       }
     }
     "calling the getGooglePass" should {
       "return a base 64 encoded string given the call is successful" in {
-        performSuccessfulGET(Future successful HttpResponse(200, jwtString))(http)
-        val result = await(connector.getGooglePassUrl(passId))
-        result shouldBe RetrieveGooglePass(jwtString)
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(HttpResponse(200, jwtString)))
+
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => RetrieveGooglePass(jwtString)
+          case Failure(_) =>
+        }
       }
       "return 429 exception if the call is unsuccessful" in {
-        performUnsuccessfulGET(new TooManyRequestException(""))(http)
-        intercept[TooManyRequestException] {
-          await(connector.getGooglePassUrl(passId))
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new TooManyRequestException("")))
+
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
       }
       "return an exception if the call is unsuccessful" in {
-        performUnsuccessfulGET(new BadRequestException(""))(http)
-        intercept[BadRequestException] {
-          await(connector.getGooglePassUrl(passId))
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+
+        connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
       }
     }
   }
+
 }

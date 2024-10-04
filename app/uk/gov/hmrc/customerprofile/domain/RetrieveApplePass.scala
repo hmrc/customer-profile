@@ -22,6 +22,6 @@ case class RetrieveApplePass(applePass: String)
 
 object RetrieveApplePass {
 
-  implicit val format:Format[RetrieveApplePass] = Json.format[RetrieveApplePass]
+  implicit val format: Format[RetrieveApplePass] = Json.format[RetrieveApplePass]
 
 }

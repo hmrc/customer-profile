@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,16 @@ import com.google.inject.name.Named
 import play.api.Logger
 import play.api.http.Status.OK
 import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
-import uk.gov.hmrc.http.{HeaderCarrier, HttpClient, HttpException, HttpResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassConnector @Inject() (
-  http:                                                          HttpClient,
+  http:                                                          HttpClientV2,
   @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
 
   val logger: Logger = Logger(this.getClass)
@@ -46,7 +47,9 @@ class ApplePassConnector @Inject() (
     val details = ApplePassIdGenerator(fullName, nino)
 
     http
-      .POST[JsValue, HttpResponse](url, Json.toJson(details))
+      .post(url"$url")
+      .withBody(Json.toJson(details))
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => response.body
@@ -64,7 +67,8 @@ class ApplePassConnector @Inject() (
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
 
     http
-      .GET[HttpResponse](url)
+      .get(url"$url")
+      .execute[HttpResponse]
       .map { response =>
         response.status match {
           case OK => RetrieveApplePass(response.body)

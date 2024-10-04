@@ -18,8 +18,8 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, Json}
 
-case class RetrieveGooglePass (googlePass: String)
+case class RetrieveGooglePass(googlePass: String)
 
 object RetrieveGooglePass {
-  implicit val format : Format[RetrieveGooglePass] = Json.format[RetrieveGooglePass]
+  implicit val format: Format[RetrieveGooglePass] = Json.format[RetrieveGooglePass]
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,108 +16,33 @@
 
 package uk.gov.hmrc.customerprofile.services
 
-import org.scalamock.handlers.CallHandler3
-import org.scalamock.matchers.MatcherBase
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
-import uk.gov.hmrc.customerprofile.domain.{Person, PersonDetails, RetrieveApplePass}
+import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditResult.Success
-import uk.gov.hmrc.play.audit.http.connector.{AuditConnector, AuditResult}
-import uk.gov.hmrc.play.audit.model.DataEvent
-import uk.gov.hmrc.domain.Nino
-
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 class ApplePassServiceSpec extends BaseSpec {
 
-  val appNameConfiguration: Configuration  = mock[Configuration]
-  val auditConnector:       AuditConnector = mock[AuditConnector]
-  val passId:               String         = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String:         String         = "TXIgSm9lIEJsb2dncw=="
-
-  val person: PersonDetails = PersonDetails(
-    Person(
-      Some("Firstname"),
-      None,
-      Some("Lastname"),
-      Some("Intial"),
-      Some("Title"),
-      Some("Honours"),
-      Some("sex"),
-      None,
-      None,
-      Some("Firstname Lastname"),
-      Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
-    ),
-    None,
-    None
-  )
-
-  def mockAudit(
-    transactionName: String,
-    detail:          Map[String, String] = Map.empty
-  ): CallHandler3[DataEvent, HeaderCarrier, ExecutionContext, Future[
-    AuditResult
-  ]] = {
-    def dataEventWith(
-      auditSource: String,
-      auditType:   String,
-      tags:        Map[String, String]
-    ): MatcherBase =
-      argThat { (dataEvent: DataEvent) =>
-        dataEvent.auditSource.equals(auditSource) &&
-        dataEvent.auditType.equals(auditType) &&
-        dataEvent.tags.equals(tags) &&
-        dataEvent.detail.equals(detail)
-      }
-
-    (auditConnector
-      .sendEvent(_: DataEvent)(_: HeaderCarrier, _: ExecutionContext))
-      .expects(
-        dataEventWith(
-          appName,
-          auditType = "ServiceResponseSent",
-          tags      = Map("transactionName" -> transactionName)
-        ),
-        *,
-        *
-      )
-      .returns(Future successful Success)
-  }
-
-  def mockGetAccounts() = {
-    mockAudit(transactionName = "getApplePass")
-    (accountAccessControl
-      .retrieveNino()(_: HeaderCarrier, _: ExecutionContext))
-      .expects(*, *)
-      .returns(Future successful Some(nino))
-  }
-
-  def mockCreateApplePass(f: Future[String]) =
-    (getApplePassConnector
-      .createApplePass(_: String, _: String)(_: ExecutionContext, _: HeaderCarrier))
-      .expects(nino.formatted, *, *, *)
-      .returning(f)
-
-  def mockGetApplePass(f: Future[RetrieveApplePass]) =
-    (getApplePassConnector
-      .getApplePass(_: String)(_: ExecutionContext, _: HeaderCarrier))
-      .expects(passId, *, *)
-      .returning(f)
+  val appNameConfiguration:    Configuration  = mock[Configuration]
+  val passId:                  String         = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String:            String         = "TXIgSm9lIEJsb2dncw=="
+  implicit val defaultTimeout: FiniteDuration = 5 seconds
+  def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
   val getApplePassConnector:   ApplePassConnector      = mock[ApplePassConnector]
   val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
-  val auditService: AuditService = new AuditService(auditConnector, "customer-profile")
+  val auditService:            AuditService            = mock[AuditService]
 
   val service = new ApplePassService(
     citizenDetailsConnector,
     getApplePassConnector,
     accountAccessControl,
-    auditConnector,
     "customer-profile",
     auditService
   )
@@ -125,19 +50,16 @@ class ApplePassServiceSpec extends BaseSpec {
   "getApplePass" should {
     "audit and return an apple pass model with a base 64 encoded string" in {
 
-      mockGetAccounts()
-      mockAudit(transactionName = "applePass")
-
-      (citizenDetailsConnector
-        .personDetails(_: Nino)(_: HeaderCarrier, _: ExecutionContext))
-        .expects(nino, *, *)
-        .returns(Future successful person)
-
-      mockCreateApplePass(Future.successful(passId))
-      mockGetApplePass(Future.successful(RetrieveApplePass(base64String)))
+      when(accountAccessControl.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
+      when(auditService.withAudit[RetrieveApplePass](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(RetrieveApplePass(base64String)))
+      when(citizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person2))
+      when(getApplePassConnector.createApplePass(any(), any())(any(), any())).thenReturn(Future.successful(passId))
+      when(getApplePassConnector.getApplePass(any())(any(), any()))
+        .thenReturn(Future.successful(RetrieveApplePass(base64String)))
 
       val result = await(service.getApplePass())
-      result shouldBe RetrieveApplePass(base64String)
+      result mustBe RetrieveApplePass(base64String)
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ import com.google.inject.{Inject, Singleton}
 
 import javax.inject.Named
 import play.api.http.Status.{CREATED, GONE, NOT_FOUND, OK}
-import play.api.libs.json.{JsValue, Json}
+import play.api.libs.json.Json
 import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference}
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.{CoreGet, CorePost, HeaderCarrier, HttpResponse, NotFoundException, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException, StringContextOps, UpstreamErrorResponse}
 import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -51,7 +52,7 @@ case object NoPreferenceExists extends PreferencesStatus
 @Singleton
 class EntityResolverConnector @Inject() (
   @Named("entity-resolver") serviceUrl: String,
-  http:                                 CoreGet with CorePost,
+  http:                                 HttpClientV2,
   val configuration:                    Configuration,
   val environment:                      Environment)
     extends ServicesCircuitBreaker {
@@ -67,7 +68,7 @@ class EntityResolverConnector @Inject() (
   )(implicit headerCarrier: HeaderCarrier,
     ex:                     ExecutionContext
   ): Future[Option[Preference]] =
-    withCircuitBreaker(http.GET[Option[Preference]](url(s"/preferences")))
+    withCircuitBreaker(http.get(url"${url(s"/preferences")}").execute[Option[Preference]])
       .recover {
         case response: UpstreamErrorResponse if response.statusCode == GONE => None
         case _:        NotFoundException                                    => None
@@ -79,7 +80,10 @@ class EntityResolverConnector @Inject() (
     ex:          ExecutionContext
   ): Future[PreferencesStatus] =
     withCircuitBreaker(
-      http.POST[JsValue, HttpResponse](url(s"/preferences/terms-and-conditions"), Json.toJson(paperless))
+      http
+        .post(url"${url(s"/preferences/terms-and-conditions")}")
+        .withBody(Json.toJson(paperless))
+        .execute[HttpResponse]
     ).map(_.status).map {
       case OK        => PreferencesExists
       case CREATED   => PreferencesCreated
@@ -96,7 +100,9 @@ class EntityResolverConnector @Inject() (
   ): Future[PreferencesStatus] =
     withCircuitBreaker(
       http
-        .POST[JsValue, HttpResponse](url(s"/preferences/terms-and-conditions"), Json.toJson(paperlessOptOut))
+        .post(url"${url(s"/preferences/terms-and-conditions")}")
+        .withBody(Json.toJson(paperlessOptOut))
+        .execute[HttpResponse]
     ).map(_.status)
       .map {
         case OK      => PreferencesExists
@@ -118,6 +124,9 @@ class EntityResolverConnector @Inject() (
     ex:          ExecutionContext
   ): Future[Entity] =
     withCircuitBreaker {
-      http.GET[Entity](url(s"/entity-resolver/paye/${nino.nino}"))
+      http
+        .get(url"${url(s"/entity-resolver/paye/${nino.nino}")}")
+        .execute[Entity]
     }
+
 }

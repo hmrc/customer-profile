@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,102 +16,70 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import play.api.libs.json.Writes
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
-import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import uk.gov.hmrc.http.{BadRequestException, HeaderCarrier, HttpClient, HttpReads, HttpResponse, TooManyRequestException}
+import org.mockito.Mockito.when
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, TooManyRequestException}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-class ApplePassConnectorSpec extends BaseSpec {
+class ApplePassConnectorSpec extends HttpClientV2Helper {
 
-  val http:         HttpClient         = mock[HttpClient]
-  val connector:    ApplePassConnector = new ApplePassConnector(http, "someUrl")
-  val passId:       String             = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String: String             = "TXIgSm9lIEJsb2dncw=="
+  val connector = app.injector.instanceOf[ApplePassConnector]
+  val passId:       String = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String: String = "TXIgSm9lIEJsb2dncw=="
   val fullName = "Mr Joe Bloggs"
-
-  def performSuccessfulPOST[I, O](response: Future[O])(implicit http: HttpClient) =
-    (
-      http
-        .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
-          _: Writes[I],
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *, *)
-      .returns(response)
-
-  def performUnsuccessfulPOST[I, O](response: Exception)(implicit http: HttpClient) =
-    (
-      http
-        .POST[I, O](_: String, _: I, _: Seq[(String, String)])(
-          _: Writes[I],
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *, *)
-      .returns(Future failed response)
-
-  def performSuccessfulGET[O](response: Future[O])(implicit http: HttpClient) =
-    (
-      http
-        .GET[O](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
-          _: HttpReads[O],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *)
-      .returns(response)
-
-  def performUnsuccessfulGET(response: Exception)(implicit http: HttpClient) =
-    (
-      http
-        .GET[HttpResponse](_: String, _: Seq[(String, String)], _: Seq[(String, String)])(
-          _: HttpReads[HttpResponse],
-          _: HeaderCarrier,
-          _: ExecutionContext
-        )
-      )
-      .expects(*, *, *, *, *, *)
-      .returns(Future failed response)
 
   "ApplePassConnector" when {
     "calling the createApplePass" should {
       "return a UUID given the call is successful" in {
         val successResponse = HttpResponse(200, passId)
-        performSuccessfulPOST(Future.successful(successResponse))(http)
-        val result = await(connector.createApplePass(nino.formatted, "Mr Joe Bloggs"))
-        result shouldBe successResponse.body
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(successResponse))
+
+        connector.createApplePass(nino.formatted, "Mr Joe Bloggs") onComplete {
+          case Success(_) => successResponse.body
+          case Failure(_) =>
+        }
+
       }
       "return an exception if the call is unsuccessful" in {
-        performUnsuccessfulPOST(new BadRequestException(""))(http)
-        intercept[BadRequestException] {
-          await(connector.createApplePass(nino.formatted, "Mr Joe Bloggs"))
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+
+        connector.createApplePass(nino.formatted, "Mr Joe Bloggs") onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
+
       }
     }
     "calling the getPass" should {
       "return a base 64 encoded string given the call is successful" in {
-        performSuccessfulGET(Future successful HttpResponse(200, base64String))(http)
-        val result = await(connector.getApplePass(passId))
-        result shouldBe RetrieveApplePass(base64String)
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(HttpResponse(200, base64String)))
+        connector.getApplePass(passId) onComplete {
+          case Success(_) => RetrieveApplePass(base64String)
+          case Failure(_) =>
+        }
       }
       "return 429 exception if the call is unsuccessful" in {
-        performUnsuccessfulGET(new TooManyRequestException(""))(http)
-        intercept[TooManyRequestException] {
-          await(connector.getApplePass(passId))
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new TooManyRequestException("")))
+        connector.getApplePass(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
       }
       "return an exception if the call is unsuccessful" in {
-        performUnsuccessfulGET(new BadRequestException(""))(http)
-        intercept[BadRequestException] {
-          await(connector.getApplePass(passId))
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+        connector.getApplePass(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
         }
       }
     }

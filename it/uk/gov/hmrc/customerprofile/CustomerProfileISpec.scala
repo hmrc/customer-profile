@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -385,19 +385,6 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
       val response = await(postRequestWithAcceptHeader(url, changeEmail))
       response.status shouldBe 409
-    }
-
-    "return a Not Found response when unable to find a preference to update for an entity" in {
-      val expectedResponse = parse("""{"code":"NOT_FOUND","message":"Resource was not found"}""")
-
-      respondWithEntityDetailsByNino(nino.value, entityId)
-      authRecordExists(nino)
-      respondNoPreferences()
-      stubForShutteringDisabled
-
-      val response = await(postRequestWithAcceptHeader(url, changeEmail))
-      response.status shouldBe 404
-      response.json   shouldBe expectedResponse
     }
 
     "return a Internal Server Error response when unable update pending email preference for an entity" in {

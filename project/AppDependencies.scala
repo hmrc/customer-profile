@@ -2,9 +2,9 @@ import sbt._
 
 object AppDependencies {
 
-  private val bootstrapPlayVersion          = "8.5.0"
+  private val bootstrapPlayVersion          = "9.5.0"
   private val playHmrcVersion               = "8.0.0"
-  private val domainVersion                 = "9.0.0"
+  private val domainVersion                 = "10.0.0"
   private val reactiveCircuitBreakerVersion = "5.0.0"
   private val emailAddressVersion           = "4.0.0"
   private val flexmarkAllVersion            = "0.36.8"
@@ -12,7 +12,7 @@ object AppDependencies {
   private val scalaMockVersion = "5.2.0"
   private val pegdownVersion   = "1.6.0"
   private val wiremockVersion  = "2.21.0"
-  private val refinedVersion   = "0.11.1"
+  private val refinedVersion   = "0.11.2"
 
   val compile = Seq(
     "uk.gov.hmrc"                  %% "bootstrap-backend-play-30"      % bootstrapPlayVersion,

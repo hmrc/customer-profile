@@ -32,7 +32,7 @@ object PaperlessStatus {
 
     override def writes(o: Option[T]): JsValue = o match {
       case Some(t) => implicitly[Writes[T]].writes(t)
-      case None => JsNull
+      case None    => JsNull
     }
   }
 

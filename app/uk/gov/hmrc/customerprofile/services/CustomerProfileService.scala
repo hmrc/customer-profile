@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ class CustomerProfileService @Inject() (
   preferencesConnector:                        PreferencesConnector,
   entityResolver:                              EntityResolverConnector,
   val accountAccessControl:                    AuthRetrievals,
-  val auditConnector:                          AuditConnector,
   @Named("appName") val appName:               String,
   @Named("reOptInEnabled") val reOptInEnabled: Boolean,
   auditService:                                AuditService) {
@@ -84,11 +83,11 @@ class CustomerProfileService @Inject() (
       for {
         preferences <- entityResolver.getPreferences()
         status <- preferences.fold(paperlessOptIn(settings)) { preference =>
-                  if (preference.digital && preference.status
-                        .getOrElse(PaperlessStatus(Verified, Info))
-                        .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
-                  else paperlessOptIn(settings)
-                }
+                   if (preference.digital && preference.status
+                         .getOrElse(PaperlessStatus(Verified, Info))
+                         .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
+                   else paperlessOptIn(settings)
+                 }
       } yield status
     }
 
@@ -119,8 +118,8 @@ class CustomerProfileService @Inject() (
   ): Future[PreferencesStatus] =
     auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
-        nino <- getNino()
-        entity <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        nino     <- getNino()
+        entity   <- entityResolver.getEntityIdByNino(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         response <- preferencesConnector.updatePendingEmail(changeEmail, entity._id)
       } yield response
     }

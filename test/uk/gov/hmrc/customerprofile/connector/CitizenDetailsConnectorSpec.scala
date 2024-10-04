@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2024 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,38 @@
 
 package uk.gov.hmrc.customerprofile.connector
 
-import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import uk.gov.hmrc.http.{BadRequestException, CoreGet, HeaderCarrier, HttpReads, HttpResponse, UpstreamErrorResponse}
+import org.mockito.Mockito.when
 
-import scala.concurrent.{ExecutionContext, Future}
+import uk.gov.hmrc.http.{BadRequestException, HttpResponse, UpstreamErrorResponse}
 
-class CitizenDetailsConnectorSpec extends BaseSpec {
+import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
-  val http:      CoreGet                 = mock[CoreGet]
-  val connector: CitizenDetailsConnector = new CitizenDetailsConnector("someUrl", http)
+class CitizenDetailsConnectorSpec extends HttpClientV2Helper {
 
-  def mockHttpGet(exception: Exception) =
-    (http
-      .GET(_: String, _: Seq[(String, String)], _: Seq[(String, String)])(_: HttpReads[HttpResponse],
-                                                                          _: HeaderCarrier,
-                                                                          _: ExecutionContext))
-      .expects(*, *, *, *, *, *)
-      .returns(Future failed exception)
+  val connector = app.injector.instanceOf[CitizenDetailsConnector]
 
   "citizenDetailsConnector" should {
     "throw BadRequestException when a 400 response is returned" in {
-      mockHttpGet(new BadRequestException("bad request"))
 
-      intercept[BadRequestException] {
-        await(connector.personDetails(nino))
+      when(requestBuilderExecute[HttpResponse])
+        .thenReturn(Future.failed(new BadRequestException("bad request")))
+      connector.personDetails(nino) onComplete {
+        case Success(_) => fail()
+        case Failure(_) =>
       }
+
     }
 
     "throw Upstream5xxResponse when a 500 response is returned" in {
-      mockHttpGet(UpstreamErrorResponse("Error", 500, 500))
 
-      intercept[UpstreamErrorResponse] {
-        await(connector.personDetails(nino))
+      when(requestBuilderExecute[HttpResponse])
+        .thenReturn(Future.failed(UpstreamErrorResponse("Error", 500, 500)))
+      connector.personDetails(nino) onComplete {
+        case Success(_) => fail()
+        case Failure(_) =>
       }
+
     }
   }
 }

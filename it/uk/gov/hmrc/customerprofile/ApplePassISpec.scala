@@ -72,6 +72,7 @@ class ApplePassISpec extends BaseISpec {
     "return 404 response status code when citizen-details returns 404 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 404)
       authRecordExists(nino)
+      ninoFound(nino)
       stubForShutteringDisabled
 
       val response = await(getRequestWithAcceptHeader(url))
