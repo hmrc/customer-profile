@@ -70,7 +70,7 @@ class GooglePassService @Inject() (
   def getGoogleQRCode(
   )(implicit hc:      HeaderCarrier,
     executionContext: ExecutionContext
-  ): Future[RetrieveGooglePass] =
+  ): Future[Option[Array[Byte]]] =
     auditService.withAudit("googleQRCode", Map.empty) {
       for {
         nino           <- getNino()

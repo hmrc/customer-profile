@@ -61,5 +61,21 @@ class ApplePassServiceSpec extends BaseSpec {
       val result = await(service.getApplePass())
       result mustBe RetrieveApplePass(base64String)
     }
+
+    "audit and return an apple QR code" in {
+
+      val qrCode = "QRCode".getBytes()
+
+      when(accountAccessControl.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
+      when(auditService.withAudit[Option[Array[Byte]]](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(Some(qrCode)))
+      when(citizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person2))
+      when(getApplePassConnector.createApplePass(any(), any())(any(), any())).thenReturn(Future.successful(passId))
+      when(getApplePassConnector.getAppleQRCode(any())(any(), any()))
+        .thenReturn(Future.successful(Some(qrCode)))
+
+      val result: Option[Array[Byte]] = await(service.getAppleQRCode())
+      result mustBe Some(qrCode)
+    }
   }
 }

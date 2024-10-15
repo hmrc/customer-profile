@@ -85,6 +85,7 @@ class ApplePassControllerSpec extends AuthAndShutterMock {
       val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 500
     }
+
     "return 521 when shuttered" in {
 
       mockAuthAccessAndShuttered()
@@ -132,5 +133,102 @@ class ApplePassControllerSpec extends AuthAndShutterMock {
       val result = applePassController.getApplePass(journeyId)(requestWithAcceptHeader)
       status(result) mustBe 404
     }
+  }
+
+  "getAppleQRCode" should {
+
+    val qrCode: Array[Byte] = "QRCodeData".getBytes()
+
+    def mockAppleServiceQRCode(response: Future[Option[Array[Byte]]]) =
+      when(appleService.getAppleQRCode()(any(), any())).thenReturn(response)
+
+    "return an apple base 64 encoded string" in {
+      mockAuthAccessAndNotShuttered()
+      mockAppleServiceQRCode(Future.successful(Some(qrCode)))
+
+      val response = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe OK
+      contentAsJson(response) mustBe Json.toJson(qrCode)
+
+    }
+
+    "propagate 401" in {
+
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
+
+      val response = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe UNAUTHORIZED
+    }
+
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
+
+      val response = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(response) mustBe UNAUTHORIZED
+
+    }
+
+    "return status code 406 when the headers are invalid" in {
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithoutAcceptHeader)
+      status(result) mustBe NOT_ACCEPTABLE
+    }
+
+    "return 500 for an unexpected error" in {
+
+      mockAuthAccessAndNotShuttered()
+      mockAppleServiceQRCode(Future.failed(new RuntimeException()))
+
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 500
+    }
+
+    "return 521 when shuttered" in {
+
+      mockAuthAccessAndShuttered()
+
+      val result =
+        applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+
+      status(result) mustBe 521
+      val jsonBody = contentAsJson(result)
+      (jsonBody \ "shuttered").as[Boolean] mustBe true
+      (jsonBody \ "title").as[String] mustBe "Shuttered"
+      (jsonBody \ "message")
+        .as[String] mustBe "Customer-Profile is currently not available"
+    }
+
+    "return Unauthorized if failed to grant access" in {
+
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
+
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe UNAUTHORIZED
+    }
+
+    "return Forbidden if failed to match URL NINO against Auth NINO" in {
+
+      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
+
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe FORBIDDEN
+    }
+
+    "return Unauthorised if Account with low CL" in {
+
+      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
+
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe UNAUTHORIZED
+    }
+
+    "return 404 where the account does not exist" in {
+
+      mockAuthAccessAndNotShuttered()
+      mockAppleServiceQRCode(Future.failed(new NotFoundException("No resources found")))
+
+      val result = applePassController.getAppleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 404
+    }
+
   }
 }

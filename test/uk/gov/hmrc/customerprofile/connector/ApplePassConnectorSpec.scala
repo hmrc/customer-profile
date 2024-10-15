@@ -83,5 +83,37 @@ class ApplePassConnectorSpec extends HttpClientV2Helper {
         }
       }
     }
+
+    "calling the get QR code" should {
+
+      val bytes = "QRCode".getBytes
+      "return a Array of bytes given the call is successful" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(HttpResponse(200, "QRCode")))
+        connector.getAppleQRCode(passId) onComplete {
+          case Success(_) => Some(bytes)
+          case Failure(_) =>
+        }
+      }
+      "return 429 exception if the call is unsuccessful" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new TooManyRequestException("")))
+        connector.getAppleQRCode(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+      "return an exception if the call is unsuccessful" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+        connector.getAppleQRCode(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+    }
   }
 }

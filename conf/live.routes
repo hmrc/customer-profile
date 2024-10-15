@@ -16,4 +16,4 @@ GET         /apple-qr-code                                            uk.gov.hmr
 
 GET         /google-pass                                           uk.gov.hmrc.customerprofile.controllers.GooglePassController.getGooglePass(journeyId: JourneyId)
 
-GET         /google-qr-code                                            uk.gov.hmrc.customerprofile.controllers.ApplePassController.getGoogleQRCode(journeyId: JourneyId)
+GET         /google-qr-code                                            uk.gov.hmrc.customerprofile.controllers.GooglePassController.getGoogleQRCode(journeyId: JourneyId)

@@ -19,12 +19,13 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.Inject
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 import com.google.inject.name.Named
-import play.api.http.Status.OK
+import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{GooglePassDetailsWithCredentials, RetrieveGooglePass}
 import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 
+import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 class GooglePassConnector @Inject() (
@@ -79,18 +80,18 @@ class GooglePassConnector @Inject() (
     passId:        String
   )(implicit ec:   ExecutionContext,
     headerCarrier: HeaderCarrier
-  ): Future[RetrieveGooglePass] = {
+  ): Future[Option[Array[Byte]]] = {
 
-    val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-google-qr-code ?passId=$passId"
+    val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-google-qr-code?passId=$passId"
 
     http
       .get(url"$url")
       .execute[HttpResponse]
       .map { response =>
         response.status match {
-          case OK =>
-            RetrieveGooglePass(response.body)
-          case _ => throw new HttpException(response.body, response.status)
+          case OK        => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
+          case _         => throw new HttpException(response.body, response.status)
         }
       }
   }
