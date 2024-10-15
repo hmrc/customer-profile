@@ -130,4 +130,97 @@ class GooglePassControllerSpec extends AuthAndShutterMock {
       status(result) mustBe 404
     }
   }
+
+  "getGoogleQRCode" should {
+
+    def mockGoogleQRCodeDef(response: Future[Option[Array[Byte]]]) =
+      when(googleService.getGoogleQRCode()(any(), any())).thenReturn(response)
+
+    val bytes = "QRCode".getBytes
+
+    "return a google QR Code" in {
+      mockAuthAccessAndNotShuttered()
+      mockGoogleQRCodeDef(Future.successful(Some(bytes)))
+
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+
+      status(result) mustBe 200
+      contentAsJson(result) mustBe toJson(bytes)
+    }
+
+    "propagate 401" in {
+
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 401, 401))
+
+      val result =
+        googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+
+    "return 401 if the user has no nino" in {
+      mockAuthorisationGrantAccessFail(new NinoNotFoundOnAccount("no nino"))
+
+      val result =
+        googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+    "return status code 406 when the headers are invalid" in {
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithoutAcceptHeader)
+      status(result) mustBe 406
+    }
+
+    "return 500 for an unexpected error" in {
+
+      mockAuthAccessAndNotShuttered()
+      mockGoogleQRCodeDef(Future.failed(new RuntimeException()))
+
+      val result =
+        googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 500
+    }
+    "return 521 when shuttered" in {
+
+      mockAuthAccessAndShuttered()
+
+      val result =
+        googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+
+      status(result) mustBe 521
+      val jsonBody = contentAsJson(result)
+      (jsonBody \ "shuttered").as[Boolean] mustBe true
+      (jsonBody \ "title").as[String] mustBe "Shuttered"
+      (jsonBody \ "message")
+        .as[String] mustBe "Customer-Profile is currently not available"
+    }
+
+    "return Unauthorized if failed to grant access" in {
+      mockAuthorisationGrantAccessFail(UpstreamErrorResponse("ERROR", 403, 403))
+
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+
+    "return Forbidden if failed to match URL NINO against Auth NINO" in {
+      mockAuthorisationGrantAccessFail(new FailToMatchTaxIdOnAuth("ERROR"))
+
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 403
+    }
+
+    "return Unauthorised if Account with low CL" in {
+
+      mockAuthorisationGrantAccessFail(new AccountWithLowCL("ERROR"))
+
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 401
+    }
+    "return 404 where the account does not exist" in {
+
+      mockAuthAccessAndNotShuttered()
+      mockGoogleQRCodeDef(Future.failed(new NotFoundException("No resources found")))
+
+      val result = googlePassController.getGoogleQRCode(journeyId)(requestWithAcceptHeader)
+      status(result) mustBe 404
+    }
+  }
 }

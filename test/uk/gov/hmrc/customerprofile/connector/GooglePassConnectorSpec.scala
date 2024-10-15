@@ -55,6 +55,7 @@ class GooglePassConnectorSpec extends HttpClientV2Helper {
         }
       }
     }
+
     "calling the getGooglePass" should {
       "return a base 64 encoded string given the call is successful" in {
         when(requestBuilderExecute[HttpResponse])
@@ -80,6 +81,39 @@ class GooglePassConnectorSpec extends HttpClientV2Helper {
           .thenReturn(Future.failed(new BadRequestException("")))
 
         connector.getGooglePassUrl(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+    }
+
+    "calling the get Google qr code" should {
+
+      val bytes = "QRCode".getBytes
+      "return a Array of Bytes given the call is successful" in {
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.successful(HttpResponse(200, "QRCode")))
+
+        connector.getGoogleQRCode(passId) onComplete {
+          case Success(_) => Some(bytes)
+          case Failure(_) =>
+        }
+      }
+      "return 429 exception if the call is unsuccessful" in {
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new TooManyRequestException("")))
+
+        connector.getGoogleQRCode(passId) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+      }
+      "return an exception if the call is unsuccessful" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("")))
+
+        connector.getGoogleQRCode(passId) onComplete {
           case Success(_) => fail()
           case Failure(_) =>
         }

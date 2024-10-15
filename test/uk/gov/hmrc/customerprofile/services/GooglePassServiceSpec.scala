@@ -66,6 +66,21 @@ class GooglePassServiceSpec extends BaseSpec {
       result mustBe RetrieveGooglePass(googleKey)
     }
 
+    "audit and return a  google QR Code in Bytes" in {
+
+      val qrCode = "QRcode".getBytes()
+      when(accountAccessControl.retrieveNino()(any(), any())).thenReturn(Future.successful(Some(nino)))
+      when(auditService.withAudit[Option[Array[Byte]]](any(), any())(any())(any(), any()))
+        .thenReturn(Future.successful(Some(qrCode)))
+      when(citizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person2))
+      when(getGooglePassConnector.createGooglePassWithCredentials(any(), any(), any())(any(), any()))
+        .thenReturn(Future.successful(passId))
+      when(getGooglePassConnector.getGoogleQRCode(any())(any(), any()))
+        .thenReturn(Future.successful(Some(qrCode)))
+      val result = await(googlePassService.getGoogleQRCode())
+      result mustBe Some(qrCode)
+    }
+
   }
 
 }
