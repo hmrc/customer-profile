@@ -12,4 +12,8 @@ POST        /profile/preferences/pending-email                     uk.gov.hmrc.c
 
 GET         /apple-pass                                            uk.gov.hmrc.customerprofile.controllers.ApplePassController.getApplePass(journeyId: JourneyId)
 
+GET         /apple-qr-code                                            uk.gov.hmrc.customerprofile.controllers.ApplePassController.getAppleQRCode(journeyId: JourneyId)
+
 GET         /google-pass                                           uk.gov.hmrc.customerprofile.controllers.GooglePassController.getGooglePass(journeyId: JourneyId)
+
+GET         /google-qr-code                                            uk.gov.hmrc.customerprofile.controllers.ApplePassController.getGoogleQRCode(journeyId: JourneyId)

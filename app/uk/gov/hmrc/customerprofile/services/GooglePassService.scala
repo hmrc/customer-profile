@@ -66,4 +66,23 @@ class GooglePassService @Inject() (
         retrieveGooglePass: RetrieveGooglePass = RetrieveGooglePass(retrieveJwt(retrievePass.googlePass))
       } yield retrieveGooglePass
     }
+
+  def getGoogleQRCode(
+  )(implicit hc:      HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[RetrieveGooglePass] =
+    auditService.withAudit("googleQRCode", Map.empty) {
+      for {
+        nino           <- getNino()
+        citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        getGooglePass <- googlePassConnector.createGooglePassWithCredentials(
+                          citizenDetails.person.completeName,
+                          nino.get.formatted,
+                          googleCredentialsHelper.createGoogleCredentials(key)
+                        )
+        googleQRCode <- googlePassConnector.getGoogleQRCode(getGooglePass)
+
+      } yield googleQRCode
+    }
+
 }

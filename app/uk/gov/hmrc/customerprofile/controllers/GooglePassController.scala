@@ -62,4 +62,18 @@ class GooglePassController @Inject() (
         }
       }
     }
+
+  def getGoogleQRCode(journeyId: JourneyId): Action[AnyContent] =
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          errorWrapper {
+            service
+              .getGoogleQRCode()
+              .map(response => Ok(toJson(response)))
+          }
+        }
+      }
+    }
 }

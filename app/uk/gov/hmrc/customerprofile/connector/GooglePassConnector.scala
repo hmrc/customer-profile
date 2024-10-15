@@ -75,4 +75,24 @@ class GooglePassConnector @Inject() (
       }
   }
 
+  def getGoogleQRCode(
+    passId:        String
+  )(implicit ec:   ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): Future[RetrieveGooglePass] = {
+
+    val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-google-qr-code ?passId=$passId"
+
+    http
+      .get(url"$url")
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK =>
+            RetrieveGooglePass(response.body)
+          case _ => throw new HttpException(response.body, response.status)
+        }
+      }
+  }
+
 }

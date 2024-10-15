@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.Inject
 import com.google.inject.name.Named
 import play.api.Logger
-import play.api.http.Status.OK
+import play.api.http.Status.{NOT_FOUND, OK}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
@@ -27,6 +27,7 @@ import uk.gov.hmrc.http.HttpReads.Implicits._
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringContextOps}
 
+import java.util.Base64
 import scala.concurrent.{ExecutionContext, Future}
 
 class ApplePassConnector @Inject() (
@@ -73,6 +74,26 @@ class ApplePassConnector @Inject() (
         response.status match {
           case OK => RetrieveApplePass(response.body)
           case _  => throw new HttpException(response.body, response.status)
+        }
+      }
+  }
+
+  def getAppleQRCode(
+    passId:        String
+  )(implicit ec:   ExecutionContext,
+    headerCarrier: HeaderCarrier
+  ): Future[Option[Array[Byte]]] = {
+
+    val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-qr-code?passId=$passId"
+
+    http
+      .get(url"$url")
+      .execute[HttpResponse]
+      .map { response =>
+        response.status match {
+          case OK        => Some(Base64.getDecoder.decode(response.body))
+          case NOT_FOUND => None
+          case _         => throw new HttpException(response.body, response.status)
         }
       }
   }

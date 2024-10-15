@@ -23,7 +23,6 @@ import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
@@ -55,6 +54,20 @@ class ApplePassService @Inject() (
                                                                     citizenDetails.person.completeName)
         getApplePass <- createApplePassConnector.getApplePass(createApplePass)
       } yield getApplePass
+    }
+
+  def getAppleQRCode(
+  )(implicit hc:      HeaderCarrier,
+    executionContext: ExecutionContext
+  ): Future[Option[Array[Byte]]] =
+    auditService.withAudit("appleQRCode", Map.empty) {
+      for {
+        nino           <- getNino()
+        citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        createApplePass <- createApplePassConnector.createApplePass(nino.get.formatted,
+                                                                    citizenDetails.person.completeName)
+        appleQRCode <- createApplePassConnector.getAppleQRCode(createApplePass)
+      } yield appleQRCode
     }
 
 }
