@@ -51,4 +51,19 @@ class CitizenDetailsConnector @Inject() (
           logger.info(s"No details found for nino '$nino'")
           throw new HttpException(e.getMessage(), NOT_FOUND)
       }
+
+  def personDetailsForPin(
+    nino:        Nino
+  )(implicit hc: HeaderCarrier,
+    ec:          ExecutionContext
+  ): Future[Option[PersonDetails]] =
+    http
+      .get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
+      .execute[PersonDetails]
+      .map(details => Some(details))
+      .recover {
+        case _ =>
+          logger.warn(s"No Customer found in the DB with the given NINO")
+          None
+      }
 }

@@ -20,7 +20,9 @@ import play.api.Logger
 import play.api.libs.json.Json
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Request, Result, Results}
 import uk.gov.hmrc.api.controllers.{ErrorAcceptHeaderInvalid, ErrorResponse, ErrorUnauthorizedLowCL, HeaderValidator}
-import uk.gov.hmrc.auth.core.{AuthorisedFunctions, Enrolment, EnrolmentIdentifier}
+import uk.gov.hmrc.auth.core.authorise.EmptyPredicate
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals
+import uk.gov.hmrc.auth.core.{AuthorisationException, AuthorisedFunctions, Enrolment, EnrolmentIdentifier, NoActiveSession}
 import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{confidenceLevel, nino}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.customerprofile.controllers.{AccountWithLowCL, ErrorUnauthorizedNoNino, ErrorUnauthorizedUpstream, FailToMatchTaxIdOnAuth, ForbiddenAccess, NinoNotFoundOnAccount}
@@ -40,11 +42,28 @@ trait Authorisation extends Results with AuthorisedFunctions {
   lazy val failedToMatchNino     = new FailToMatchTaxIdOnAuth("The nino in the URL failed to match auth!")
   lazy val lowConfidenceLevel    = new AccountWithLowCL("Unauthorised! Account with low CL!")
 
+  def withNinoFromAuth(
+    f:           String => Future[Result]
+  )(implicit hc: HeaderCarrier,
+    ec:          ExecutionContext
+  ): Future[Result] =
+    authConnector
+      .authorise(EmptyPredicate, Retrievals.nino)
+      .flatMap {
+        case Some(ninoFromAuth) => f(ninoFromAuth)
+        case None               => Future.successful(Unauthorized("Authorization failure [user is not enrolled for NI]"))
+      }
+      .recover {
+        case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
+        case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
+        case e: Exception              => Unauthorized(s"Authorisation failure [${e.getMessage}]")
+      }
+
   def grantAccess(
     requestedNino: Option[Nino]
   )(implicit hc:   HeaderCarrier,
     ec:            ExecutionContext
-  ): Future[Unit] =
+  ): Future[String] =
     if (requestedNino.isDefined) {
       val suppliedNino = requestedNino.getOrElse(throw ninoNotFoundOnAccount)
       authorised(Enrolment("HMRC-NI", Seq(EnrolmentIdentifier("NINO", suppliedNino.nino)), "Activated", None))
@@ -53,7 +72,7 @@ trait Authorisation extends Results with AuthorisedFunctions {
             if (foundNino.isEmpty) throw ninoNotFoundOnAccount
             if (!foundNino.equals(suppliedNino.nino)) throw failedToMatchNino
             if (confLevel > foundConfidenceLevel.level) throw lowConfidenceLevel
-            Future successful ()
+            Future successful (foundNino)
           case None ~ _ => throw ninoNotFoundOnAccount
         }
 
@@ -62,7 +81,7 @@ trait Authorisation extends Results with AuthorisedFunctions {
         case Some(foundNino) ~ foundConfidenceLevel =>
           if (foundNino.isEmpty) throw ninoNotFoundOnAccount
           if (confLevel > foundConfidenceLevel.level) throw lowConfidenceLevel
-          Future successful ()
+          Future successful (foundNino)
         case None ~ _ => throw ninoNotFoundOnAccount
       }
     }
@@ -76,7 +95,7 @@ trait Authorisation extends Results with AuthorisedFunctions {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     grantAccess(taxId)
-      .flatMap { _ =>
+      .flatMap { nino =>
         block(request)
       }
       .recover {

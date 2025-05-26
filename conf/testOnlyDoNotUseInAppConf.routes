@@ -11,3 +11,6 @@
 
 # Add all the application routes to the prod.routes file
 ->        /        prod.Routes
+POST       /pin/test-only/save-pin     uk.gov.hmrc.customerprofile.testOnly.controllers.MobilePinTestOnlyController.savePin
+DELETE     /pin/test-only/delete       uk.gov.hmrc.customerprofile.testOnly.controllers.MobilePinTestOnlyController.deleteAllPins
+DELETE     /pin/test-only/delete/:deviceId       uk.gov.hmrc.customerprofile.testOnly.controllers.MobilePinTestOnlyController.deleteByDeviceId(deviceId: String)
