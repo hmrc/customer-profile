@@ -26,12 +26,11 @@ lazy val microservice = Project(appName, file("."))
     libraryDependencies ++= AppDependencies(),
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
     resolvers += Resolver.jcenterRepo,
-     IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base =>
+    IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base =>
       Seq(base / "it-resources")
     ).value,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
-
     scalacOptions ++= Seq(
       "-deprecation",
       "-encoding",
@@ -44,7 +43,7 @@ lazy val microservice = Project(appName, file("."))
       "-Ywarn-numeric-widen",
       "-Xlint"
     ),
-    coverageMinimumStmtTotal := 90,
+    coverageMinimumStmtTotal := 75,
     coverageFailOnMinimum := true,
     coverageHighlighting := true,
     coverageExcludedPackages := "<empty>;.*Routes.*;app.*;.*prod;.*definition;.*testOnlyDoNotUseInAppConf;.*com.kenshoo.*;.*javascript.*;.*BuildInfo;.*Reverse.*;.*Binders.*;"

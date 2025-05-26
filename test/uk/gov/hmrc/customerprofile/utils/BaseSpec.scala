@@ -41,6 +41,7 @@ import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.client.HttpClientV2
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
 trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
@@ -118,6 +119,8 @@ trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
     None,
     None
   )
+
+  val person4 = person3.copy(person = person3.person.copy(personDateOfBirth = Some(LocalDate.of(1986, 6, 30))))
 
   val shuttered: Shuttering =
     Shuttering(
