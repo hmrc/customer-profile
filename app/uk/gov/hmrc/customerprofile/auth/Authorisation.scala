@@ -42,23 +42,6 @@ trait Authorisation extends Results with AuthorisedFunctions {
   lazy val failedToMatchNino     = new FailToMatchTaxIdOnAuth("The nino in the URL failed to match auth!")
   lazy val lowConfidenceLevel    = new AccountWithLowCL("Unauthorised! Account with low CL!")
 
-  def withNinoFromAuth(
-    f:           String => Future[Result]
-  )(implicit hc: HeaderCarrier,
-    ec:          ExecutionContext
-  ): Future[Result] =
-    authConnector
-      .authorise(EmptyPredicate, Retrievals.nino)
-      .flatMap {
-        case Some(ninoFromAuth) => f(ninoFromAuth)
-        case None               => Future.successful(Unauthorized("Authorization failure [user is not enrolled for NI]"))
-      }
-      .recover {
-        case e: NoActiveSession        => Unauthorized(s"Authorisation failure [${e.reason}]")
-        case e: AuthorisationException => Forbidden(s"Authorisation failure [${e.reason}]")
-        case e: Exception              => Unauthorized(s"Authorisation failure [${e.getMessage}]")
-      }
-
   def grantAccess(
     requestedNino: Option[Nino]
   )(implicit hc:   HeaderCarrier,

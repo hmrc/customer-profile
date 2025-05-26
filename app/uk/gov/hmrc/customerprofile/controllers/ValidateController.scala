@@ -27,7 +27,7 @@ import uk.gov.hmrc.customerprofile.auth.AccessControl
 import uk.gov.hmrc.customerprofile.connector.CitizenDetailsConnector
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.response.ValidateResponse
-import uk.gov.hmrc.customerprofile.services.MongoService
+import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MongoService}
 import uk.gov.hmrc.customerprofile.utils.DOBUtils
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -43,6 +43,7 @@ class ValidateController @Inject() (
   override val authConnector:                            AuthConnector,
   citizenDetailsConnector:                               CitizenDetailsConnector,
   mongoService:                                          MongoService,
+  customerProfileService:                                CustomerProfileService,
   @Named("controllers.confidenceLevel") val confLevel:   Int,
   @Named("service.maxStoredPins") val storedPinCount:    Int,
   @Named("dobErrorKey") val dobErrorKey:                 String,
@@ -66,9 +67,9 @@ class ValidateController @Inject() (
   ): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, None).async { implicit request =>
       implicit val hc: HeaderCarrier = fromRequest(request)
-      withNinoFromAuth { nino =>
-        errorWrapper {
-          citizenDetailsConnector.personDetailsForPin(Nino(nino)).flatMap { personDetails =>
+      errorWrapper {
+        customerProfileService.getNino().flatMap { nino =>
+          citizenDetailsConnector.personDetailsForPin(nino.getOrElse(Nino(""))).flatMap { personDetails =>
             val dob: Option[LocalDate] = personDetails.flatMap(_.person.personDateOfBirth)
 
             DOBUtils.matchesDOBPatterns(dob, enteredPin) match {
@@ -109,6 +110,7 @@ class ValidateController @Inject() (
           }
 
         }
+
       }
 
     }
