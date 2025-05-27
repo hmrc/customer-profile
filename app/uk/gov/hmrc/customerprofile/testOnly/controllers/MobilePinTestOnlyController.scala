@@ -39,8 +39,8 @@ class MobilePinTestOnlyController @Inject() (
       case JsSuccess(mobilePin, _) =>
         mobilePinMongo.add(mobilePin).map {
           _.fold(
-            { e =>
-              println("exception is ::" + e); InternalServerError
+            { _ =>
+              InternalServerError
             },
             _ => Created
           )
