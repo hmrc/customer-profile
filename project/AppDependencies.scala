@@ -3,14 +3,14 @@ import sbt._
 object AppDependencies {
 
   private val bootstrapPlayVersion          = "9.12.0"
-  private val playHmrcVersion               = "8.0.0"
-  private val domainVersion                 = "11.0.0"
-  private val reactiveCircuitBreakerVersion = "5.0.0"
+  private val playHmrcVersion               = "8.2.0"
+  private val domainVersion                 = "12.1.0"
+  private val reactiveCircuitBreakerVersion = "6.0.0"
   private val emailAddressVersion           = "4.0.0"
   private val flexmarkAllVersion            = "0.36.8"
   private val hmrcMongoVersion              = "2.6.0"
 
-  private val scalaMockVersion = "5.2.0"
+  private val scalaMockVersion = "7.3.2"
   private val pegdownVersion   = "1.6.0"
   private val wiremockVersion  = "2.21.0"
   private val refinedVersion   = "0.11.3"
@@ -21,7 +21,6 @@ object AppDependencies {
     "uk.gov.hmrc.mongo"            %% "hmrc-mongo-play-30"             % hmrcMongoVersion,
     "uk.gov.hmrc"                  %% "domain-play-30"                 % domainVersion,
     "uk.gov.hmrc"                  %% "reactive-circuit-breaker"       % reactiveCircuitBreakerVersion,
-    "uk.gov.hmrc"                  %% "emailaddress-play-30"           % emailAddressVersion,
     "eu.timepit"                   %% "refined"                        % refinedVersion,
     "com.google.auth"              % "google-auth-library-oauth2-http" % "1.16.0",
     "com.auth0"                    % "java-jwt"                        % "4.4.0",

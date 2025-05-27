@@ -37,7 +37,7 @@ object Person {
     (JsPath \ "nino").readNullable[Nino] and
     (JsPath \ "fullName").readNullable[String] and
     (JsPath \ "nationalInsuranceLetterUrl").readNullable[String]
-  )(Person.apply _)
+  )(Person.apply)
 }
 
 case class Person(

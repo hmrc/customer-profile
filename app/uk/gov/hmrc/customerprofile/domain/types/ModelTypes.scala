@@ -22,9 +22,28 @@ import eu.timepit.refined.string.MatchesRegex
 
 object ModelTypes {
 
+//  case class JourneyId(value: String) extends AnyVal
   type JourneyId = String Refined ValidJourneyId
 
   private type ValidJourneyId =
-    MatchesRegex[W.`"""[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}"""`.T]
+    MatchesRegex["""[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}"""]
 
 }
+
+//final case class JourneyId(value: String) {
+//  require(
+//    JourneyId.isValid(value),
+//    s"Invalid JourneyId format: $value"
+//  )
+//}
+//
+//object JourneyId {
+//  private val regex = "[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}".r
+//
+//  def isValid(s: String): Boolean = regex.matches(s)
+//
+//  // PathBindable for Play routing
+//  import play.api.mvc.PathBindable
+//  implicit val pathBindable: PathBindable[JourneyId] =
+//    implicitly[PathBindable[String]].transform(JourneyId(_), _.value)
+//}

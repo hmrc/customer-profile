@@ -18,7 +18,8 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, OFormat, Reads, Writes}
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
+
 
 case class TermsAccepted(
   accepted:  Option[Boolean],
@@ -36,7 +37,6 @@ case class Paperless(
 object Paperless {
 
   implicit val formats: OFormat[Paperless] = {
-    import uk.gov.hmrc.emailaddress.PlayJsonFormats.{emailAddressReads, emailAddressWrites}
     Json.using[Json.WithDefaultValues].format[Paperless]
   }
 }
