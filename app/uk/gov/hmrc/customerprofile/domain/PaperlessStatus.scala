@@ -40,13 +40,13 @@ object PaperlessStatus {
     (__ \ "name").read[StatusName] and
     (__ \ "category").read[Category] and
     (__ \ "reoptinMajor").readNullable[Int]
-  )(PaperlessStatus.apply _)
+  )(PaperlessStatus.apply)
 
   implicit val statusWrites: Writes[PaperlessStatus] = (
     (__ \ "name").write[StatusName] and
     (__ \ "category").write[Category] and
     (__ \ "majorVersion").writeNullable[Int]
-  )(unlift(PaperlessStatus.unapply))
+  )(PaperlessStatus => Tuple.fromProductTyped(PaperlessStatus))
 
 }
 

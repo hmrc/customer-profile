@@ -9,6 +9,8 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
+  .settings(scalacOptions += "-Wconf:src=routes/.*:s,src=txt/.*:s")
+  .settings(scalacOptions ++=Seq("-source:3.0-migration", "-rewrite"))
   .settings(
     Seq(
       routesImport ++= Seq(
@@ -21,7 +23,8 @@ lazy val microservice = Project(appName, file("."))
   )
   .settings(
     majorVersion := 1,
-    scalaVersion := "2.13.12",
+    scalaVersion := "3.6.4",
+//    crossScalaVersions ++= Seq("2.13.16", "3.3.5"),
     playDefaultPort := 8233,
     libraryDependencies ++= AppDependencies(),
     update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),

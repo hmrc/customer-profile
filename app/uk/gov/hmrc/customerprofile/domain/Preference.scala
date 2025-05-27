@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import play.api.libs.json._
-import uk.gov.hmrc.emailaddress.EmailAddress
+import play.api.libs.json.*
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 import java.time.LocalDate
 
@@ -27,8 +27,6 @@ case class EmailPreference(
   linkSent: Option[LocalDate] = None)
 
 object EmailPreference {
-
-  import uk.gov.hmrc.emailaddress.PlayJsonFormats.{emailAddressReads, emailAddressWrites}
 
   implicit val localdateFormatDefault: Format[LocalDate] =
     Format(Reads.DefaultLocalDateReads, Writes.DefaultLocalDateWrites)
