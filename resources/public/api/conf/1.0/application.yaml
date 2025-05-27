@@ -359,6 +359,71 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
+  /validate/pin/{enteredPin}:
+    get:
+      tags:
+        - mobile-pin
+      summary: Validate the PIN against DOB pattern and previously used PINs.
+      description: This endpoint validate the user entered PIN against DOB pattern and previously used PINs.
+      operationId: ValidatePin
+      parameters:
+        - name: enteredPin
+          in: path
+          description: PIN entered by the user.
+          required: true
+          style: simple
+          schema:
+            type: string
+            example: 300685
+        - name: journeyId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 27085215-69a4-4027-8f72-b04b10ec16b0
+        - name: deviceId
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            example: 27085215-69a4-4027-8f72-b04b10ec16b0
+        - name: mode
+          in: query
+          description: ''
+          required: true
+          style: form
+          explode: true
+          schema:
+            type: string
+            enum: [ createPin, updatePin ]
+            example: createPin
+
+      responses:
+        '200':
+          description: Valid PIN response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidPin'
+        '401':
+          description: PIN is invalid (either DOB match or previously used).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DOBCheck'
+                  - $ref: '#/components/schemas/PreviousPinCheck'
+
+      deprecated: false
+      security:
+        - userRestricted:
+            - read:customer-profile
 components:
   securitySchemes:
     userRestricted:
@@ -375,6 +440,30 @@ components:
           scopes:
             read:customer-profile: Retrieve the customer profile
   schemas:
+    ValidPin:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Pin is Valid"
+    DOBCheck:
+      type: object
+      properties:
+        key:
+          type: string
+          example: "create_pin_date_of_birth_error_message"
+        message:
+          type: string
+          example: "PIN should not include your date of birth"
+    PreviousPinCheck:
+      type: object
+      properties:
+        key:
+          type: string
+          example: "change_pin_disallow_previous_pins_error_message"
+        message:
+          type: string
+          example: "Do not re-use an old PIN"
     errorResponse:
       title: errorResponse
       required:
