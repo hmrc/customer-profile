@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.repository
 
-import com.google.inject.name.Named
 import org.mongodb.scala.model.{IndexModel, IndexOptions, ReplaceOptions}
 import play.api.Logger
 import org.mongodb.scala.model.Filters.equal
@@ -24,18 +23,19 @@ import uk.gov.hmrc.customerprofile.domain.{MobilePin, ServiceResponse}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.Indexes.{ascending, descending}
+import uk.gov.hmrc.customerprofile.config.AppConfig
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class MobilePinMongo @Inject() (
-  mongo:                              MongoComponent,
-  @Named("mongodb.ttlDays") mongoTtl: Int
-)(implicit executionContext:          ExecutionContext)
+  mongo:                     MongoComponent,
+  appConfig:                 AppConfig
+)(implicit executionContext: ExecutionContext)
     extends PlayMongoRepository[MobilePin](collectionName = "mobilePin",
                                            mongoComponent = mongo,
                                            domainFormat   = MobilePin.format,
@@ -49,12 +49,12 @@ class MobilePinMongo @Inject() (
                                                         IndexOptions()
                                                           .background(false)
                                                           .name("createdAt")
-                                                          .expireAfter(mongoTtl, TimeUnit.DAYS)),
+                                                          .expireAfter(appConfig.mongoTtl, TimeUnit.DAYS)),
                                              IndexModel(descending("updatedAt"),
                                                         IndexOptions()
                                                           .background(false)
                                                           .name("updatedAt")
-                                                          .expireAfter(mongoTtl, TimeUnit.DAYS))
+                                                          .expireAfter(appConfig.mongoTtl, TimeUnit.DAYS))
                                            ),
                                            replaceIndexes = true) {
 
