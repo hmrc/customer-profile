@@ -74,7 +74,6 @@ class BaseISpec
     "play.ws.timeout.request"                               -> "20000 seconds",
     "microservice.services.mobile-shuttering.port"          -> wireMockPort,
     "optInVersionsEnabled"                                  -> false,
-    "metrics.enabled"                                       -> false,
     "metrics.jvm.enabled"                                   -> false,
     "microservice.services.find-my-nino-add-to-wallet.port" -> wireMockPort,
     "googlePass.key"                                        -> "ey23xs"

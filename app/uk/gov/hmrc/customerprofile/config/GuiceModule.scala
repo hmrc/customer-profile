@@ -35,6 +35,8 @@ class GuiceModule(
     bind(classOf[AuthConnector]).to(classOf[DefaultAuthConnector])
 
     bindConfigInt("controllers.confidenceLevel")
+    bindConfigInt("mongodb.ttlDays")
+    bindConfigInt("service.maxStoredPins")
     bind(classOf[ApiAccess]).toInstance(
       ApiAccess("PRIVATE")
     )
@@ -43,6 +45,8 @@ class GuiceModule(
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
     bindConfigBoolean("reOptInEnabled", "reOptInEnabled")
     bindConfigString("key", "googlePass.key")
+    bindConfigString("dobErrorKey", "dobErrorKey")
+    bindConfigString("previousPinErrorKey", "previousPinErrorKey")
 
     bind(classOf[String]).annotatedWith(named("auth")).toInstance(servicesConfig.baseUrl("auth"))
     bind(classOf[String]).annotatedWith(named("citizen-details")).toInstance(servicesConfig.baseUrl("citizen-details"))

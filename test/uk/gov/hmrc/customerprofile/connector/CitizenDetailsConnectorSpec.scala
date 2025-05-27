@@ -17,9 +17,10 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import org.mockito.Mockito.when
-
+import uk.gov.hmrc.customerprofile.domain.PersonDetails
 import uk.gov.hmrc.http.{BadRequestException, HttpResponse, UpstreamErrorResponse}
 
+import java.time.LocalDate
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
@@ -28,26 +29,67 @@ class CitizenDetailsConnectorSpec extends HttpClientV2Helper {
   val connector = app.injector.instanceOf[CitizenDetailsConnector]
 
   "citizenDetailsConnector" should {
-    "throw BadRequestException when a 400 response is returned" in {
 
-      when(requestBuilderExecute[HttpResponse])
-        .thenReturn(Future.failed(new BadRequestException("bad request")))
-      connector.personDetails(nino) onComplete {
-        case Success(_) => fail()
-        case Failure(_) =>
+    "get person details" should {
+
+      "throw BadRequestException when a 400 response is returned" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("bad request")))
+        connector.personDetails(nino) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+
       }
 
+      "throw Upstream5xxResponse when a 500 response is returned" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(UpstreamErrorResponse("Error", 500, 500)))
+        connector.personDetails(nino) onComplete {
+          case Success(_) => fail()
+          case Failure(_) =>
+        }
+
+      }
     }
 
-    "throw Upstream5xxResponse when a 500 response is returned" in {
+    "get person Details For Pin" should {
 
-      when(requestBuilderExecute[HttpResponse])
-        .thenReturn(Future.failed(UpstreamErrorResponse("Error", 500, 500)))
-      connector.personDetails(nino) onComplete {
-        case Success(_) => fail()
-        case Failure(_) =>
+      "give person details" in {
+        val personDets     = person.person.copy(personDateOfBirth = Some(LocalDate.of(1986, 5, 6)))
+        val personDetails1 = person.copy(person                   = personDets)
+        when(requestBuilderExecute[Option[PersonDetails]])
+          .thenReturn(Future.successful(Some(personDetails1)))
+        connector.personDetailsForPin(nino) onComplete {
+          case Success(_) => Some(LocalDate.of(1986, 5, 6))
+          case Failure(_) =>
+        }
+
       }
 
+      "throw BadRequestException when a 400 response is returned" in {
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(new BadRequestException("bad request")))
+        connector.personDetailsForPin(nino) onComplete {
+          case Success(_) => None
+          case Failure(_) =>
+        }
+
+      }
+
+      "throw Upstream5xxResponse when a 500 response is returned" in {
+
+        when(requestBuilderExecute[HttpResponse])
+          .thenReturn(Future.failed(UpstreamErrorResponse("Error", 500, 500)))
+        connector.personDetailsForPin(nino) onComplete {
+          case Success(_) => None
+          case Failure(_) =>
+        }
+
+      }
     }
+
   }
 }
