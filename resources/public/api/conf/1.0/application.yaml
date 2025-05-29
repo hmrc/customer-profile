@@ -424,6 +424,36 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
+  /upsert/nino/{nino}:
+    put:
+      tags:
+        - mobile-pin
+      summary: Insert or update the PIN.
+      operationId: UpsertPin
+      parameters:
+        - name: nino
+          in: path
+          description: The NINO for the individual.
+          required: true
+          schema:
+            type: string
+            example: NS123456B
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ValidateRequest'
+      responses:
+        400:
+          description: request body is malformed
+        '201':
+          description: created/updated successfully
+      deprecated: false
+      security:
+        - userRestricted:
+            - read:customer-profile
 components:
   securitySchemes:
     userRestricted:
