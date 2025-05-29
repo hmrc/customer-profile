@@ -14,4 +14,6 @@ GET         /apple-pass                                            uk.gov.hmrc.c
 
 GET         /google-pass                                           uk.gov.hmrc.customerprofile.controllers.GooglePassController.getGooglePass(journeyId: JourneyId)
 
-GET        /validate/pin/:enteredPin              uk.gov.hmrc.customerprofile.controllers.ValidateController.validatePin(enteredPin: String, deviceId: String, journeyId: JourneyId, mode: String)
+GET        /validate/pin/:enteredPin                               uk.gov.hmrc.customerprofile.controllers.ValidateController.validatePin(enteredPin: String, deviceId: String, journeyId: JourneyId, mode: String)
+
+PUT         /upsert/nino/:nino                                     uk.gov.hmrc.customerprofile.controllers.MobilePinController.upsert(nino: uk.gov.hmrc.domain.Nino)

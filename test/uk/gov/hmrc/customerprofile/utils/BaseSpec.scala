@@ -16,15 +16,18 @@
 
 package uk.gov.hmrc.customerprofile.utils
 
+import com.typesafe.config.ConfigFactory
 import play.api.http.HeaderNames
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
-import play.api.test.FakeRequest
+import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import uk.gov.hmrc.auth.core.ConfidenceLevel.L200
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import eu.timepit.refined.auto._
+import org.scalatest.matchers.must.Matchers
+import org.scalatest.{BeforeAndAfterAll, Outcome}
 import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -33,18 +36,25 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.{AuthConnector, ConfidenceLevel}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.auth.core.syntax.retrieved.authSyntaxForRetrieved
+import uk.gov.hmrc.customerprofile.config.AppConfig
 import uk.gov.hmrc.customerprofile.connector.Entity
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.StatusName.Verified
 import uk.gov.hmrc.customerprofile.domain.{Address, Category, EmailPreference, OptInPage, PageType, Paperless, PaperlessStatus, Person, PersonDetails, Preference, Shuttering, StatusName, TermsAccepted, Version}
 import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.client.HttpClientV2
+import uk.gov.hmrc.mongo.test.DefaultPlayMongoRepositorySupport
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
+trait BaseSpec extends PlaySpec
+  with GuiceOneAppPerSuite
+  with MockitoSugar
+  with Matchers
+  with FutureAwaits
+  with DefaultAwaitTimeout{
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val config:             Configuration  = mock[Configuration]
@@ -182,5 +192,37 @@ trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar {
       email   = Some(EmailPreference(EmailAddress("old@old.com"), status)),
       status  = Some(PaperlessStatus(name = status, category = Category.Info))
     )
+
+  private lazy val configuration = Configuration(
+    ConfigFactory.parseString(
+      """
+        | mongodb.ttlDays = 547
+        | dobErrorKey = "create_pin_date_of_birth_error_message"
+        | previousPinErrorKey = "change_pin_disallow_previous_pins_error_message"
+        | service.maxStoredPins = 3
+        | """.stripMargin
+    )
+  )
+  implicit lazy val appConfig: AppConfig = new AppConfig(configuration)
+
+  val string1 = "30061986"
+  val hash1   = HashSaltUtils.createHashAndSalt(string1)
+
+  val string2 = "24072012"
+  val hash2   = HashSaltUtils.createHashAndSalt(string2)
+
+  val string3 = "12122014"
+  val hash3   = HashSaltUtils.createHashAndSalt(string2)
+
+}
+
+trait PlayMongoRepositorySupport[A] extends DefaultPlayMongoRepositorySupport[A] with BeforeAndAfterAll {
+  override def withFixture(test: NoArgTest): Outcome = super.withFixture(test)
+  override protected def checkTtlIndex: Boolean = false
+
+  abstract override def afterAll(): Unit = {
+    super.afterAll()
+    mongoComponent.client.close()
+  }
 
 }

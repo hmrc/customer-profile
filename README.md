@@ -34,16 +34,17 @@ The service can be run locally from Service Manager, using the following profile
 API
 ---
 
-| *Task*                                     | *Supported Methods* | *Description*                                                                                                        |
-|--------------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------------------|
-| ```/profile/personal-details/:nino```      | GET                 | Returns a user's designatory details. [More...](docs/personalDetails.md)                                             |
-| ```/profile/preferences```                 | GET                 | Returns the user's preferences. [More...](docs/preferences.md)                                                       |
-| ```/profile/preferences/paperless-settings/opt-in``` | POST                | Sets or updates the user's paperless opt-in preference settings. [More...](docs/paperlessSettingsOptIn.md)           |
-| ```/profile/preferences/paperless-settings/opt-out``` | POST                | Opts the user out of paperless. [More...](docs/paperlessSettingsOptOut.md)                                           |
-| ```/profile/pending-email```               | POST                | Updates the user's email address for pending emails. [More...](docs/pendingEmail.md)                                 |
-| ```/apple-pass```                          | GET                 | Returns an encrypted pass that allows a user to store a nino in an apple wallet. [More...](docs/getApplePass.md)     |
-| ```/google-pass```                         | GET                 | Returns a JWT token that allows a user to store a nino in an google wallet. [More...](docs/getGooglePass.md) |
-| ```/validate/pin/:enteredPin```            | GET                 | Validate the PIN against DOB pattern and previously used pins.
+| *Task*                                     | *Supported Methods* | *Description*                                                                                                    |
+|--------------------------------------------|---------------------|------------------------------------------------------------------------------------------------------------------|
+| ```/profile/personal-details/:nino```      | GET                 | Returns a user's designatory details. [More...](docs/personalDetails.md)                                         |
+| ```/profile/preferences```                 | GET                 | Returns the user's preferences. [More...](docs/preferences.md)                                                   |
+| ```/profile/preferences/paperless-settings/opt-in``` | POST                | Sets or updates the user's paperless opt-in preference settings. [More...](docs/paperlessSettingsOptIn.md)       |
+| ```/profile/preferences/paperless-settings/opt-out``` | POST                | Opts the user out of paperless. [More...](docs/paperlessSettingsOptOut.md)                                       |
+| ```/profile/pending-email```               | POST                | Updates the user's email address for pending emails. [More...](docs/pendingEmail.md)                             |
+| ```/apple-pass```                          | GET                 | Returns an encrypted pass that allows a user to store a nino in an apple wallet. [More...](docs/getApplePass.md) |
+| ```/google-pass```                         | GET                 | Returns a JWT token that allows a user to store a nino in an google wallet. [More...](docs/getGooglePass.md)     |
+| ```/validate/pin/:enteredPin```            | GET                 | Validate the PIN against DOB pattern and previously used pins.                                                   
+| ```/mobile-pin/upsert/nino/:nino/```       | PUT                 | Update/Insert PIN in the DB.                                                                                     |
 
 
 ### `GET /validate/nino/:nino/pin/:enteredPin`
@@ -76,11 +77,24 @@ Example response body for previous pin match 401 OK:
    "message ":  "Do not re-use an old PIN"
 }
 ```
+
+### `PUT /mobile-pin/upsert/nino/:nino/`
+
+
+- Local testing URL - http:/localhost:8286/mobile-pin/upsert/nino/{Nino}
+- Headers     - Accept -> application/vnd.hmrc.1.0+json
+```json
+{
+    "pin" : "123456",
+   "deviceId ": "device-002"
+}
+```
 # Sandbox
 All the above endpoints are accessible on sandbox with `/sandbox` prefix on each endpoint, e.g.
 ```
     GET /sandbox/profile/accounts
 ```
+
 
 To trigger the sandbox endpoints locally, use the "X-MOBILE-USER-ID" header with one of the following values:
 208606423740 or 167927702220
