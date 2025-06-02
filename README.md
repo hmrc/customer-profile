@@ -51,7 +51,7 @@ API
 
 Validate the entered pin against the DOB pattern and previously used pin
 
-- Local testing URL - http:/localhost:8286/mobile-pin//validate/nino/{nino}/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>&mode=updatePin/createPin
+- Local testing URL - http:/localhost:8286/mobile-pin/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>&mode=updatePin/createPin
 - mode can be createPin or updatePin
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
 
@@ -111,7 +111,21 @@ See each linked file for details:
 | ```/sandbox/profile/pending-email```                         | POST                | Acts as a stub for the related live endpoint. [More...](docs/pendingEmail.md)                    |
 | ```/sandbox/apple-pass```                                    | GET                  | Acts as a stub for the related live endpoint.               |
 
+## Test-Only Endpoints
+### `POST       /pin/test-only/save-pin`
+save some pin data in DB
+```json
+{
+   "deviceId ": "device-002",
+  "hashedPins" : ["123445","567890"]
+}
+```
 
+### `DELETE       /pin/test-only/delete`
+delete all pin data from DB
+
+### `DELETE /pin/test-only/delete/:deviceId`
+delete all pin data from DB based on device id
 
 # Version
 Version of API need to be provided in `Accept` request header

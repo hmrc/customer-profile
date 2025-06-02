@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{ActionBuilder, AnyContent, BodyParser, Request, Result, Results}
 import uk.gov.hmrc.api.controllers.{ErrorAcceptHeaderInvalid, ErrorResponse, ErrorUnauthorizedLowCL, HeaderValidator}
 import uk.gov.hmrc.auth.core.{AuthorisedFunctions, Enrolment, EnrolmentIdentifier}
-import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{confidenceLevel, nino}
+import uk.gov.hmrc.auth.core.retrieve.v2.Retrievals.{confidenceLevel, email, nino}
 import uk.gov.hmrc.auth.core.retrieve.~
 import uk.gov.hmrc.customerprofile.controllers.{AccountWithLowCL, ErrorUnauthorizedNoNino, ErrorUnauthorizedUpstream, FailToMatchTaxIdOnAuth, ForbiddenAccess, NinoNotFoundOnAccount}
 import uk.gov.hmrc.domain.Nino

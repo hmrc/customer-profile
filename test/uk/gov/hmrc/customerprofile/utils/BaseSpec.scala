@@ -49,12 +49,13 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-trait BaseSpec extends PlaySpec
-  with GuiceOneAppPerSuite
-  with MockitoSugar
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout{
+trait BaseSpec
+    extends PlaySpec
+    with GuiceOneAppPerSuite
+    with MockitoSugar
+    with Matchers
+    with FutureAwaits
+    with DefaultAwaitTimeout {
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val config:             Configuration  = mock[Configuration]
@@ -207,6 +208,9 @@ trait BaseSpec extends PlaySpec
 
   val string1 = "30061986"
   val hash1   = HashSaltUtils.createHashAndSalt(string1)
+
+  val string11 = "240712"
+  val hash11   = HashSaltUtils.createHashAndSalt(string11)
 
   val string2 = "24072012"
   val hash2   = HashSaltUtils.createHashAndSalt(string2)

@@ -58,6 +58,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     reset(mockEntityResolver)
     reset(mockAuditService)
+    reset(mockCitizenDetailsConnector)
   }
 
   implicit val defaultTimeout: FiniteDuration = 5 seconds
