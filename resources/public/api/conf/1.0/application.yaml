@@ -528,6 +528,15 @@ components:
         line3: West Sussex
         postcode: BN99 8IG
         changeAddressLink: /personal-account/your-profile
+    ValidateRequest:
+      type: object
+      properties:
+        pin:
+          type: string
+          example: "300685"
+        deviceId:
+          type: string
+          example: "27085215-69a4-4027-8f72-b04b10ec16b0"
     CustomerProfileProfilePersonalDetailsresponse:
       title: CustomerProfileProfilePersonalDetailsresponse
       required:
