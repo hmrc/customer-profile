@@ -51,9 +51,12 @@ API
 
 Validate the entered pin against the DOB pattern and previously used pin
 
-- Local testing URL - http:/localhost:8286/mobile-pin//validate/nino/{nino}/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>&mode=updatePin/createPin
-- mode can be createPin or updatePin
+- Local testing URL - http://localhost:8233/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+- QA URL - https://api.qa.tax.service.gov.uk/customer-profile/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+- Staging URL - https://api.staging.tax.service.gov.uk/customer-profile/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
+- Bearer token needs to be supplied
 
 Example response body for success with 200 OK:
 ```json
@@ -86,7 +89,7 @@ Example response body for previous pin match 401 OK:
 ```json
 {
     "pin" : "123456",
-   "deviceId ": "device-002"
+   "deviceId ": "device-002",
 }
 ```
 # Sandbox
@@ -111,7 +114,22 @@ See each linked file for details:
 | ```/sandbox/profile/pending-email```                         | POST                | Acts as a stub for the related live endpoint. [More...](docs/pendingEmail.md)                    |
 | ```/sandbox/apple-pass```                                    | GET                  | Acts as a stub for the related live endpoint.               |
 
+## Test-Only Endpoints
+### `POST       /pin/test-only/save-pin`
+save some pin data in DB
+```json
+{
+   "deviceId ": "device-002",
+  "ninoHash" : "SZ123456B",
+  "hashedPins" : ["123445","567890"]
+}
+```
 
+### `DELETE       /pin/test-only/delete`
+delete all pin data from DB
+
+### `DELETE /pin/test-only/delete/deviceId/:deviceId/nino/:nino`
+delete all pin data from DB based on device id and nino
 
 # Version
 Version of API need to be provided in `Accept` request header

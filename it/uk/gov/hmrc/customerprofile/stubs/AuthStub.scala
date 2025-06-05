@@ -144,4 +144,20 @@ object AuthStub {
             .withStatus(200)
         )
     )
+
+  def getNino(): StubMapping =
+    stubFor(
+      post(urlEqualTo(authUrl))
+        .withRequestBody(equalToJson(ninoRequestJson, true, true))
+        .willReturn(
+          aResponse()
+            .withStatus(200)
+            .withBody(
+              obj(
+                "nino"            -> "AA000006C",
+                "confidenceLevel" -> L200.level
+              ).toString
+            )
+        )
+    )
 }

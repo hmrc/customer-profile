@@ -16,19 +16,18 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json._
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 
-class MobilePinValidatedRequestSpec extends AnyWordSpec with Matchers {
+class MobilePinValidatedRequestSpec extends BaseSpec {
 
   "MobilePinValidatedRequest" should {
 
     "serialize to JSON correctly" in {
       val request = MobilePinValidatedRequest("1234", "device-xyz")
-      val json = Json.toJson(request)
+      val json    = Json.toJson(request)
 
-      json shouldBe Json.parse("""
+      json mustBe Json.parse(s"""
         {
           "pin": "1234",
           "deviceId": "device-xyz"
@@ -37,7 +36,7 @@ class MobilePinValidatedRequestSpec extends AnyWordSpec with Matchers {
     }
 
     "deserialize from valid JSON correctly" in {
-      val json = Json.parse("""
+      val json = Json.parse(s"""
         {
           "pin": "4321",
           "deviceId": "device-abc"
@@ -46,8 +45,8 @@ class MobilePinValidatedRequestSpec extends AnyWordSpec with Matchers {
 
       val result = json.validate[MobilePinValidatedRequest]
 
-      result.isSuccess shouldBe true
-      result.get shouldBe MobilePinValidatedRequest("4321", "device-abc")
+      result.isSuccess mustBe true
+      result.get mustBe MobilePinValidatedRequest("4321", "device-abc")
     }
 
     "fail to deserialize from JSON with missing fields" in {
@@ -59,7 +58,7 @@ class MobilePinValidatedRequestSpec extends AnyWordSpec with Matchers {
 
       val result = json.validate[MobilePinValidatedRequest]
 
-      result.isError shouldBe true
+      result.isError mustBe true
     }
 
     "fail to deserialize from JSON with wrong field types" in {
@@ -72,7 +71,7 @@ class MobilePinValidatedRequestSpec extends AnyWordSpec with Matchers {
 
       val result = json.validate[MobilePinValidatedRequest]
 
-      result.isError shouldBe true
+      result.isError mustBe true
     }
   }
 }

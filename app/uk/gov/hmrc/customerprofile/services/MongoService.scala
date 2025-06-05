@@ -17,6 +17,7 @@
 package uk.gov.hmrc.customerprofile.services
 
 import com.google.inject.{Inject, Singleton}
+import uk.gov.hmrc.customerprofile.domain.MobilePin
 import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,15 +25,16 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class MongoService @Inject() (mobilePinMongo: MobilePinMongo) {
 
-  def getLastThreePin(
-    deviceId: String
+  def findByDeviceIdAndNinoHash(
+    deviceId: String,
+    ninoHash: String
   )(implicit
     ec: ExecutionContext
-  ): Future[List[String]] =
-    mobilePinMongo.findByDeviceId(deviceId).map { deviceInfo =>
+  ): Future[Option[MobilePin]] =
+    mobilePinMongo.findByDeviceIdAndNino(deviceId, ninoHash).map { deviceInfo =>
       deviceInfo.fold(
         error => throw new Exception(error.message),
-        pins => pins.map(_.hashedPins).getOrElse(List.empty)
+        data => data
       )
     }
 }

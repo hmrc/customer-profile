@@ -434,6 +434,33 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
     }
   }
 
+  "GET /validate/pin/:enteredPin" should {
+
+    val url           = s"/validate/pin/$pin?journeyId=$journeyId&deviceId=$deviceId"
+    val urlWithDobPin = s"/validate/pin/050369?journeyId=$journeyId&deviceId=$deviceId"
+
+    "return 200" in {
+      designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
+      authRecordExistsNinoCheck(nino)
+      getNino()
+      val response = await(getRequestWithAcceptHeader(url))
+      response.status shouldBe 200
+
+    }
+
+    "return 401 if pin matches the dob while pin creation" in {
+      designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
+      authRecordExistsNinoCheck(nino)
+      getNino()
+      val response = await(getRequestWithAcceptHeader(urlWithDobPin))
+      response.status shouldBe 401
+      response.json shouldBe parse(
+        """{"key":"create_pin_date_of_birth_error_message","message":"PIN should not include your date of birth"}"""
+      )
+    }
+
+  }
+
 }
 
 class CustomerProfileAllEnabledISpec extends CustomerProfileTests {

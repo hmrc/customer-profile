@@ -18,7 +18,9 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json._
 
-case class MobilePinValidatedRequest(pin: String, deviceId: String)
+case class MobilePinValidatedRequest(
+  pin:      String,
+  deviceId: String)
 
 object MobilePinValidatedRequest {
   implicit val format: OFormat[MobilePinValidatedRequest] = Json.format[MobilePinValidatedRequest]

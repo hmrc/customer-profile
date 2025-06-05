@@ -19,21 +19,16 @@ package uk.gov.hmrc.customerprofile.domain.audit
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
 
-case class MobilePinAudit (
-                            pin: String,
-                            deviceId: String
-                          )
+case class MobilePinAudit(
+  pin:      String,
+  deviceId: String)
 
 object MobilePinAudit {
 
   def fromResponse(response: MobilePinValidatedRequest): MobilePinAudit =
     MobilePinAudit(
-      pin = response.pin,
+      pin      = response.pin,
       deviceId = response.deviceId
     )
   implicit val format: OFormat[MobilePinAudit] = Json.format[MobilePinAudit]
 }
-
-
-
-

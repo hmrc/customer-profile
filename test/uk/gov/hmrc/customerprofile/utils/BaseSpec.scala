@@ -49,12 +49,13 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-trait BaseSpec extends PlaySpec
-  with GuiceOneAppPerSuite
-  with MockitoSugar
-  with Matchers
-  with FutureAwaits
-  with DefaultAwaitTimeout{
+trait BaseSpec
+    extends PlaySpec
+    with GuiceOneAppPerSuite
+    with MockitoSugar
+    with Matchers
+    with FutureAwaits
+    with DefaultAwaitTimeout {
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
   val config:             Configuration  = mock[Configuration]
@@ -69,8 +70,9 @@ trait BaseSpec extends PlaySpec
   implicit lazy val hc: HeaderCarrier    = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  val appName:              String      = "customer-profile"
-  val nino:                 Nino        = Nino("CS700100A")
+  val appName: String = "customer-profile"
+  val nino:    Nino   = Nino("CS700100A")
+  val hashNino = HashSaltUtils.createNINOHash(nino.nino)
   val journeyId:            JourneyId   = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val acceptheader:         String      = "application/vnd.hmrc.1.0+json"
   val grantAccessWithCL200: GrantAccess = Some(nino.nino) and L200
@@ -207,6 +209,9 @@ trait BaseSpec extends PlaySpec
 
   val string1 = "30061986"
   val hash1   = HashSaltUtils.createHashAndSalt(string1)
+
+  val string11 = "240712"
+  val hash11   = HashSaltUtils.createHashAndSalt(string11)
 
   val string2 = "24072012"
   val hash2   = HashSaltUtils.createHashAndSalt(string2)

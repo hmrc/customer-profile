@@ -17,11 +17,13 @@
 package uk.gov.hmrc.customerprofile.testOnly.controllers
 
 import com.google.inject.{Inject, Singleton}
+import org.mindrot.jbcrypt.BCrypt
 import play.api.Logging
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.ControllerComponents
 import uk.gov.hmrc.customerprofile.domain.MobilePin
 import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
+import uk.gov.hmrc.customerprofile.utils.HashSaltUtils
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -36,8 +38,13 @@ class MobilePinTestOnlyController @Inject() (
 
   def savePin = Action(parse.json).async { implicit request =>
     Json.fromJson[MobilePin](request.body) match {
-      case JsSuccess(mobilePin, _) =>
-        mobilePinMongo.add(mobilePin).map {
+      case JsSuccess(mobilePin, _) => {
+
+        val hashedPinsInsert = mobilePin.hashedPins.map(x => HashSaltUtils.createHashAndSalt(x))
+        val updatedMobilePin =
+          mobilePin.copy(ninoHash = HashSaltUtils.createNINOHash(mobilePin.ninoHash), hashedPins = hashedPinsInsert)
+
+        mobilePinMongo.add(updatedMobilePin).map {
           _.fold(
             { _ =>
               InternalServerError
@@ -46,6 +53,7 @@ class MobilePinTestOnlyController @Inject() (
           )
 
         }
+      }
 
       case JsError(e) =>
         Future.successful(BadRequest(s"Could not parse JSON: $e"))
@@ -65,8 +73,12 @@ class MobilePinTestOnlyController @Inject() (
     }
   }
 
-  def deleteByDeviceId(deviceId: String) = Action.async { implicit request =>
-    mobilePinMongo.deleteOne(deviceId).map {
+  def deleteByDeviceIdAndNino(
+    deviceId: String,
+    nino:     String
+  ) = Action.async { implicit request =>
+    val hashNino = HashSaltUtils.createNINOHash(nino)
+    mobilePinMongo.deleteOne(deviceId, hashNino).map {
       _.fold(
         { e =>
           logger.logger.warn(s"Could not delete mobile pin", e)

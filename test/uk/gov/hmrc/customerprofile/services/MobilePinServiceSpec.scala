@@ -35,83 +35,83 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
   val service = new MobilePinService(mockMongo, maxStoredPins = 3)(ec: ExecutionContext)
 
   val deviceId = UUID.randomUUID().toString
-  val pin = "828936"
-  val dummyPin = MobilePin(deviceId, List("hashed-pin"))
-  val request = MobilePinValidatedRequest(pin, deviceId)
+  val pin      = "828936"
+  val dummyPin = MobilePin(deviceId, nino.nino, List("hashed-pin"))
+  val request  = MobilePinValidatedRequest(pin, deviceId)
 
   val now: Instant = Instant.now()
-
 
   "MobilePinService.upsertPin" should {
 
     "insert a new record when deviceId does not exist" in {
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Right(None)))
+      when(mockMongo.findByDeviceIdAndNino(any(), any())).thenReturn(Future.successful(Right(None)))
       when(mockMongo.add(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request).map { _ =>
+      service.upsertPin(request, nino).map { _ =>
         verify(mockMongo).add(argThat { record: MobilePin =>
           record.deviceId == deviceId &&
-            record.hashedPins.length == 1
+          record.hashedPins.length == 1
         })
         succeed
       }
     }
 
     "append to existing list if fewer than 3 pins" in {
-      val existing = MobilePin(deviceId, List(hash1, hash2), Some(now), Some(now))
+      val existing = MobilePin(deviceId, nino.nino, List(hash1, hash2), Some(now), Some(now))
 
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Right(Some(existing))))
+      when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(Some(existing))))
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request).map { _ =>
+      service.upsertPin(request, nino).map { _ =>
         verify(mockMongo).update(argThat { record: MobilePin =>
           record.hashedPins.length == 3 &&
-            record.deviceId == deviceId
+          record.deviceId == deviceId
         })
         succeed
       }
     }
 
     "remove oldest pin and append new one when already 3 pins" in {
-      val existing = MobilePin(deviceId, List(hash1, hash2, hash3), Some(now), Some(now))
+      val existing = MobilePin(deviceId, nino.nino, List(hash1, hash2, hash3), Some(now), Some(now))
 
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Right(Some(existing))))
+      when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(Some(existing))))
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request).map { _ =>
+      service.upsertPin(request, nino).map { _ =>
         verify(mockMongo).update(argThat { record: MobilePin =>
           record.hashedPins.length == 3 &&
-            !record.hashedPins.contains(hash1)
+          !record.hashedPins.contains(hash1)
         })
         succeed
       }
     }
 
     "fail if findByDeviceId returns error" in {
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Left(MongoDBError("DB error"))))
+      when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino))
+        .thenReturn(Future.successful(Left(MongoDBError("DB error"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request)
+        service.upsertPin(request, nino)
       }
     }
 
     "fail if add returns error" in {
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Right(None)))
+      when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(None)))
       when(mockMongo.add(any[MobilePin])).thenReturn(Future.successful(Left(MongoDBError("Add failed"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request)
+        service.upsertPin(request, nino)
       }
     }
 
     "fail if update returns error" in {
-      val existing = MobilePin(deviceId, List(hash1), Some(now), Some(now))
+      val existing = MobilePin(deviceId, nino.nino, List(hash1), Some(now), Some(now))
 
-      when(mockMongo.findByDeviceId(deviceId)).thenReturn(Future.successful(Right(Some(existing))))
+      when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(Some(existing))))
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Left(MongoDBError("Update failed"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request)
+        service.upsertPin(request, nino)
       }
     }
   }
