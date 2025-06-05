@@ -51,9 +51,12 @@ API
 
 Validate the entered pin against the DOB pattern and previously used pin
 
-- Local testing URL - http:/localhost:8286/mobile-pin/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
-- mode can be createPin or updatePin
+- Local testing URL - http://localhost:8233/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+- QA URL - https://api.qa.tax.service.gov.uk/customer-profile/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+- Staging URL - https://api.staging.tax.service.gov.uk/customer-profile/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
+
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
+- Bearer token needs to be supplied
 
 Example response body for success with 200 OK:
 ```json
