@@ -33,27 +33,26 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import java.util.UUID
 import scala.concurrent.{ExecutionContext, Future}
 
-class MobilePinControllerSpec
-  extends BaseSpec
-    with MockitoSugar
-    with Results {
+class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
 
-  val mockPinService: MobilePinService = mock[MobilePinService]
-  val auditConnector: AuditConnector = mock[AuditConnector]
+  val mockPinService:       MobilePinService     = mock[MobilePinService]
+  val auditConnector:       AuditConnector       = mock[AuditConnector]
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val acceptHeader:         (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptHeader:         (String, String)     = "Accept" -> "application/vnd.hmrc.1.0+json"
   val uuid = UUID.randomUUID().toString
 
-
   val jsonRequest = Json.obj(
-    "pin" -> "828936",
-    "deviceId" -> uuid
+    "pin"      -> "828936",
+    "deviceId" -> uuid,
+    "nino"     -> nino.nino
   )
-  val fakeRequest:          FakeRequest[jsonRequest.type] = FakeRequest("PUT", "/").withHeaders(acceptHeader).withBody(jsonRequest)
+
+  val fakeRequest: FakeRequest[jsonRequest.type] =
+    FakeRequest("PUT", "/").withHeaders(acceptHeader).withBody(jsonRequest)
+
   val controller = new MobilePinController(
     mockAuthConnector,
     confLevel = 200,
-    mongoService = mock[MongoService],
     controllerComponents,
     auditConnector,
     pinService = mockPinService
@@ -66,7 +65,7 @@ class MobilePinControllerSpec
     ).thenReturn(Future.successful(response))
 
   private def mockUpsertPin(response: Future[Unit]) =
-    when(mockPinService.upsertPin(any[MobilePinValidatedRequest])(any[ExecutionContext]))
+    when(mockPinService.upsertPin(any[MobilePinValidatedRequest], any())(any[ExecutionContext]))
       .thenReturn(response)
 
   "MobilePinController#upsert" should {
@@ -85,8 +84,8 @@ class MobilePinControllerSpec
       val invalidJson = Json.obj("invalidField" -> "oops")
       mockUpsertPin(Future.successful(()))
       val request = FakeRequest(PUT, "/mobile-pin/upsert")
-              .withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
-              .withBody(invalidJson)
+        .withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
+        .withBody(invalidJson)
       val result = controller.upsert(nino)(request)
 
       status(result) mustBe BAD_REQUEST
@@ -103,4 +102,3 @@ class MobilePinControllerSpec
     }
   }
 }
-

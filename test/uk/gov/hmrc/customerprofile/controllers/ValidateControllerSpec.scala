@@ -22,10 +22,12 @@ import play.api.mvc.{ControllerComponents, Results}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, status, stubControllerComponents}
 import uk.gov.hmrc.customerprofile.connector.CitizenDetailsConnector
+import uk.gov.hmrc.customerprofile.domain.MobilePin
 import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MongoService}
-import uk.gov.hmrc.customerprofile.utils.{AuthAndShutterMock, BaseSpec}
+import uk.gov.hmrc.customerprofile.utils.{AuthAndShutterMock, BaseSpec, HashSaltUtils}
 
 import java.time.LocalDate
+import java.util.UUID
 import scala.concurrent.Future
 
 class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
@@ -49,8 +51,12 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
   )
 
   val deviceId    = "6D92078A-8246-4BA4-AE5B-76104861E7DC"
+  val deviceId1   = "7D92078A-8246-4BA4-AE5B-76104861E7DC"
   val dob1        = LocalDate.of(1980, 7, 24)
   val fakeRequest = FakeRequest("GET", "/").withHeaders(acceptHeader)
+  val uuid        = UUID.randomUUID().toString
+
+  val mobilePin = MobilePin(uuid, hashNino, List(hash11, hash2))
 
   "ValidateControllerSpec" should {
 
@@ -62,19 +68,22 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(nino)))
         when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
           .thenReturn(Future.successful(Some(person4)))
-        val result = controller.validatePin("300684", deviceId, journeyId, "createPin")(fakeRequest)
+        when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
+          .thenReturn(Future.successful(None))
+        val result = controller.validatePin("300684", deviceId, journeyId)(fakeRequest)
         status(result) mustBe (200)
       }
 
-      "valid pin is entered while pin update" in {
+      "valid pin is entered if the deviceId and nino combination exists in DB" in {
         mockAuthorisationGrantAccess(grantAccessWithCL200)
         when(mockCustomerProfileService.getNino()(any(), any()))
           .thenReturn(Future.successful(Some(nino)))
         when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
           .thenReturn(Future.successful(Some(person4)))
-        when(mockMongoService.getLastThreePin(any())(any())).thenReturn(Future.successful(List(hash1, hash2)))
+        when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
+          .thenReturn(Future.successful(Some(mobilePin)))
 
-        val result = controller.validatePin("300685", deviceId, journeyId, "updatePin")(fakeRequest)
+        val result = controller.validatePin("300685", deviceId, journeyId)(fakeRequest)
         status(result) mustBe (200)
 
       }
@@ -89,23 +98,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(nino)))
         when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
           .thenReturn(Future.successful(Some(person4)))
-        val result   = controller.validatePin("300686", deviceId, journeyId, "createPin")(fakeRequest)
-        val jsonBody = contentAsJson(result)
-        status(result) mustBe (401)
-        (jsonBody \ "key").as[String] mustBe "dob_error"
-
-      }
-
-      "a pin matching dob is entered while pin update" in {
-
-        mockAuthorisationGrantAccess(grantAccessWithCL200)
-        when(mockCustomerProfileService.getNino()(any(), any()))
-          .thenReturn(Future.successful(Some(nino)))
-        when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
-          .thenReturn(Future.successful(Some(person4)))
-        when(mockMongoService.getLastThreePin(any())(any())).thenReturn(Future.successful(List(hash1, hash2)))
-
-        val result   = controller.validatePin("300686", deviceId, journeyId, "updatePin")(fakeRequest)
+        val result   = controller.validatePin("300686", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
         status(result) mustBe (401)
         (jsonBody \ "key").as[String] mustBe "dob_error"
@@ -119,9 +112,10 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(nino)))
         when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
           .thenReturn(Future.successful(Some(person4)))
-        when(mockMongoService.getLastThreePin(any())(any())).thenReturn(Future.successful(List(hash11)))
+        when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
+          .thenReturn(Future.successful(Some(mobilePin)))
 
-        val result   = controller.validatePin("240712", deviceId, journeyId, "updatePin")(fakeRequest)
+        val result   = controller.validatePin("240712", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
         status(result) mustBe (401)
         (jsonBody \ "key").as[String] mustBe "prev_pin_error"

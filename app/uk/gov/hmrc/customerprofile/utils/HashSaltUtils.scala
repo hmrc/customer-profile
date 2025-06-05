@@ -17,10 +17,18 @@
 package uk.gov.hmrc.customerprofile.utils
 
 import org.mindrot.jbcrypt.BCrypt
+import java.security.MessageDigest
 
 object HashSaltUtils {
 
   def createHashAndSalt(pin: String) =
     BCrypt.hashpw(pin, BCrypt.gensalt())
+
+  def createNINOHash(nino: String) = {
+
+    val digest = MessageDigest.getInstance("SHA-256").digest(nino.getBytes("UTF-8"))
+    digest.map("%02x".format(_)).mkString
+
+  }
 
 }

@@ -28,7 +28,7 @@ import uk.gov.hmrc.customerprofile.connector.CitizenDetailsConnector
 import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
 import uk.gov.hmrc.customerprofile.response.ValidateResponse
 import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MongoService}
-import uk.gov.hmrc.customerprofile.utils.DOBUtils
+import uk.gov.hmrc.customerprofile.utils.{DOBUtils, HashSaltUtils}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -62,8 +62,7 @@ class ValidateController @Inject() (
   def validatePin(
     enteredPin: String,
     deviceId:   String,
-    journeyId:  JourneyId,
-    mode:       String
+    journeyId:  JourneyId
   ): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, None).async { implicit request =>
       implicit val hc: HeaderCarrier = fromRequest(request)
@@ -71,7 +70,6 @@ class ValidateController @Inject() (
         customerProfileService.getNino().flatMap { nino =>
           citizenDetailsConnector.personDetailsForPin(nino.getOrElse(Nino(""))).flatMap { personDetails =>
             val dob: Option[LocalDate] = personDetails.flatMap(_.person.personDateOfBirth)
-
             DOBUtils.matchesDOBPatterns(dob, enteredPin) match {
               case true =>
                 logger.info("Unauthorized! Pin shouldn't match DOB!")
@@ -83,27 +81,31 @@ class ValidateController @Inject() (
                   )
                 )
               case false =>
-                if (mode == "updatePin") {
-                  mongoService.getLastThreePin(deviceId).flatMap { hashedPins =>
-                    if (hashedPins
-                          .takeRight(storedPinCount)
-                          .exists(storedHash => BCrypt.checkpw(enteredPin, storedHash))) {
-                      logger.info("Entered Pin can't be same as last three pins!")
-                      Future.successful(
-                        Unauthorized(
-                          Json.toJson(
-                            ValidateResponse(Some(previousPinErrorKey), "Do not re-use an old PIN")
+                val hashNino = nino.map(x => HashSaltUtils.createNINOHash(x.nino)).getOrElse("")
+
+                mongoService.findByDeviceIdAndNinoHash(deviceId, hashNino).flatMap {
+                  _ match {
+                    case Some(mobilePin) =>
+                      if (mobilePin.hashedPins
+                            .takeRight(storedPinCount)
+                            .exists(storedHash => BCrypt.checkpw(enteredPin, storedHash))) {
+                        logger.info("Entered Pin can't be same as last three pins!")
+                        Future.successful(
+                          Unauthorized(
+                            Json.toJson(
+                              ValidateResponse(Some(previousPinErrorKey), "Do not re-use an old PIN")
+                            )
                           )
                         )
-                      )
-                    } else {
+                      } else {
+                        logger.info("Successful! Entered Pin is valid")
+                        Future.successful(Ok(Json.toJson(ValidateResponse(None, "Pin is valid"))))
+                      }
+                    case None =>
                       logger.info("Successful! Entered Pin is valid")
                       Future.successful(Ok(Json.toJson(ValidateResponse(None, "Pin is valid"))))
-                    }
                   }
-                } else {
-                  logger.info("Successful! Entered Pin is valid")
-                  Future.successful(Ok(Json.toJson(ValidateResponse(None, "Pin is valid"))))
+
                 }
 
             }

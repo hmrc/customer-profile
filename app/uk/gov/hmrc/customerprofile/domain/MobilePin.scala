@@ -26,6 +26,7 @@ case class MobilePin(
   @BsonId
   @BsonProperty("_id")
   deviceId:   String,
+  ninoHash:   String,
   hashedPins: List[String],
   createdAt:  Option[Instant] = None,
   updatedAt:  Option[Instant] = None)

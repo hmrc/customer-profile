@@ -37,18 +37,18 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
 
     "record is  inserted properly" in {
       repository.collection.drop()
-      val mobilePin = MobilePin(uuid, List("123", "345", "678"))
+      val mobilePin = MobilePin(uuid, nino.nino, List("123", "345", "678"))
       repository.add(mobilePin).futureValue
       val countF: Future[Long] = repository.collection.countDocuments().toFuture()
       val count:  Long         = await(countF)
-      count mustBe  1
+      count mustBe 1
     }
 
     "record is not inserted properly" in {
       repository.collection.drop()
-      val mobilePin1 = MobilePin(uuid, List("123", "345", "678"))
+      val mobilePin1 = MobilePin(uuid, nino.nino, List("123", "345", "678"))
       repository.add(mobilePin1).futureValue
-      val mobilePin2 = MobilePin(uuid, List("12311", "345", "678"))
+      val mobilePin2 = MobilePin(uuid, nino.nino, List("12311", "345", "678"))
       val result     = repository.add(mobilePin2).futureValue
       result mustBe (Left(MongoDBError("Unexpected error while writing a document.")))
     }
@@ -60,26 +60,26 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
     "update the record is already exists" in {
       repository.collection.drop()
 
-      val mobilePin = MobilePin(uuid, List("123", "345", "678"), createdAt = Some(instant))
+      val mobilePin = MobilePin(uuid, nino.nino, List("123", "345", "678"), createdAt = Some(instant))
       val updatedPin = mobilePin
         .copy(hashedPins = List("345", "678", "918"))
       repository.add(mobilePin).futureValue
       repository.update(updatedPin).futureValue
-      val record        = repository.findByDeviceId(uuid).futureValue
+      val record        = repository.findByDeviceIdAndNino(uuid, nino.nino).futureValue
       val updatedRecord = record.toOption.get
       updatedRecord.get.hashedPins.takeRight(1).head mustBe "918"
-      updatedRecord.get.updatedAt.isDefined          mustBe (true)
+      updatedRecord.get.updatedAt.isDefined mustBe (true)
     }
 
     "add the record if not existing already" in {
       repository.collection.drop()
 
-      val mobilePin = MobilePin(uuid, List("123", "345", "678"))
+      val mobilePin = MobilePin(uuid, nino.nino, List("123", "345", "678"))
       repository.update(mobilePin).futureValue
-      val record = repository.findByDeviceId(uuid).futureValue.toOption.get.get
+      val record = repository.findByDeviceIdAndNino(uuid, nino.nino).futureValue.toOption.get.get
 
-      record.deviceId            mustBe (uuid)
-      record.hashedPins          mustBe (List("123", "345", "678"))
+      record.deviceId mustBe (uuid)
+      record.hashedPins mustBe (List("123", "345", "678"))
       record.updatedAt.isDefined mustBe (true)
 
     }
@@ -91,12 +91,13 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
     "give a record response if exists" in {
       repository.collection.drop()
 
-      val mobilePin = MobilePin(uuid, List("12345", "345"))
+      val mobilePin = MobilePin(uuid, nino.nino, List("12345", "345"))
       repository.add(mobilePin).futureValue
-      val record = repository.findByDeviceId(uuid).futureValue.toOption.get.get
+      val record = repository.findByDeviceIdAndNino(uuid, nino.nino).futureValue.toOption.get.get
 
-      record.deviceId            mustBe (uuid)
-      record.hashedPins          mustBe (List("12345", "345"))
+      record.deviceId mustBe (uuid)
+      record.ninoHash mustBe nino.nino
+      record.hashedPins mustBe (List("12345", "345"))
       record.createdAt.isDefined mustBe (true)
       record.updatedAt.isDefined mustBe (true)
     }
@@ -104,7 +105,7 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
     "give a None response if record don't exists" in {
       repository.collection.drop()
 
-      val record: Option[MobilePin] = repository.findByDeviceId(uuid).futureValue.toOption.get
+      val record: Option[MobilePin] = repository.findByDeviceIdAndNino(uuid, nino.nino).futureValue.toOption.get
       record.isDefined mustBe (false)
 
     }
@@ -115,7 +116,7 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
 
     "delete all records from DB" in {
       repository.collection.drop()
-      val mobilePin = MobilePin(uuid, List("123", "345", "678"), createdAt = Some(instant))
+      val mobilePin = MobilePin(uuid, nino.nino, List("123", "345", "678"), createdAt = Some(instant))
       repository.add(mobilePin).futureValue
       repository.deleteAll.futureValue
       val count = repository.collection.countDocuments().toFuture()
@@ -131,11 +132,11 @@ class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[Mobile
 
     "delete the records from DB by DeviceId" in {
       repository.collection.drop()
-      val mobilePin1 = MobilePin(uuid, List("123", "345", "678"), createdAt    = Some(instant))
-      val mobilePin2 = MobilePin(uuid2, List("311", "2134", "5467"), createdAt = Some(instant))
+      val mobilePin1 = MobilePin(uuid, nino.nino, List("123", "345", "678"), createdAt    = Some(instant))
+      val mobilePin2 = MobilePin(uuid2, nino.nino, List("311", "2134", "5467"), createdAt = Some(instant))
       repository.add(mobilePin1).futureValue
       repository.add(mobilePin2).futureValue
-      repository.deleteOne(uuid).futureValue
+      repository.deleteOne(uuid, nino.nino).futureValue
       val count = repository.collection.countDocuments().toFuture()
       count onComplete {
         case Success(counter) => counter mustBe (1)

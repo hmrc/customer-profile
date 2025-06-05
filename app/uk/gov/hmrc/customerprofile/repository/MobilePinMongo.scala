@@ -16,9 +16,9 @@
 
 package uk.gov.hmrc.customerprofile.repository
 
-import org.mongodb.scala.model.{IndexModel, IndexOptions, ReplaceOptions}
+import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import play.api.Logger
-import org.mongodb.scala.model.Filters.equal
+import org.mongodb.scala.model.Filters._
 import uk.gov.hmrc.customerprofile.domain.{MobilePin, ServiceResponse}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
@@ -40,11 +40,16 @@ class MobilePinMongo @Inject() (
                                            mongoComponent = mongo,
                                            domainFormat   = MobilePin.format,
                                            indexes = Seq(
-                                             IndexModel(ascending("deviceId"),
-                                                        IndexOptions()
-                                                          .name("deviceId-index")
-                                                          .unique(true)
-                                                          .background(true)),
+                                             IndexModel(
+                                               Indexes.compoundIndex(
+                                                 Indexes.ascending("deviceId"),
+                                                 Indexes.ascending("ninoHash")
+                                               ),
+                                               IndexOptions()
+                                                 .name("device-nino-index")
+                                                 .unique(true)
+                                                 .background(true)
+                                             ),
                                              IndexModel(ascending("createdAt"),
                                                         IndexOptions()
                                                           .background(false)
@@ -73,7 +78,7 @@ class MobilePinMongo @Inject() (
 
   def update(updatedMobilePin: MobilePin): ServiceResponse[MobilePin] = {
 
-    val filter      = equal("deviceId", updatedMobilePin.deviceId)
+    val filter      = and(equal("deviceId", updatedMobilePin.deviceId), equal("ninoHash", updatedMobilePin.ninoHash))
     val currentTime = Instant.now()
     collection
       .replaceOne(filter, updatedMobilePin.copy(updatedAt = Some(currentTime)), ReplaceOptions().upsert(true))
@@ -84,14 +89,20 @@ class MobilePinMongo @Inject() (
       }
   }
 
-  def findByDeviceId(deviceId: String): ServiceResponse[Option[MobilePin]] =
+  def findByDeviceIdAndNino(
+    deviceId: String,
+    ninoHash: String
+  ): ServiceResponse[Option[MobilePin]] = {
+
+    val filter = and(equal("deviceId", deviceId), equal("ninoHash", ninoHash))
     collection
-      .find[MobilePin](equal("deviceId", deviceId))
+      .find[MobilePin](filter)
       .toFuture()
       .map(data => Right(data.headOption))
       .recover {
         case _ => Left(MongoDBError("Unexpected error while searching  a document."))
       }
+  }
 
   def deleteAll: ServiceResponse[Unit] =
     collection
@@ -103,13 +114,18 @@ class MobilePinMongo @Inject() (
 
       }
 
-  def deleteOne(deviceId: String): ServiceResponse[Unit] =
+  def deleteOne(
+    deviceId: String,
+    ninoHash: String
+  ): ServiceResponse[Unit] = {
+    val filter = and(equal("deviceId", deviceId), equal("ninoHash", ninoHash))
     collection
-      .deleteOne(equal("deviceId", deviceId))
+      .deleteOne(filter)
       .toFuture()
       .map(_ => Right())
       .recover {
         case _ => Left(MongoDBError("Unexpected error while searching  a document."))
 
       }
+  }
 }

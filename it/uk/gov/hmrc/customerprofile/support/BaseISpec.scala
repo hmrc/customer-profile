@@ -47,7 +47,9 @@ class BaseISpec
   override implicit lazy val app: Application = appBuilder
     .build()
 
-  val nino:                    Nino             = Nino("AA000006C")
+  val nino: Nino = Nino("AA000006C")
+  val pin      = "240712"
+  val deviceId = "f7a5d556-9f34-47cb-9d84-7e904f2fe704"
   val acceptJsonHeader:        (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
   val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
   val journeyId:               JourneyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"

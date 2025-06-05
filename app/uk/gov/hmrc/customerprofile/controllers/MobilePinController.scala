@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.auth.AccessControl
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
 import uk.gov.hmrc.customerprofile.domain.audit.MobilePinAudit
-import uk.gov.hmrc.customerprofile.services.{MobilePinService, MongoService}
+import uk.gov.hmrc.customerprofile.services.{MobilePinService}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
@@ -39,45 +39,50 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
 @Singleton
-class MobilePinController @Inject()(
-                                      override val authConnector: AuthConnector,
-                                      @Named("controllers.confidenceLevel") override val confLevel: Int,
-                                      mongoService: MongoService,
-                                      controllerComponents: ControllerComponents,
-                                      val auditConnector:   AuditConnector,
-                                      pinService: MobilePinService
-                                    )(implicit val executionContext: ExecutionContext)
-extends BackendController(controllerComponents)
-with ErrorHandling
-with AccessControl
-with HeaderValidator
-{
+class MobilePinController @Inject() (
+  override val authConnector:                                   AuthConnector,
+  @Named("controllers.confidenceLevel") override val confLevel: Int,
+  controllerComponents:                                         ControllerComponents,
+  val auditConnector:                                           AuditConnector,
+  pinService:                                                   MobilePinService
+)(implicit val executionContext:                                ExecutionContext)
+    extends BackendController(controllerComponents)
+    with ErrorHandling
+    with AccessControl
+    with HeaderValidator {
   override val app:    String                 = "mobile-pin-security"
   override val logger: Logger                 = Logger(this.getClass)
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
-  def upsert(
-    nino: Nino): Action[JsValue] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async(parse.json){ implicit request =>
+  def upsert(nino: Nino): Action[JsValue] =
+    validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async(parse.json) { implicit request =>
       implicit val hc: HeaderCarrier = fromRequest(request)
-      request.body.validate[MobilePinValidatedRequest].fold(
-        errors => {
-                logger.warn(s"Invalid request body: $errors")
-                Future.successful(BadRequest(Json.obj("error" -> "Invalid request format", "details" -> JsError.toJson(errors))))
-              },
-              validRequest =>{
-                pinService.upsertPin(validRequest).andThen { case Success(_) =>
+      request.body
+        .validate[MobilePinValidatedRequest]
+        .fold(
+          errors => {
+            logger.warn(s"Invalid request body: $errors")
+            Future.successful(
+              BadRequest(Json.obj("error" -> "Invalid request format", "details" -> JsError.toJson(errors)))
+            )
+          },
+          validRequest =>
+            pinService
+              .upsertPin(validRequest, nino)
+              .andThen {
+                case Success(_) =>
                   sendAuditEvent(nino, MobilePinAudit.fromResponse(validRequest), request.path)
-                }
-                  .map(_ => Created)
-              })
-      }
+              }
+              .map(_ => Created)
+        )
+    }
+
   private def sendAuditEvent(
-                              nino:        Nino,
-                              response:    MobilePinAudit,
-                              path:        String
-                            )(implicit hc: HeaderCarrier
-                            ): Unit = auditConnector.sendEvent(
+    nino:        Nino,
+    response:    MobilePinAudit,
+    path:        String
+  )(implicit hc: HeaderCarrier
+  ): Unit = auditConnector.sendEvent(
     DataEvent(
       app,
       "Pin Updated/Inserted",

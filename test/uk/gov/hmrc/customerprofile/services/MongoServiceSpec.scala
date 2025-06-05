@@ -17,7 +17,6 @@
 package uk.gov.hmrc.customerprofile.services
 
 import org.mockito.Mockito.when
-import org.scalatestplus.mockito.MockitoSugar.mock
 import uk.gov.hmrc.customerprofile.domain.{MobilePin, ServiceResponse}
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
 import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
@@ -37,13 +36,13 @@ class MongoServiceSpec extends BaseSpec {
   def mockFindByDevice(f: ServiceResponse[Option[MobilePin]]) =
     when(
       mockMobilePinMongo
-        .findByDeviceId(uuid)
+        .findByDeviceIdAndNino(uuid, nino.nino)
     ).thenReturn(f)
 
   "MongoService" should {
 
-    "return last 3 hashed pins if device id is found" in {
-      val mobilePin = MobilePin(uuid, List(hash1, hash2, hash3))
+    "return the mobile pin value" in {
+      val mobilePin = MobilePin(uuid, nino.nino, List(hash1, hash2, hash3))
       mockFindByDevice(
         Future.successful(
           Right(
@@ -51,42 +50,13 @@ class MongoServiceSpec extends BaseSpec {
           )
         )
       )
-      service.getLastThreePin(uuid) onComplete {
-        case Success(value) => value.size mustBe (3)
+      service.findByDeviceIdAndNinoHash(uuid, nino.nino) onComplete {
+        case Success(value) => value.get mustBe (mobilePin)
         case Failure(_)     => ()
       }
     }
 
-    "return last 2 hashed pins if device id is found having 2 pins" in {
-      val mobilePin = MobilePin(uuid, List(hash1, hash2))
-      mockFindByDevice(
-        Future.successful(
-          Right(
-            Some(mobilePin)
-          )
-        )
-      )
-      service.getLastThreePin(uuid) onComplete {
-        case Success(value) => value.size mustBe (2)
-        case Failure(_)     => ()
-      }
-    }
-
-    "return empty list of no pin is there" in {
-      val mobilePin = MobilePin(uuid, List())
-      mockFindByDevice(
-        Future.successful(
-          Right(
-            Some(mobilePin)
-          )
-        )
-      )
-      service.getLastThreePin(uuid) onComplete {
-        case Success(value) => value.isEmpty mustBe (true)
-        case Failure(_)     => ()
-      }
-    }
-    "return empty list of no value is found" in {
+    "return None , if no data is there" in {
       mockFindByDevice(
         Future.successful(
           Right(
@@ -94,11 +64,12 @@ class MongoServiceSpec extends BaseSpec {
           )
         )
       )
-      service.getLastThreePin(uuid) onComplete {
-        case Success(value) => value.isEmpty mustBe (true)
+      service.findByDeviceIdAndNinoHash(uuid, nino.nino) onComplete {
+        case Success(value) => value.isDefined mustBe (false)
         case Failure(_)     => ()
       }
     }
+
     "return exception if Mongo error occurred while fetching data" in {
       mockFindByDevice(
         Future.successful(
@@ -107,7 +78,7 @@ class MongoServiceSpec extends BaseSpec {
           )
         )
       )
-      service.getLastThreePin(uuid) onComplete {
+      service.findByDeviceIdAndNinoHash(uuid, nino.nino) onComplete {
         case Success(_) => fail()
         case Failure(_) =>
       }

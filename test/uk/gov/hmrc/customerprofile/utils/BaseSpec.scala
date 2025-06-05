@@ -70,8 +70,9 @@ trait BaseSpec
   implicit lazy val hc: HeaderCarrier    = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
-  val appName:              String      = "customer-profile"
-  val nino:                 Nino        = Nino("CS700100A")
+  val appName: String = "customer-profile"
+  val nino:    Nino   = Nino("CS700100A")
+  val hashNino = HashSaltUtils.createNINOHash(nino.nino)
   val journeyId:            JourneyId   = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
   val acceptheader:         String      = "application/vnd.hmrc.1.0+json"
   val grantAccessWithCL200: GrantAccess = Some(nino.nino) and L200

@@ -51,7 +51,7 @@ API
 
 Validate the entered pin against the DOB pattern and previously used pin
 
-- Local testing URL - http:/localhost:8286/mobile-pin/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>&mode=updatePin/createPin
+- Local testing URL - http:/localhost:8286/mobile-pin/validate/pin/{enteredPin}?journeyId=<journeyId>&deviceId=<deviceId>
 - mode can be createPin or updatePin
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
 
@@ -86,7 +86,7 @@ Example response body for previous pin match 401 OK:
 ```json
 {
     "pin" : "123456",
-   "deviceId ": "device-002"
+   "deviceId ": "device-002",
 }
 ```
 # Sandbox
@@ -117,6 +117,7 @@ save some pin data in DB
 ```json
 {
    "deviceId ": "device-002",
+  "ninoHash" : "SZ123456B",
   "hashedPins" : ["123445","567890"]
 }
 ```
@@ -124,8 +125,8 @@ save some pin data in DB
 ### `DELETE       /pin/test-only/delete`
 delete all pin data from DB
 
-### `DELETE /pin/test-only/delete/:deviceId`
-delete all pin data from DB based on device id
+### `DELETE /pin/test-only/delete/deviceId/:deviceId/nino/:nino`
+delete all pin data from DB based on device id and nino
 
 # Version
 Version of API need to be provided in `Accept` request header

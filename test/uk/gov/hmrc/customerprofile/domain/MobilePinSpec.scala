@@ -16,22 +16,22 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
+import uk.gov.hmrc.customerprofile.utils.BaseSpec
 
 import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 
-class MobilePinSpec extends AnyWordSpec with Matchers {
+class MobilePinSpec extends BaseSpec {
 
   val uuid     = UUID.randomUUID().toString
   val dateTime = LocalDateTime.of(2025, 4, 4, 0, 0) // 4 April 2025 at 00:00
   val instant  = dateTime.toInstant(ZoneOffset.UTC)
 
-  val mobilePin  = MobilePin(uuid, List("1234", "5678", "9012"), Some(instant), Some(instant))
+  val mobilePin  = MobilePin(uuid, nino.nino, List("1234", "5678", "9012"), Some(instant), Some(instant))
   val mobileJson = Json.parse(s"""{
                                  |  "deviceId": "$uuid",
+                                 |  "ninoHash" : "${nino.nino}",
                                  |  "hashedPins": [
                                  |    "1234",
                                  |    "5678",
@@ -44,12 +44,12 @@ class MobilePinSpec extends AnyWordSpec with Matchers {
 
   "perform JOSN de/serialisation correctly" should {
     "serialize mobile pin data" in {
-      Json.toJson(mobilePin) shouldBe mobileJson
+      Json.toJson(mobilePin) mustBe mobileJson
     }
 
     "convert instant to Local date time" in {
       val result = MobilePin.convertInstantToLocalTime(instant)
-      result shouldBe (LocalDateTime.of(2025, 4, 4, 1, 0))
+      result mustBe (LocalDateTime.of(2025, 4, 4, 1, 0))
     }
   }
 
