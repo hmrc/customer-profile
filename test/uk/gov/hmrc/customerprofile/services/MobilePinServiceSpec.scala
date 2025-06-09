@@ -24,6 +24,7 @@ import uk.gov.hmrc.customerprofile.domain.{MobilePin, MobilePinValidatedRequest}
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
 import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
+import uk.gov.hmrc.domain.Nino
 
 import java.time.Instant
 import java.util.UUID
@@ -33,6 +34,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
 
   val mockMongo: MobilePinMongo = mock[MobilePinMongo]
   val service = new MobilePinService(mockMongo, maxStoredPins = 3)(ec: ExecutionContext)
+  val someNino: Option[Nino] = Some(Nino("CS700100A"))
 
   val deviceId = UUID.randomUUID().toString
   val pin      = "828936"
@@ -47,7 +49,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.findByDeviceIdAndNino(any(), any())).thenReturn(Future.successful(Right(None)))
       when(mockMongo.add(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request, nino).map { _ =>
+      service.upsertPin(request, someNino).map { _ =>
         verify(mockMongo).add(argThat { record: MobilePin =>
           record.deviceId == deviceId &&
           record.hashedPins.length == 1
@@ -62,7 +64,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(Some(existing))))
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request, nino).map { _ =>
+      service.upsertPin(request, someNino).map { _ =>
         verify(mockMongo).update(argThat { record: MobilePin =>
           record.hashedPins.length == 3 &&
           record.deviceId == deviceId
@@ -77,7 +79,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.findByDeviceIdAndNino(deviceId, nino.nino)).thenReturn(Future.successful(Right(Some(existing))))
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
-      service.upsertPin(request, nino).map { _ =>
+      service.upsertPin(request, someNino).map { _ =>
         verify(mockMongo).update(argThat { record: MobilePin =>
           record.hashedPins.length == 3 &&
           !record.hashedPins.contains(hash1)
@@ -91,7 +93,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
         .thenReturn(Future.successful(Left(MongoDBError("DB error"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request, nino)
+        service.upsertPin(request, someNino)
       }
     }
 
@@ -100,7 +102,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.add(any[MobilePin])).thenReturn(Future.successful(Left(MongoDBError("Add failed"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request, nino)
+        service.upsertPin(request, someNino)
       }
     }
 
@@ -111,7 +113,7 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Left(MongoDBError("Update failed"))))
 
       recoverToSucceededIf[Exception] {
-        service.upsertPin(request, nino)
+        service.upsertPin(request, someNino)
       }
     }
   }

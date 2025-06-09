@@ -424,20 +424,12 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
-  /upsert/nino/{nino}:
+  /upsert:
     put:
       tags:
         - mobile-pin
       summary: Insert or update the PIN.
       operationId: UpsertPin
-      parameters:
-        - name: nino
-          in: path
-          description: The NINO for the individual.
-          required: true
-          schema:
-            type: string
-            example: NS123456B
       requestBody:
         description: ''
         content:

@@ -25,7 +25,7 @@ import play.api.test.Helpers._
 import play.api.test._
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
-import uk.gov.hmrc.customerprofile.services.{MobilePinService, MongoService}
+import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MobilePinService, MongoService}
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
@@ -40,11 +40,11 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
   val controllerComponents: ControllerComponents = stubControllerComponents()
   val acceptHeader:         (String, String)     = "Accept" -> "application/vnd.hmrc.1.0+json"
   val uuid = UUID.randomUUID().toString
+  val mockCustomerProfileService: CustomerProfileService = mock[CustomerProfileService]
 
   val jsonRequest = Json.obj(
     "pin"      -> "828936",
-    "deviceId" -> uuid,
-    "nino"     -> nino.nino
+    "deviceId" -> uuid
   )
 
   val fakeRequest: FakeRequest[jsonRequest.type] =
@@ -55,7 +55,8 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
     confLevel = 200,
     controllerComponents,
     auditConnector,
-    pinService = mockPinService
+    pinService = mockPinService,
+    mockCustomerProfileService,
   )
 
   def mockAuthorisationGrantAccess(response: GrantAccess)(implicit authConnector: AuthConnector) =
@@ -73,32 +74,27 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
     "return Created (201) for valid request" in {
 
       mockAuthorisationGrantAccess(grantAccessWithCL200)
+      when(mockCustomerProfileService.getNino()(any(), any()))
+        .thenReturn(Future.successful(Some(nino)))
       mockUpsertPin(Future.successful(()))
-      val result = controller.upsert(nino)(fakeRequest)
+      val result = controller.upsert(fakeRequest)
 
       status(result) mustBe CREATED
     }
 
     "return BadRequest (400) for invalid request body" in {
       mockAuthorisationGrantAccess(grantAccessWithCL200)
+      when(mockCustomerProfileService.getNino()(any(), any()))
+        .thenReturn(Future.successful(Some(nino)))
       val invalidJson = Json.obj("invalidField" -> "oops")
       mockUpsertPin(Future.successful(()))
       val request = FakeRequest(PUT, "/mobile-pin/upsert")
         .withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
         .withBody(invalidJson)
-      val result = controller.upsert(nino)(request)
+      val result = controller.upsert(request)
 
       status(result) mustBe BAD_REQUEST
       (contentAsJson(result) \ "error").as[String] mustBe "Invalid request format"
-    }
-
-    "Return Forbidden (403) when the nino is wrong" in {
-      mockAuthorisationGrantAccess(grantAccessWithCL200)
-      mockUpsertPin(Future.successful(()))
-      val result = controller.upsert(Nino("AA123456D"))(fakeRequest)
-
-      status(result) mustBe FORBIDDEN
-
     }
   }
 }
