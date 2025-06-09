@@ -41,7 +41,7 @@ class MobilePinService @Inject() (
   ): Future[Unit] = {
     val hashedPin = HashSaltUtils.createHashAndSalt(request.pin)
     val now       = Instant.now()
-    val hashNino  = HashSaltUtils.createNINOHash(Future.successful(Some(nino)).toString)
+    val hashNino = nino.map(x => HashSaltUtils.createNINOHash(x.nino)).getOrElse("")
 
     mobilePinMongo.findByDeviceIdAndNino(request.deviceId, hashNino).flatMap {
       case Left(error) =>
