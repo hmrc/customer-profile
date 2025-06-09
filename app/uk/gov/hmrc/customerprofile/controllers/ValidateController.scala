@@ -81,7 +81,7 @@ class ValidateController @Inject() (
                   )
                 )
               case false =>
-                val hashNino = nino.map(x => HashSaltUtils.createNINOHash(x.nino)).getOrElse("")
+                val hashNino = nino.map(ni => HashSaltUtils.createNINOHash(ni.nino)).getOrElse("")
 
                 mongoService.findByDeviceIdAndNinoHash(deviceId, hashNino).flatMap {
                   _ match {

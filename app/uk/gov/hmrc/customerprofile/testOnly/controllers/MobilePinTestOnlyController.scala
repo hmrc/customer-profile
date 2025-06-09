@@ -17,7 +17,6 @@
 package uk.gov.hmrc.customerprofile.testOnly.controllers
 
 import com.google.inject.{Inject, Singleton}
-import org.mindrot.jbcrypt.BCrypt
 import play.api.Logging
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.ControllerComponents
@@ -26,6 +25,7 @@ import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
 import uk.gov.hmrc.customerprofile.utils.HashSaltUtils
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.time.Instant
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -42,7 +42,8 @@ class MobilePinTestOnlyController @Inject() (
 
         val hashedPinsInsert = mobilePin.hashedPins.map(x => HashSaltUtils.createHashAndSalt(x))
         val updatedMobilePin =
-          mobilePin.copy(ninoHash = HashSaltUtils.createNINOHash(mobilePin.ninoHash), hashedPins = hashedPinsInsert)
+          mobilePin.copy(ninoHash   = HashSaltUtils.createNINOHash(mobilePin.ninoHash),
+                         hashedPins = hashedPinsInsert)
 
         mobilePinMongo.add(updatedMobilePin).map {
           _.fold(

@@ -24,23 +24,31 @@ import java.util.UUID
 
 class MobilePinSpec extends BaseSpec {
 
-  val uuid     = UUID.randomUUID().toString
+  val uuid     = "51317d4a-8daf-458b-ba5a-219253becff6"
   val dateTime = LocalDateTime.of(2025, 4, 4, 0, 0) // 4 April 2025 at 00:00
   val instant  = dateTime.toInstant(ZoneOffset.UTC)
 
   val mobilePin  = MobilePin(uuid, nino.nino, List("1234", "5678", "9012"), Some(instant), Some(instant))
-  val mobileJson = Json.parse(s"""{
-                                 |  "deviceId": "$uuid",
-                                 |  "ninoHash" : "${nino.nino}",
-                                 |  "hashedPins": [
-                                 |    "1234",
-                                 |    "5678",
-                                 |    "9012"
-                                 |  ],
-                                 |  "createdAt": "2025-04-04T00:00:00Z",
-                                 |  "updatedAt": "2025-04-04T00:00:00Z"
-                                 |}
-                                 |""".stripMargin)
+  val mobileJson = Json.parse("""{
+                                |  "deviceId": "51317d4a-8daf-458b-ba5a-219253becff6",
+                                |  "ninoHash": "CS700100A",
+                                |  "hashedPins": [
+                                |    "1234",
+                                |    "5678",
+                                |    "9012"
+                                |  ],
+                                |  "createdAt": {
+                                |    "$date": {
+                                |      "$numberLong": "1743724800000"
+                                |    }
+                                |  },
+                                |  "updatedAt": {
+                                |    "$date": {
+                                |      "$numberLong": "1743724800000"
+                                |    }
+                                |  }
+                                |}
+                                |""".stripMargin)
 
   "perform JOSN de/serialisation correctly" should {
     "serialize mobile pin data" in {
