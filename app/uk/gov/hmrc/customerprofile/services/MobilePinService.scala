@@ -53,9 +53,7 @@ class MobilePinService @Inject() (
         val newRecord = MobilePin(
           deviceId   = request.deviceId,
           ninoHash   = hashNino,
-          hashedPins = List(hashedPin),
-          createdAt  = Some(now),
-          updatedAt  = Some(now)
+          hashedPins = List(hashedPin)
         )
         mobilePinMongo.add(newRecord).map {
           case Left(error) =>
@@ -72,7 +70,6 @@ class MobilePinService @Inject() (
 
         val updatedRecord = existingRecord.copy(
           hashedPins = updatedPins,
-          updatedAt  = Some(now)
         )
 
         mobilePinMongo.update(updatedRecord).map {

@@ -27,6 +27,7 @@ import uk.gov.hmrc.customerprofile.config.AppConfig
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
 
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -53,8 +54,7 @@ class MobilePinMongo @Inject() (
                                              IndexModel(ascending("createdAt"),
                                                         IndexOptions()
                                                           .background(false)
-                                                          .name("createdAt")
-                                                          .expireAfter(appConfig.mongoTtl, TimeUnit.DAYS)),
+                                                          .name("createdAt")),
                                              IndexModel(descending("updatedAt"),
                                                         IndexOptions()
                                                           .background(false)
@@ -81,7 +81,9 @@ class MobilePinMongo @Inject() (
     val filter      = and(equal("deviceId", updatedMobilePin.deviceId), equal("ninoHash", updatedMobilePin.ninoHash))
     val currentTime = Instant.now()
     collection
-      .replaceOne(filter, updatedMobilePin.copy(updatedAt = Some(currentTime)), ReplaceOptions().upsert(true))
+      .replaceOne(filter,
+                  updatedMobilePin.copy(updatedAt = Some(Instant.now.plus(appConfig.mongoTtl, ChronoUnit.DAYS))),
+                  ReplaceOptions().upsert(true))
       .toFuture()
       .map(_ => Right(updatedMobilePin))
       .recover {

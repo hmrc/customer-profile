@@ -18,13 +18,13 @@ package uk.gov.hmrc.customerprofile.domain
 
 import org.bson.codecs.pojo.annotations.BsonId
 import org.mongodb.scala.bson.annotations.BsonProperty
-import play.api.libs.json.{Format, Json}
+import play.api.Logger
+import play.api.libs.json.{Format, JsError, JsResult, JsSuccess, JsValue, Json, Reads, Writes}
+import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.{Instant, LocalDateTime, ZoneId}
 
 case class MobilePin(
-  @BsonId
-  @BsonProperty("_id")
   deviceId:   String,
   ninoHash:   String,
   hashedPins: List[String],
@@ -32,6 +32,27 @@ case class MobilePin(
   updatedAt:  Option[Instant] = None)
 
 object MobilePin {
+
+  implicit val instantReads: Reads[Instant] = stringOrDate => {
+    MongoJavatimeFormats.instantFormat.reads(stringOrDate) match {
+      case s @ JsSuccess(_, _) => s
+      case _ @JsError(_)       => handleStringDate(stringOrDate)
+    }
+  }
+
+  implicit val instantWrites: Writes[Instant] = MongoJavatimeFormats.instantWrites
+
+  // $COVERAGE-OFF$
+  private def handleStringDate(stringDate: JsValue): JsResult[Instant] = {
+    Logger(this.getClass).warn("Failed trying to read mongo date format. Next trying to read string date format")
+    Json.fromJson[Instant](stringDate)(play.api.libs.json.Reads.DefaultInstantReads) match {
+      case s @ JsSuccess(_, _) => s
+      case f @ JsError(_) =>
+        Logger(this.getClass)
+          .warn("Failed to read a date from mongo date format and string format")
+        f
+    }
+  }
   implicit val format: Format[MobilePin] = Json.format[MobilePin]
 
   def convertInstantToLocalTime(instant: Instant): LocalDateTime =

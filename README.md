@@ -89,7 +89,7 @@ Example response body for previous pin match 401 OK:
 ```json
 {
     "pin" : "123456",
-   "deviceId ": "device-002",
+   "deviceId ": "device-002"
 }
 ```
 # Sandbox
