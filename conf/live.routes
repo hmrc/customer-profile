@@ -16,4 +16,4 @@ GET         /google-pass                                           uk.gov.hmrc.c
 
 GET        /validate/pin/:enteredPin                               uk.gov.hmrc.customerprofile.controllers.ValidateController.validatePin(enteredPin: String, deviceId: String, journeyId: JourneyId)
 
-PUT         /upsert/nino/:nino                                     uk.gov.hmrc.customerprofile.controllers.MobilePinController.upsert(nino: uk.gov.hmrc.domain.Nino)
+PUT         /upsert                                                uk.gov.hmrc.customerprofile.controllers.MobilePinController.upsert

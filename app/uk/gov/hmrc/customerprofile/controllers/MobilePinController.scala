@@ -25,7 +25,7 @@ import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.auth.AccessControl
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
 import uk.gov.hmrc.customerprofile.domain.audit.MobilePinAudit
-import uk.gov.hmrc.customerprofile.services.{MobilePinService}
+import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MobilePinService}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.audit.AuditExtensions.auditHeaderCarrier
@@ -44,7 +44,8 @@ class MobilePinController @Inject() (
   @Named("controllers.confidenceLevel") override val confLevel: Int,
   controllerComponents:                                         ControllerComponents,
   val auditConnector:                                           AuditConnector,
-  pinService:                                                   MobilePinService
+  pinService:                                                   MobilePinService,
+  customerProfileService:                                       CustomerProfileService
 )(implicit val executionContext:                                ExecutionContext)
     extends BackendController(controllerComponents)
     with ErrorHandling
@@ -54,31 +55,33 @@ class MobilePinController @Inject() (
   override val logger: Logger                 = Logger(this.getClass)
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
-  def upsert(nino: Nino): Action[JsValue] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async(parse.json) { implicit request =>
+  def upsert : Action[JsValue] =
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(parse.json) { implicit request =>
       implicit val hc: HeaderCarrier = fromRequest(request)
-      request.body
-        .validate[MobilePinValidatedRequest]
-        .fold(
-          errors => {
-            logger.warn(s"Invalid request body: $errors")
-            Future.successful(
-              BadRequest(Json.obj("error" -> "Invalid request format", "details" -> JsError.toJson(errors)))
-            )
-          },
-          validRequest =>
-            pinService
-              .upsertPin(validRequest, nino)
-              .andThen {
-                case Success(_) =>
-                  sendAuditEvent(nino, MobilePinAudit.fromResponse(validRequest), request.path)
-              }
-              .map(_ => Created)
-        )
+      customerProfileService.getNino().flatMap { nino =>
+        request.body
+          .validate[MobilePinValidatedRequest]
+          .fold(
+            errors => {
+              logger.warn(s"Invalid request body: $errors")
+              Future.successful(
+                BadRequest(Json.obj("error" -> "Invalid request format", "details" -> JsError.toJson(errors)))
+              )
+            },
+            validRequest =>
+              pinService
+                .upsertPin(validRequest, nino)
+                .andThen {
+                  case Success(_) =>
+                    sendAuditEvent(nino, MobilePinAudit.fromResponse(validRequest), request.path)
+                }
+                .map(_ => Created)
+          )
+      }
     }
 
   private def sendAuditEvent(
-    nino:        Nino,
+    nino:        Option[Nino],
     response:    MobilePinAudit,
     path:        String
   )(implicit hc: HeaderCarrier
@@ -87,7 +90,7 @@ class MobilePinController @Inject() (
       app,
       "Pin Updated/Inserted",
       tags   = hc.toAuditTags("Pin-Updated-Inserted", path),
-      detail = Map("nino" -> nino.value, "data" -> response.toString)
+      detail = Map("nino" -> Future.successful(Some(nino)).toString, "data" -> response.toString)
     )
   )
 }
