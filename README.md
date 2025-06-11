@@ -84,7 +84,7 @@ Example response body for previous pin match 401 OK:
 ### `PUT /mobile-pin/upsert`
 
 
-- Local testing URL - http:/localhost:8286/mobile-pin/upsert/nino/{Nino}
+- Local testing URL - http:/localhost:8286/mobile-pin/upsert
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
 ```json
 {
