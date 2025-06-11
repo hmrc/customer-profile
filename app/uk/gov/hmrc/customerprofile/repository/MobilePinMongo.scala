@@ -82,7 +82,7 @@ class MobilePinMongo @Inject() (
     val currentTime = Instant.now()
     collection
       .replaceOne(filter,
-                  updatedMobilePin.copy(updatedAt = Some(Instant.now.plus(appConfig.mongoTtl, ChronoUnit.DAYS))),
+                  updatedMobilePin.copy(updatedAt = Some(Instant.now)),
                   ReplaceOptions().upsert(true))
       .toFuture()
       .map(_ => Right(updatedMobilePin))
