@@ -44,7 +44,7 @@ API
 | ```/apple-pass```              | GET                 | Returns an encrypted pass that allows a user to store a nino in an apple wallet. [More...](docs/getApplePass.md) |
 | ```/google-pass```             | GET                 | Returns a JWT token that allows a user to store a nino in an google wallet. [More...](docs/getGooglePass.md)     |
 | ```/validate/pin/:enteredPin``` | GET                 | Validate the PIN against DOB pattern and previously used pins.                                                   
-| ```/mobile-pin/upsert```       | PUT                 | Update/Insert PIN in the DB.                                                                                     |
+| ```/upsert```       | PUT                 | Update/Insert PIN in the DB.                                                                                     |
 
 
 ### `GET /validate/nino/:nino/pin/:enteredPin`
