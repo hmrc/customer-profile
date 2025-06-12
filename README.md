@@ -47,7 +47,7 @@ API
 | ```/upsert```       | PUT                 | Update/Insert PIN in the DB.                                                                                     |
 
 
-### `GET /validate/nino/:nino/pin/:enteredPin`
+### `GET /validate/pin/:enteredPin`
 
 Validate the entered pin against the DOB pattern and previously used pin
 
@@ -81,11 +81,15 @@ Example response body for previous pin match 401 OK:
 }
 ```
 
-### `PUT /mobile-pin/upsert`
+### `PUT /upsert`
 
+- Local testing URL - http:/localhost:8233/upsert
+- QA URL - https://api.qa.tax.service.gov.uk/customer-profile/upsert
+- Staging URL - https://api.staging.tax.service.gov.uk/customer-profile/upsert
 
-- Local testing URL - http:/localhost:8286/mobile-pin/upsert
 - Headers     - Accept -> application/vnd.hmrc.1.0+json
+- Bearer token needs to be supplied
+n
 ```json
 {
     "pin" : "123456",

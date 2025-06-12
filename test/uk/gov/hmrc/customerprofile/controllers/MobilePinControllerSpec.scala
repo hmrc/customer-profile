@@ -88,7 +88,7 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
         .thenReturn(Future.successful(Some(nino)))
       val invalidJson = Json.obj("invalidField" -> "oops")
       mockUpsertPin(Future.successful(()))
-      val request = FakeRequest(PUT, "/mobile-pin/upsert")
+      val request = FakeRequest(PUT, "/upsert")
         .withHeaders("Accept" -> "application/vnd.hmrc.1.0+json")
         .withBody(invalidJson)
       val result = controller.upsert(request)
