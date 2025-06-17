@@ -19,11 +19,11 @@ package uk.gov.hmrc.customerprofile.controllers
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.json.Json.toJson
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.customerprofile.auth._
+import uk.gov.hmrc.customerprofile.auth.*
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.customerprofile.services.GooglePassService
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
@@ -34,19 +34,19 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class GooglePassController @Inject() (
-  override val authConnector:                                   AuthConnector,
+  override val authConnector: AuthConnector,
   @Named("controllers.confidenceLevel") override val confLevel: Int,
-  service:                                                      GooglePassService,
-  controllerComponents:                                         ControllerComponents,
-  shutteringConnector:                                          ShutteringConnector
-)(implicit val executionContext:                                ExecutionContext)
+  service: GooglePassService,
+  controllerComponents: ControllerComponents,
+  shutteringConnector: ShutteringConnector
+)(implicit val executionContext: ExecutionContext)
     extends BackendController(controllerComponents)
     with AccessControl
     with ErrorHandling
     with ControllerChecks {
   outer =>
-  override val logger: Logger                 = Logger(this.getClass)
-  def parser:          BodyParser[AnyContent] = controllerComponents.parsers.anyContent
+  override val logger: Logger = Logger(this.getClass)
+  def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
   val app = "Google Pass Controller"
 
   def getGooglePass(journeyId: JourneyId): Action[AnyContent] =

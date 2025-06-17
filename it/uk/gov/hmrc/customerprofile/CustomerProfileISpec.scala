@@ -22,10 +22,10 @@ import play.api.libs.json.Json.{parse, toJson}
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, OptInPage, PageType, Paperless, PaperlessOptOut, Shuttering, TermsAccepted, Version}
-import uk.gov.hmrc.customerprofile.stubs.AuthStub._
-import uk.gov.hmrc.customerprofile.stubs.ShutteringStub._
+import uk.gov.hmrc.customerprofile.stubs.AuthStub.*
+import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.*
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse, npsDataIsLockedDueToMciFlag}
-import uk.gov.hmrc.customerprofile.stubs.EntityResolverStub._
+import uk.gov.hmrc.customerprofile.stubs.EntityResolverStub.*
 import uk.gov.hmrc.customerprofile.stubs.PreferencesStub.{conflictPendingEmailUpdate, errorPendingEmailUpdate, successfulPendingEmailUpdate}
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 import uk.gov.hmrc.emailaddress.EmailAddress
@@ -172,7 +172,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "POST /profile/paperless-settings/opt-in" should {
-    val url      = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -359,8 +359,8 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "POST /profile/preferences/pending-email" should {
-    val url         = s"/profile/preferences/pending-email?journeyId=$journeyId"
-    val entityId    = "1098561938451038465138465"
+    val url = s"/profile/preferences/pending-email?journeyId=$journeyId"
+    val entityId = "1098561938451038465138465"
     val changeEmail = toJson(ChangeEmail(email = EmailAddress("new-email@new-email.new.email")))
 
     "return a 204 response when a pending email address is successfully updated" in {
@@ -436,7 +436,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
   "GET /validate/pin/:enteredPin" should {
 
-    val url           = s"/validate/pin/$pin?journeyId=$journeyId&deviceId=$deviceId"
+    val url = s"/validate/pin/$pin?journeyId=$journeyId&deviceId=$deviceId"
     val urlWithDobPin = s"/validate/pin/050369?journeyId=$journeyId&deviceId=$deviceId"
 
     "return 200" in {
@@ -521,9 +521,9 @@ class CustomerProfileCitizenDetailsDisabledISpec extends CustomerProfileTests {
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "microservice.services.citizen-details.enabled" -> false
-    )
+      Map(
+        "microservice.services.citizen-details.enabled" -> false
+      )
   )
 
   "GET /profile/personal-details/:nino - Citizen Details Disabled" should {
@@ -544,13 +544,13 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "optInVersionsEnabled" -> true
-    )
+      Map(
+        "optInVersionsEnabled" -> true
+      )
   )
 
   "POST /profile/paperless-settings/opt-in - Paperless Versions Enabled" should {
-    val url      = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -575,7 +575,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
   }
 
   "POST /profile/paperless-settings/opt-out - Paperless Versions Enabled" should {
-    val url      = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -604,9 +604,9 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
 
   override protected def appBuilder: GuiceApplicationBuilder = new GuiceApplicationBuilder().configure(
     config ++
-    Map(
-      "reOptInEnabled" -> false
-    )
+      Map(
+        "reOptInEnabled" -> false
+      )
   )
 
   "GET /profile/preferences" should {

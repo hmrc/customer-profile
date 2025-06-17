@@ -24,10 +24,7 @@ import uk.gov.hmrc.customerprofile.controllers.api.ApiAccess
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
-class GuiceModule(
-  environment:   Environment,
-  configuration: Configuration)
-    extends AbstractModule {
+class GuiceModule(environment: Environment, configuration: Configuration) extends AbstractModule {
 
   val servicesConfig = new ServicesConfig(configuration)
 
@@ -60,9 +57,8 @@ class GuiceModule(
       .toInstance(servicesConfig.baseUrl("find-my-nino-add-to-wallet"))
   }
 
-  /**
-    * Binds a configuration value using the `path` as the name for the binding.
-    * Throws an exception if the configuration value does not exist or cannot be read as an Int.
+  /** Binds a configuration value using the `path` as the name for the binding. Throws an exception if the configuration value does not exist or
+    * cannot be read as an Int.
     */
   private def bindConfigInt(path: String): Unit =
     bindConstant()

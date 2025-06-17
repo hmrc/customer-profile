@@ -20,47 +20,32 @@ import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsVal
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
-
-case class TermsAccepted(
-  accepted:  Option[Boolean],
-  optInPage: Option[OptInPage] = None)
+case class TermsAccepted(accepted: Option[Boolean], optInPage: Option[OptInPage] = None)
 
 object TermsAccepted {
   implicit val formats: OFormat[TermsAccepted] = Json.format[TermsAccepted]
 }
 
-case class Paperless(
-  generic:  TermsAccepted,
-  email:    EmailAddress,
-  language: Option[Language] = Some(English))
+case class Paperless(generic: TermsAccepted, email: EmailAddress, language: Option[Language] = Some(English))
 
 object Paperless {
 
-  implicit val formats: OFormat[Paperless] = {
-    Json.using[Json.WithDefaultValues].format[Paperless]
-  }
+  implicit val formats: OFormat[Paperless] = Json.format[Paperless]
 }
 
-case class PaperlessOptOut(
-  generic:  Option[TermsAccepted],
-  language: Option[Language] = Some(English))
+case class PaperlessOptOut(generic: Option[TermsAccepted], language: Option[Language] = Some(English))
 
 object PaperlessOptOut {
   implicit val format: OFormat[PaperlessOptOut] = Json.using[Json.WithDefaultValues].format[PaperlessOptOut]
 }
 
-case class OptInPage(
-  version:  Version,
-  cohort:   Int,
-  pageType: PageType)
+case class OptInPage(version: Version, cohort: Int, pageType: PageType)
 
 object OptInPage {
   implicit val format: OFormat[OptInPage] = Json.format[OptInPage]
 }
 
-case class Version(
-  major: Int,
-  minor: Int)
+case class Version(major: Int, minor: Int)
 
 object Version {
   implicit val format: OFormat[Version] = Json.format[Version]
@@ -69,14 +54,14 @@ object Version {
 sealed trait PageType
 
 object PageType {
-  case object AndroidOptInPage extends PageType
-  case object IosOptInPage extends PageType
-  case object AndroidOptOutPage extends PageType
-  case object IosOptOutPage extends PageType
-  case object AndroidReOptInPage extends PageType
-  case object IosReOptInPage extends PageType
+  case object AndroidOptInPage    extends PageType
+  case object IosOptInPage        extends PageType
+  case object AndroidOptOutPage   extends PageType
+  case object IosOptOutPage       extends PageType
+  case object AndroidReOptInPage  extends PageType
+  case object IosReOptInPage      extends PageType
   case object AndroidReOptOutPage extends PageType
-  case object IosReOptOutPage extends PageType
+  case object IosReOptOutPage     extends PageType
 
   val reads: Reads[PageType] = new Reads[PageType] {
 

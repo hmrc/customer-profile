@@ -24,11 +24,11 @@ import java.util.UUID
 
 class MobilePinSpec extends BaseSpec {
 
-  val uuid     = "51317d4a-8daf-458b-ba5a-219253becff6"
+  val uuid = "51317d4a-8daf-458b-ba5a-219253becff6"
   val dateTime = LocalDateTime.of(2025, 4, 4, 0, 0) // 4 April 2025 at 00:00
-  val instant  = dateTime.toInstant(ZoneOffset.UTC)
+  val instant = dateTime.toInstant(ZoneOffset.UTC)
 
-  val mobilePin  = MobilePin(uuid, nino.nino, List("1234", "5678", "9012"), Some(instant), Some(instant))
+  val mobilePin = MobilePin(uuid, nino.nino, List("1234", "5678", "9012"), Some(instant), Some(instant))
   val mobileJson = Json.parse("""{
                                 |  "deviceId": "51317d4a-8daf-458b-ba5a-219253becff6",
                                 |  "ninoHash": "CS700100A",

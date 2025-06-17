@@ -10,8 +10,8 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
 
 class ApplePassISpec extends BaseISpec {
   val base64String = "TXIgSm9lIEJsb2dncw=="
-  val passId       = "c864139e-77b5-448f-b443-17c69060870d"
-  val fullName     = "Mr Angus John Smith"
+  val passId = "c864139e-77b5-448f-b443-17c69060870d"
+  val fullName = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
     val url = s"/apple-pass?journeyId=$journeyId"

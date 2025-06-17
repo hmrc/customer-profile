@@ -37,14 +37,12 @@ trait Authorisation extends Results with AuthorisedFunctions {
 
   lazy val requiresAuth: Boolean = true
   lazy val ninoNotFoundOnAccount = new NinoNotFoundOnAccount("The user must have a National Insurance Number")
-  lazy val failedToMatchNino     = new FailToMatchTaxIdOnAuth("The nino in the URL failed to match auth!")
-  lazy val lowConfidenceLevel    = new AccountWithLowCL("Unauthorised! Account with low CL!")
+  lazy val failedToMatchNino = new FailToMatchTaxIdOnAuth("The nino in the URL failed to match auth!")
+  lazy val lowConfidenceLevel = new AccountWithLowCL("Unauthorised! Account with low CL!")
 
   def grantAccess(
     requestedNino: Option[Nino]
-  )(implicit hc:   HeaderCarrier,
-    ec:            ExecutionContext
-  ): Future[Unit] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Unit] =
     if (requestedNino.isDefined) {
       val suppliedNino = requestedNino.getOrElse(throw ninoNotFoundOnAccount)
       authorised(Enrolment("HMRC-NI", Seq(EnrolmentIdentifier("NINO", suppliedNino.nino)), "Activated", None))
@@ -68,11 +66,10 @@ trait Authorisation extends Results with AuthorisedFunctions {
     }
 
   def invokeAuthBlock[A](
-    request:     Request[A],
-    block:       Request[A] => Future[Result],
-    taxId:       Option[Nino]
-  )(implicit ec: ExecutionContext
-  ): Future[Result] = {
+    request: Request[A],
+    block: Request[A] => Future[Result],
+    taxId: Option[Nino]
+  )(implicit ec: ExecutionContext): Future[Result] = {
     implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequest(request)
 
     grantAccess(taxId)
@@ -92,7 +89,7 @@ trait Authorisation extends Results with AuthorisedFunctions {
           logger.info("Unauthorized! Account with low CL!")
           Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedLowCL))
 
-        case ex: UpstreamErrorResponse if (ex.statusCode < 500) =>
+        case ex: UpstreamErrorResponse if ex.statusCode < 500 =>
           logger.info("Unauthorized! Failed to grant access since 4xx response!")
           Unauthorized(Json.toJson[ErrorResponse](ErrorUnauthorizedUpstream))
       }
@@ -104,18 +101,17 @@ trait AccessControl extends HeaderValidator with Authorisation {
   def parser: BodyParser[AnyContent]
 
   def validateAcceptWithAuth(
-    rules:       Option[String] => Boolean,
-    taxId:       Option[Nino]
-  )(implicit ec: ExecutionContext
-  ): ActionBuilder[Request, AnyContent] =
+    rules: Option[String] => Boolean,
+    taxId: Option[Nino]
+  )(implicit ec: ExecutionContext): ActionBuilder[Request, AnyContent] =
     new ActionBuilder[Request, AnyContent] {
 
-      override def parser:                     BodyParser[AnyContent] = outer.parser
-      override protected def executionContext: ExecutionContext       = outer.executionContext
+      override def parser: BodyParser[AnyContent] = outer.parser
+      override protected def executionContext: ExecutionContext = outer.executionContext
 
       def invokeBlock[A](
         request: Request[A],
-        block:   Request[A] => Future[Result]
+        block: Request[A] => Future[Result]
       ): Future[Result] =
         if (rules(request.headers.get("Accept"))) {
           if (requiresAuth) invokeAuthBlock(request, block, taxId)

@@ -16,13 +16,13 @@
 
 package uk.gov.hmrc.customerprofile.controllers
 
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers.*
+import org.mockito.Mockito.*
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.json._
-import play.api.mvc._
-import play.api.test.Helpers._
-import play.api.test._
+import play.api.libs.json.*
+import play.api.mvc.*
+import play.api.test.Helpers.*
+import play.api.test.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
 import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MobilePinService, MongoService}
@@ -35,10 +35,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
 
-  val mockPinService:       MobilePinService     = mock[MobilePinService]
-  val auditConnector:       AuditConnector       = mock[AuditConnector]
+  val mockPinService: MobilePinService = mock[MobilePinService]
+  val auditConnector: AuditConnector = mock[AuditConnector]
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val acceptHeader:         (String, String)     = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
   val uuid = UUID.randomUUID().toString
   val mockCustomerProfileService: CustomerProfileService = mock[CustomerProfileService]
 
@@ -56,7 +56,7 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
     controllerComponents,
     auditConnector,
     pinService = mockPinService,
-    mockCustomerProfileService,
+    mockCustomerProfileService
   )
 
   def mockAuthorisationGrantAccess(response: GrantAccess)(implicit authConnector: AuthConnector) =

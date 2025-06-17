@@ -18,13 +18,13 @@ package uk.gov.hmrc.customerprofile
 
 import play.api.libs.json.Json
 import play.api.libs.ws.WSRequest
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 
 class SandboxApplePassISpec extends BaseISpec {
 
   def request(
-    url:       String,
+    url: String,
     journeyId: JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")
@@ -34,7 +34,7 @@ class SandboxApplePassISpec extends BaseISpec {
       )
 
   def requestWithoutAcceptHeader(
-    url:       String,
+    url: String,
     journeyId: JourneyId
   ): WSRequest =
     wsUrl(s"$url?journeyId=$journeyId")

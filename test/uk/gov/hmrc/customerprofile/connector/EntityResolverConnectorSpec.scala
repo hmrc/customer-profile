@@ -29,9 +29,9 @@ import scala.util.{Failure, Success}
 
 class EntityResolverConnectorSpec extends HttpClientV2Helper with MockFactory {
 
-  val baseUrl:                                         String = "http://entity-resolver.service"
-  val termsAndConditionsPostUrl:                       String = s"$baseUrl/preferences/terms-and-conditions"
-  val circuitBreakerNumberOfCallsToTriggerStateChange: Int    = 5
+  val baseUrl: String = "http://entity-resolver.service"
+  val termsAndConditionsPostUrl: String = s"$baseUrl/preferences/terms-and-conditions"
+  val circuitBreakerNumberOfCallsToTriggerStateChange: Int = 5
 
   // create a new connector each time because the circuit breaker is stateful
   def entityResolverConnector: EntityResolverConnector = {
@@ -101,7 +101,7 @@ class EntityResolverConnectorSpec extends HttpClientV2Helper with MockFactory {
     }
 
     "paperlessSettings()" should {
-      val email                     = EmailAddress("me@mine.com")
+      val email = EmailAddress("me@mine.com")
       val paperlessSettingsAccepted = Paperless(TermsAccepted(Some(true)), email, Some(English))
       val paperlessSettingsRejected = Paperless(TermsAccepted(Some(false)), email, Some(English))
 

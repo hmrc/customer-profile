@@ -22,10 +22,10 @@ import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{AnyContentAsEmpty, ControllerComponents}
 import play.api.test.{DefaultAwaitTimeout, FakeRequest, FutureAwaits}
 import uk.gov.hmrc.auth.core.ConfidenceLevel.L200
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import eu.timepit.refined.auto._
+import eu.timepit.refined.auto.*
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{BeforeAndAfterAll, Outcome}
 import org.scalatestplus.mockito.MockitoSugar
@@ -49,34 +49,28 @@ import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import java.time.LocalDate
 import scala.concurrent.ExecutionContext
 
-trait BaseSpec
-    extends PlaySpec
-    with GuiceOneAppPerSuite
-    with MockitoSugar
-    with Matchers
-    with FutureAwaits
-    with DefaultAwaitTimeout {
+trait BaseSpec extends PlaySpec with GuiceOneAppPerSuite with MockitoSugar with Matchers with FutureAwaits with DefaultAwaitTimeout {
 
   val mockServicesConfig: ServicesConfig = mock[ServicesConfig]
-  val config:             Configuration  = mock[Configuration]
-  val environment:        Environment    = mock[Environment]
-  val mockHttpClient:     HttpClientV2   = mock[HttpClientV2]
+  val config: Configuration = mock[Configuration]
+  val environment: Environment = mock[Environment]
+  val mockHttpClient: HttpClientV2 = mock[HttpClientV2]
 
   type GrantAccess = Option[String] ~ ConfidenceLevel
 
-  implicit val mockAuthConnector: AuthConnector        = mock[AuthConnector]
-  lazy val components:            ControllerComponents = app.injector.instanceOf[ControllerComponents]
+  implicit val mockAuthConnector: AuthConnector = mock[AuthConnector]
+  lazy val components: ControllerComponents = app.injector.instanceOf[ControllerComponents]
 
-  implicit lazy val hc: HeaderCarrier    = HeaderCarrier()
+  implicit lazy val hc: HeaderCarrier = HeaderCarrier()
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val appName: String = "customer-profile"
-  val nino:    Nino   = Nino("CS700100A")
+  val nino: Nino = Nino("CS700100A")
   val hashNino = HashSaltUtils.createNINOHash(nino.nino)
-  val journeyId:            JourneyId   = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
-  val acceptheader:         String      = "application/vnd.hmrc.1.0+json"
+  val journeyId: JourneyId = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
+  val acceptheader: String = "application/vnd.hmrc.1.0+json"
   val grantAccessWithCL200: GrantAccess = Some(nino.nino) and L200
-  val entity:               Entity      = Entity("entityId")
+  val entity: Entity = Entity("entityId")
 
   val person = PersonDetails(
     Person(
@@ -154,13 +148,11 @@ trait BaseSpec
       .withBody(Json.parse("""{ "blah" : "blah" }"""))
       .withHeaders(HeaderNames.ACCEPT -> acceptheader)
 
-  val newEmail          = EmailAddress("new@new.com")
+  val newEmail = EmailAddress("new@new.com")
   val paperlessSettings = Paperless(TermsAccepted(Some(true)), newEmail, Some(English))
 
   val paperlessSettingsWithVersion =
-    Paperless(TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.AndroidOptInPage))),
-              newEmail,
-              Some(English))
+    Paperless(TermsAccepted(accepted = Some(true), Some(OptInPage(Version(1, 1), 44, PageType.AndroidOptInPage))), newEmail, Some(English))
 
   val validPaperlessSettingsRequest: FakeRequest[JsValue] =
     FakeRequest()
@@ -187,7 +179,7 @@ trait BaseSpec
 
   def existingPreferences(
     digital: Boolean,
-    status:  StatusName = Verified
+    status: StatusName = Verified
   ): Preference =
     Preference(
       digital = digital,
@@ -208,16 +200,16 @@ trait BaseSpec
   implicit lazy val appConfig: AppConfig = new AppConfig(configuration)
 
   val string1 = "30061986"
-  val hash1   = HashSaltUtils.createHashAndSalt(string1)
+  val hash1 = HashSaltUtils.createHashAndSalt(string1)
 
   val string11 = "240712"
-  val hash11   = HashSaltUtils.createHashAndSalt(string11)
+  val hash11 = HashSaltUtils.createHashAndSalt(string11)
 
   val string2 = "24072012"
-  val hash2   = HashSaltUtils.createHashAndSalt(string2)
+  val hash2 = HashSaltUtils.createHashAndSalt(string2)
 
   val string3 = "12122014"
-  val hash3   = HashSaltUtils.createHashAndSalt(string2)
+  val hash3 = HashSaltUtils.createHashAndSalt(string2)
 
 }
 

@@ -33,10 +33,10 @@ import scala.concurrent.Future
 class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
 
   val mockCitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val mockMongoService            = mock[MongoService]
-  val mockCustomerProfileService  = mock[CustomerProfileService]
+  val mockMongoService = mock[MongoService]
+  val mockCustomerProfileService = mock[CustomerProfileService]
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val acceptHeader:         (String, String)     = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
 
   val controller = new ValidateController(
     mockAuthConnector,
@@ -50,11 +50,11 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
     controllerComponents
   )
 
-  val deviceId    = "6D92078A-8246-4BA4-AE5B-76104861E7DC"
-  val deviceId1   = "7D92078A-8246-4BA4-AE5B-76104861E7DC"
-  val dob1        = LocalDate.of(1980, 7, 24)
+  val deviceId = "6D92078A-8246-4BA4-AE5B-76104861E7DC"
+  val deviceId1 = "7D92078A-8246-4BA4-AE5B-76104861E7DC"
+  val dob1 = LocalDate.of(1980, 7, 24)
   val fakeRequest = FakeRequest("GET", "/").withHeaders(acceptHeader)
-  val uuid        = UUID.randomUUID().toString
+  val uuid = UUID.randomUUID().toString
 
   val mobilePin = MobilePin(uuid, hashNino, List(hash11, hash2))
 
@@ -99,7 +99,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(nino)))
         when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
           .thenReturn(Future.successful(Some(person4)))
-        val result   = controller.validatePin("300686", deviceId, journeyId)(fakeRequest)
+        val result = controller.validatePin("300686", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
         status(result) mustBe (200)
         (jsonBody \ "key").as[String] mustBe "dob_error"
@@ -116,7 +116,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
         when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
           .thenReturn(Future.successful(Some(mobilePin)))
 
-        val result   = controller.validatePin("240712", deviceId, journeyId)(fakeRequest)
+        val result = controller.validatePin("240712", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
         status(result) mustBe (200)
         (jsonBody \ "key").as[String] mustBe "prev_pin_error"

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import play.api.libs.json._
+import play.api.libs.json.*
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 
 class MobilePinValidatedRequestSpec extends BaseSpec {
@@ -25,7 +25,7 @@ class MobilePinValidatedRequestSpec extends BaseSpec {
 
     "serialize to JSON correctly" in {
       val request = MobilePinValidatedRequest("1234", "device-xyz")
-      val json    = Json.toJson(request)
+      val json = Json.toJson(request)
 
       json mustBe Json.parse(s"""
         {

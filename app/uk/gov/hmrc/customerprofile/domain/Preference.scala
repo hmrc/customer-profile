@@ -21,10 +21,7 @@ import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 import java.time.LocalDate
 
-case class EmailPreference(
-  email:    EmailAddress,
-  status:   StatusName,
-  linkSent: Option[LocalDate] = None)
+case class EmailPreference(email: EmailAddress, status: StatusName, linkSent: Option[LocalDate] = None)
 
 object EmailPreference {
 
@@ -34,12 +31,12 @@ object EmailPreference {
   implicit val formats: OFormat[EmailPreference] = Json.format[EmailPreference]
 }
 
-case class Preference(
-  digital:      Boolean,
-  emailAddress: Option[String] = None,
-  linkSent:     Option[LocalDate] = None,
-  email:        Option[EmailPreference] = None,
-  status:       Option[PaperlessStatus] = None)
+case class Preference(digital: Boolean,
+                      emailAddress: Option[String] = None,
+                      linkSent: Option[LocalDate] = None,
+                      email: Option[EmailPreference] = None,
+                      status: Option[PaperlessStatus] = None
+                     )
 
 object Preference {
 

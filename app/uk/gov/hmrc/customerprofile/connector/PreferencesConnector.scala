@@ -25,7 +25,7 @@ import play.api.{Configuration, Environment, Logger}
 import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, StringContextOps}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
@@ -40,26 +40,24 @@ object Entity {
 }
 
 @Singleton
-class PreferencesConnector @Inject() (
-  http:                             HttpClientV2,
-  @Named("preferences") serviceUrl: String,
-  override val externalServiceName: String,
-  val configuration:                Configuration,
-  val environment:                  Environment)
+class PreferencesConnector @Inject() (http: HttpClientV2,
+                                      @Named("preferences") serviceUrl: String,
+                                      override val externalServiceName: String,
+                                      val configuration: Configuration,
+                                      val environment: Environment
+                                     )
     extends ServicesCircuitBreaker {
 
   val logger: Logger = Logger(this.getClass)
   val NOT_FOUND = 404
-  val CONFLICT  = 409
+  val CONFLICT = 409
 
   def url(path: String): String = s"$serviceUrl$path"
 
   def updatePendingEmail(
     changeEmail: ChangeEmail,
-    entityId:    String
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PreferencesStatus] =
+    entityId: String
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     http
       .put(url"${url(s"/preferences/$entityId/pending-email")}")
       .withBody(Json.toJson(changeEmail))
@@ -80,7 +78,7 @@ class PreferencesConnector @Inject() (
       }
 
   def log(
-    msg:      String,
+    msg: String,
     entityId: String
   ): Unit =
     logger.warn(msg + s" for entity $entityId")

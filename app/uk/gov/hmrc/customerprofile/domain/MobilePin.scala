@@ -24,12 +24,12 @@ import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats
 
 import java.time.{Instant, LocalDateTime, ZoneId}
 
-case class MobilePin(
-  deviceId:   String,
-  ninoHash:   String,
-  hashedPins: List[String],
-  createdAt:  Option[Instant] = None,
-  updatedAt:  Option[Instant] = None)
+case class MobilePin(deviceId: String,
+                     ninoHash: String,
+                     hashedPins: List[String],
+                     createdAt: Option[Instant] = None,
+                     updatedAt: Option[Instant] = None
+                    )
 
 object MobilePin {
 

@@ -1,12 +1,12 @@
 package uk.gov.hmrc.customerprofile.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, Verified}
-import uk.gov.hmrc.customerprofile.domain._
+import uk.gov.hmrc.customerprofile.domain.*
 import uk.gov.hmrc.emailaddress.EmailAddress
 
 import java.time.LocalDate
@@ -14,7 +14,7 @@ import java.time.LocalDate
 object EntityResolverStub {
 
   private def entityDetailsByNino(
-    nino:     String,
+    nino: String,
     entityId: String
   ): String = s"""
                  |{
@@ -24,11 +24,11 @@ object EntityResolverStub {
                  |}""".stripMargin
 
   private def preferences(
-    optedIn:     Boolean           = true,
-    email:       String            = "test@email.com",
-    emailStatus: StatusName        = Verified,
-    status:      String            = "ALRIGHT",
-    linkSent:    Option[LocalDate] = None
+    optedIn: Boolean = true,
+    email: String = "test@email.com",
+    emailStatus: StatusName = Verified,
+    status: String = "ALRIGHT",
+    linkSent: Option[LocalDate] = None
   ): String =
     if (optedIn) {
       s"""
@@ -63,7 +63,7 @@ object EntityResolverStub {
     urlEqualTo(s"/entity-resolver/paye/$nino")
 
   def respondWithEntityDetailsByNino(
-    nino:     String,
+    nino: String,
     entityId: String
   ): StubMapping =
     stubFor(
@@ -73,13 +73,13 @@ object EntityResolverStub {
 
   def respondPreferencesWithPaperlessOptedIn(): StubMapping =
     stubFor(
-      get(urlEqualToPreferences).willReturn(aResponse().withStatus(200).withBody((preferences())))
+      get(urlEqualToPreferences).willReturn(aResponse().withStatus(200).withBody(preferences()))
     )
 
   def respondPreferencesWithPaperlessOptedOut(): StubMapping =
     stubFor(
       get(urlEqualToPreferences).willReturn(
-        aResponse().withStatus(200).withBody((preferences(optedIn = false, status = "PAPER")))
+        aResponse().withStatus(200).withBody(preferences(optedIn = false, status = "PAPER"))
       )
     )
 
@@ -89,7 +89,7 @@ object EntityResolverStub {
         .willReturn(
           aResponse()
             .withStatus(200)
-            .withBody((preferences(emailStatus = Bounced, status = "BOUNCED_EMAIL")))
+            .withBody(preferences(emailStatus = Bounced, status = "BOUNCED_EMAIL"))
         )
     )
 
@@ -100,7 +100,7 @@ object EntityResolverStub {
           aResponse()
             .withStatus(200)
             .withBody(
-              (preferences(emailStatus = Pending, status = "EMAIL_NOT_VERIFIED", linkSent = linkSent))
+              preferences(emailStatus = Pending, status = "EMAIL_NOT_VERIFIED", linkSent = linkSent)
             )
         )
     )
@@ -108,21 +108,21 @@ object EntityResolverStub {
   def respondPreferencesWithReOptInRequired(): StubMapping =
     stubFor(
       get(urlEqualToPreferences).willReturn(
-        aResponse().withStatus(200).withBody((preferences(status = "OLD_VERSION")))
+        aResponse().withStatus(200).withBody(preferences(status = "OLD_VERSION"))
       )
     )
 
   def respondPreferencesWithReOptInModified(): StubMapping =
     stubFor(
       get(urlEqualToPreferences).willReturn(
-        aResponse().withStatus(200).withBody((preferences(status = "RE_OPT_IN_MODIFIED")))
+        aResponse().withStatus(200).withBody(preferences(status = "RE_OPT_IN_MODIFIED"))
       )
     )
 
   def respondPreferencesNoPaperlessSet(): StubMapping =
     stubFor(
       get(urlEqualToPreferences)
-        .willReturn(aResponse().withStatus(200).withBody((preferences(optedIn = false))))
+        .willReturn(aResponse().withStatus(200).withBody(preferences(optedIn = false)))
     )
 
   def respondNoPreferences(): StubMapping =
@@ -162,7 +162,8 @@ object EntityResolverStub {
                 PaperlessOptOut(generic = Some(
                                   TermsAccepted(Some(false), Some(OptInPage(Version(1, 1), 44, PageType.IosOptOutPage)))
                                 ),
-                                Some(English))
+                                Some(English)
+                               )
               )
               .toString(),
             true,
@@ -172,6 +173,6 @@ object EntityResolverStub {
         .willReturn(aResponse().withStatus(200))
     )
 
-  val urlEqualToPreferences:             UrlPattern = urlEqualTo(s"/preferences")
+  val urlEqualToPreferences: UrlPattern = urlEqualTo(s"/preferences")
   val urlEqualToPaperlessSettingsChange: UrlPattern = urlEqualTo(s"/preferences/terms-and-conditions")
 }

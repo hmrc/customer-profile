@@ -7,12 +7,11 @@ import play.api.libs.ws.WSResponse
 import play.api.test.PlayRunners
 import uk.gov.hmrc.customerprofile.support.BaseISpec
 
-/**
-  * Testcase to verify the capability of integration with the API platform.
+/** Testcase to verify the capability of integration with the API platform.
   *
-  * 1a, To expose API's to Third Party Developers, the service needs to define the APIs in a definition.json and make it available under api/definition GET endpoint
-  * 1b, For all of the endpoints defined in the definition.json a documentation.xml needs to be provided and be available under api/documentation/[version]/[endpoint name] GET endpoint
-  * Example: api/documentation/1.0/Fetch-Some-Data
+  * 1a, To expose API's to Third Party Developers, the service needs to define the APIs in a definition.json and make it available under
+  * api/definition GET endpoint 1b, For all of the endpoints defined in the definition.json a documentation.xml needs to be provided and be available
+  * under api/documentation/[version]/[endpoint name] GET endpoint Example: api/documentation/1.0/Fetch-Some-Data
   *
   * See: confluence ApiPlatform/API+Platform+Architecture+with+Flows
   */
@@ -25,8 +24,8 @@ class PlatformIntegrationSpec extends BaseISpec with Eventually with PlayRunners
       val result: WSResponse = await(wsUrl("/api/definition").get())
       result.status shouldBe 200
 
-      val definition: JsValue      = result.json
-      val versions:   Seq[JsValue] = (definition \ "api" \\ "versions").head.as[JsArray].value.toSeq
+      val definition: JsValue = result.json
+      val versions: Seq[JsValue] = (definition \ "api" \\ "versions").head.as[JsArray].value.toSeq
       versions.length shouldBe 1
 
       val versionJson: JsValue = versions.head

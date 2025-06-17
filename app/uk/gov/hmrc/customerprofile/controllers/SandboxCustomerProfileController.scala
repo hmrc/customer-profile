@@ -23,13 +23,13 @@ import play.api.Logger
 import javax.inject.Inject
 import play.api.libs.json.JsValue
 import play.api.libs.json.Json.toJson
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.api.sandbox.FileResource
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
-import uk.gov.hmrc.customerprofile.domain._
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.*
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
@@ -38,10 +38,10 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class SandboxCustomerProfileController @Inject() (
-  override val authConnector:                                   AuthConnector,
+  override val authConnector: AuthConnector,
   @Named("controllers.confidenceLevel") override val confLevel: Int,
-  cc:                                                           ControllerComponents
-)(implicit val executionContext:                                ExecutionContext)
+  cc: ControllerComponents
+)(implicit val executionContext: ExecutionContext)
     extends BackendController(cc)
     with CustomerProfileController
     with HeaderValidator
@@ -53,7 +53,7 @@ class SandboxCustomerProfileController @Inject() (
   private val SANDBOX_CONTROL_HEADER = "SANDBOX-CONTROL"
 
   private def preferencesSandbox(
-    status:   StatusName,
+    status: StatusName,
     linkSent: Option[LocalDate] = None
   ) =
     Preference(
@@ -66,7 +66,7 @@ class SandboxCustomerProfileController @Inject() (
     )
 
   override def getPersonalDetails(
-    nino:      Nino,
+    nino: Nino,
     journeyId: JourneyId
   ): Action[AnyContent] =
     validateAccept(acceptHeaderValidationRules).async { implicit request =>

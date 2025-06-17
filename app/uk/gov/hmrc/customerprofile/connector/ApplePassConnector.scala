@@ -23,7 +23,7 @@ import play.api.http.Status.OK
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{ApplePassIdGenerator, RetrieveApplePass}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
@@ -32,18 +32,14 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, HttpResponse, StringConte
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplePassConnector @Inject() (
-  http:                                                          HttpClientV2,
-  @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
+class ApplePassConnector @Inject() (http: HttpClientV2, @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
 
   val logger: Logger = Logger(this.getClass)
 
   def createApplePass(
-    nino:          String,
-    fullName:      String
-  )(implicit ec:   ExecutionContext,
-    headerCarrier: HeaderCarrier
-  ): Future[String] = {
+    nino: String,
+    fullName: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[String] = {
 
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/create-apple-pass"
 
@@ -62,10 +58,8 @@ class ApplePassConnector @Inject() (
   }
 
   def getApplePass(
-    passId:        String
-  )(implicit ec:   ExecutionContext,
-    headerCarrier: HeaderCarrier
-  ): Future[RetrieveApplePass] = {
+    passId: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[RetrieveApplePass] = {
 
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-pass-card?passId=$passId"
 

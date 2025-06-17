@@ -9,29 +9,26 @@ lazy val microservice = Project(appName, file("."))
   .disablePlugins(JUnitXmlReportPlugin)
   .configs(IntegrationTest)
   .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
-  .settings(scalacOptions += "-Wconf:src=routes/.*:s,src=txt/.*:s")
-  .settings(scalacOptions ++=Seq("-source:3.0-migration", "-rewrite"))
+  .settings(scalafmtOnCompile := true)
   .settings(
     Seq(
       routesImport ++= Seq(
         "uk.gov.hmrc.domain._",
         "uk.gov.hmrc.customerprofile.binder.Binders._",
         "uk.gov.hmrc.customerprofile.domain.types._",
-        "uk.gov.hmrc.customerprofile.domain.types.ModelTypes._"
+        "uk.gov.hmrc.customerprofile.domain.types.JourneyId._"
       )
     )
   )
   .settings(
     majorVersion := 1,
     scalaVersion := "3.6.4",
-//    crossScalaVersions ++= Seq("2.13.16", "3.3.5"),
     playDefaultPort := 8233,
     libraryDependencies ++= AppDependencies(),
-    update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
+    update / evictionWarningOptions := EvictionWarningOptions.default
+      .withWarnScalaVersionEviction(false),
     resolvers += Resolver.jcenterRepo,
-    IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base =>
-      Seq(base / "it-resources")
-    ).value,
+    IntegrationTest / unmanagedResourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it-resources")).value,
     Compile / unmanagedResourceDirectories += baseDirectory.value / "resources",
     IntegrationTest / unmanagedSourceDirectories := (IntegrationTest / baseDirectory)(base => Seq(base / "it")).value,
     scalacOptions ++= Seq(

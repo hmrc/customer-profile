@@ -22,7 +22,7 @@ import com.google.inject.name.Named
 import play.api.http.Status.OK
 import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.{GooglePassDetailsWithCredentials, RetrieveGooglePass}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
@@ -30,17 +30,13 @@ import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GooglePassConnector @Inject() (
-  http:                                                          HttpClientV2,
-  @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
+class GooglePassConnector @Inject() (http: HttpClientV2, @Named("find-my-nino-add-to-wallet") findMyNinoAddToWalletUrl: String) {
 
   def createGooglePassWithCredentials(
-    fullName:      String,
-    nino:          String,
-    credentials:   String
-  )(implicit ec:   ExecutionContext,
-    headerCarrier: HeaderCarrier
-  ): Future[String] = {
+    fullName: String,
+    nino: String,
+    credentials: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[String] = {
 
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/create-google-pass-with-credentials"
 
@@ -59,10 +55,8 @@ class GooglePassConnector @Inject() (
   }
 
   def getGooglePassUrl(
-    passId:        String
-  )(implicit ec:   ExecutionContext,
-    headerCarrier: HeaderCarrier
-  ): Future[RetrieveGooglePass] = {
+    passId: String
+  )(implicit ec: ExecutionContext, headerCarrier: HeaderCarrier): Future[RetrieveGooglePass] = {
 
     val url = s"$findMyNinoAddToWalletUrl/find-my-nino-add-to-wallet/get-google-pass-url?passId=$passId"
 

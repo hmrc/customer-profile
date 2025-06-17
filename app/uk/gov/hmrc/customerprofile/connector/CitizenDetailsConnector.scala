@@ -23,23 +23,19 @@ import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps, Upstrea
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.customerprofile.domain.PersonDetails
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CitizenDetailsConnector @Inject() (
-  @Named("citizen-details") citizenDetailsConnectorUrl: String,
-  http:                                                 HttpClientV2) {
+class CitizenDetailsConnector @Inject() (@Named("citizen-details") citizenDetailsConnectorUrl: String, http: HttpClientV2) {
 
   val logger: Logger = Logger(this.getClass)
 
   def personDetails(
-    nino:        Nino
-  )(implicit hc: HeaderCarrier,
-    ec:          ExecutionContext
-  ): Future[PersonDetails] =
+    nino: Nino
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[PersonDetails] =
     http
       .get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
       .execute[PersonDetails]
@@ -53,17 +49,14 @@ class CitizenDetailsConnector @Inject() (
       }
 
   def personDetailsForPin(
-    nino:        Nino
-  )(implicit hc: HeaderCarrier,
-    ec:          ExecutionContext
-  ): Future[Option[PersonDetails]] =
+    nino: Nino
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[PersonDetails]] =
     http
       .get(url"$citizenDetailsConnectorUrl/citizen-details/$nino/designatory-details")
       .execute[PersonDetails]
       .map(details => Some(details))
-      .recover {
-        case _ =>
-          logger.warn(s"No Customer found in the DB with the given NINO")
-          None
+      .recover { case _ =>
+        logger.warn(s"No Customer found in the DB with the given NINO")
+        None
       }
 }

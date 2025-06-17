@@ -26,7 +26,7 @@ import uk.gov.hmrc.customerprofile.config.ServicesCircuitBreaker
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, NotFoundException, StringContextOps, UpstreamErrorResponse}
-import uk.gov.hmrc.http.HttpReads.Implicits._
+import uk.gov.hmrc.http.HttpReads.Implicits.*
 import uk.gov.hmrc.http.client.HttpClientV2
 import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
 import play.api.libs.ws.writeableOf_JsValue
@@ -53,11 +53,11 @@ case object EmailNotExist extends PreferencesStatus
 case object NoPreferenceExists extends PreferencesStatus
 
 @Singleton
-class EntityResolverConnector @Inject() (
-  @Named("entity-resolver") serviceUrl: String,
-  http:                                 HttpClientV2,
-  val configuration:                    Configuration,
-  val environment:                      Environment)
+class EntityResolverConnector @Inject() (@Named("entity-resolver") serviceUrl: String,
+                                         http: HttpClientV2,
+                                         val configuration: Configuration,
+                                         val environment: Environment
+                                        )
     extends ServicesCircuitBreaker {
 
   import Paperless.formats
@@ -68,20 +68,16 @@ class EntityResolverConnector @Inject() (
   def url(path: String) = s"$serviceUrl$path"
 
   def getPreferences(
-  )(implicit headerCarrier: HeaderCarrier,
-    ex:                     ExecutionContext
-  ): Future[Option[Preference]] =
+  )(implicit headerCarrier: HeaderCarrier, ex: ExecutionContext): Future[Option[Preference]] =
     withCircuitBreaker(http.get(url"${url(s"/preferences")}").execute[Option[Preference]])
       .recover {
         case response: UpstreamErrorResponse if response.statusCode == GONE => None
-        case _:        NotFoundException                                    => None
+        case _: NotFoundException                                           => None
       }
 
   def paperlessSettings(
-    paperless:   Paperless
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PreferencesStatus] =
+    paperless: Paperless
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     withCircuitBreaker(
       http
         .post(url"${url(s"/preferences/terms-and-conditions")}")
@@ -98,9 +94,7 @@ class EntityResolverConnector @Inject() (
 
   def paperlessOptOut(
     paperlessOptOut: PaperlessOptOut
-  )(implicit hc:     HeaderCarrier,
-    ex:              ExecutionContext
-  ): Future[PreferencesStatus] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     withCircuitBreaker(
       http
         .post(url"${url(s"/preferences/terms-and-conditions")}")
@@ -110,7 +104,7 @@ class EntityResolverConnector @Inject() (
       .map {
         case OK      => PreferencesExists
         case CREATED =>
-          //how could you create an opt-out paperless setting prior to opting-in??
+          // how could you create an opt-out paperless setting prior to opting-in??
           logger.warn("Unexpected behaviour : creating paperless setting opt-out")
           PreferencesCreated
         case NOT_FOUND =>
@@ -122,10 +116,8 @@ class EntityResolverConnector @Inject() (
       }
 
   def getEntityIdByNino(
-    nino:        Nino
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[Entity] =
+    nino: Nino
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Entity] =
     withCircuitBreaker {
       http
         .get(url"${url(s"/entity-resolver/paye/${nino.nino}")}")

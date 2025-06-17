@@ -29,18 +29,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class MobilePinService @Inject() (
-  mobilePinMongo:                                    MobilePinMongo,
+  mobilePinMongo: MobilePinMongo,
   @Named("service.maxStoredPins") val maxStoredPins: Int
-)(ec:                                                ExecutionContext)
+)(ec: ExecutionContext)
     extends Logging {
 
   def upsertPin(
-    request:     MobilePinValidatedRequest,
-    nino:        Option[Nino]
-  )(implicit ec: ExecutionContext
-  ): Future[Unit] = {
+    request: MobilePinValidatedRequest,
+    nino: Option[Nino]
+  )(implicit ec: ExecutionContext): Future[Unit] = {
     val hashedPin = HashSaltUtils.createHashAndSalt(request.pin)
-    val now       = Instant.now()
+    val now = Instant.now()
     val hashNino = nino.map(x => HashSaltUtils.createNINOHash(x.nino)).getOrElse("")
 
     mobilePinMongo.findByDeviceIdAndNino(request.deviceId, hashNino).flatMap {
@@ -69,7 +68,7 @@ class MobilePinService @Inject() (
         val updatedPins = trimmedPins :+ hashedPin
 
         val updatedRecord = existingRecord.copy(
-          hashedPins = updatedPins,
+          hashedPins = updatedPins
         )
 
         mobilePinMongo.update(updatedRecord).map {

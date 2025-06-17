@@ -18,10 +18,13 @@ package uk.gov.hmrc.customerprofile.emailaddress
 
 import com.google.inject.ImplementedBy
 import EmailAddressValidation.validEmail
-import javax.naming.Context.{ INITIAL_CONTEXT_FACTORY => ICF }
+import play.api.libs.json.{Json, OFormat}
+import uk.gov.hmrc.customerprofile.domain.Version
+
+import javax.naming.Context.INITIAL_CONTEXT_FACTORY as ICF
 import javax.inject.Singleton
 import javax.naming.directory.InitialDirContext
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.util.Try
 
 case class EmailAddress(value: String) extends StringValue {
@@ -34,12 +37,16 @@ case class EmailAddress(value: String) extends StringValue {
   lazy val obfuscated: ObfuscatedEmailAddress = ObfuscatedEmailAddress.apply(value)
 
 }
+
+object EmailAddress {
+  implicit val format: OFormat[EmailAddress] = Json.format[EmailAddress]
+}
 case class Mailbox(value: String) extends StringValue
 
 case class Domain(value: String) extends StringValue {
   value match {
     case EmailAddressValidation.validDomain(_) => //
-    case invalidDomain => throw new IllegalArgumentException(s"'$invalidDomain' is not a valid email domain")
+    case invalidDomain                         => throw new IllegalArgumentException(s"'$invalidDomain' is not a valid email domain")
   }
 }
 @ImplementedBy(classOf[EmailAddressValidation])

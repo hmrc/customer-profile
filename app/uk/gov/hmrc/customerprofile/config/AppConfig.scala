@@ -22,9 +22,9 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class AppConfig @Inject() (config: Configuration) {
-  val mongoTtl: Int = config.get[Int]("mongodb.ttlDays")
-  val dobErrorKey         = config.get[String]("dobErrorKey")
+  val mongoTtl: Long = config.get[Long]("mongodb.ttlDays")
+  val dobErrorKey = config.get[String]("dobErrorKey")
   val previousPinErrorKey = config.get[String]("previousPinErrorKey")
-  val storedPinCount      = config.get[Int]("service.maxStoredPins")
+  val storedPinCount = config.get[Int]("service.maxStoredPins")
 
 }

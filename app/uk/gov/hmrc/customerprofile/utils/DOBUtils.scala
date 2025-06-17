@@ -22,16 +22,16 @@ object DOBUtils {
 
   def matchesDOBPatterns(
     dateOfBirth: Option[LocalDate],
-    input:       String
+    input: String
   ): Boolean =
     dateOfBirth match {
       case Some(dob) =>
-        val year2  = f"${dob.getYear % 100}%02d"
-        val year4  = f"${dob.getYear}%02d"
+        val year2 = f"${dob.getYear % 100}%02d"
+        val year4 = f"${dob.getYear}%02d"
         val month2 = f"${dob.getMonthValue}%02d"
         val month1 = f"${dob.getMonthValue}%01d"
-        val day2   = f"${dob.getDayOfMonth}%02d"
-        val day1   = f"${dob.getDayOfMonth}%01d"
+        val day2 = f"${dob.getDayOfMonth}%02d"
+        val day1 = f"${dob.getDayOfMonth}%01d"
 
         val patterns = Seq(
           s"$day2$month2$year2", // DDMMYY
@@ -49,7 +49,8 @@ object DOBUtils {
           Seq(s"$day1$month1$year4", // DMYYYY
               s"$month1$day1$year4", // MDYYYY
               s"$year4$day1$month1", // YYYYDM
-              s"$year4$month1$day1") // YYYYMD
+              s"$year4$month1$day1"
+             ) // YYYYMD
         } else Seq.empty
 
         (patterns ++ patterns2).contains(input)
