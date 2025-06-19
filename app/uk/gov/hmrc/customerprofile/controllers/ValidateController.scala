@@ -74,7 +74,7 @@ class ValidateController @Inject() (
               case true =>
                 logger.info("Unauthorized! Pin shouldn't match DOB!")
                 Future.successful(
-                  Unauthorized(
+                  Ok(
                     Json.toJson(
                       ValidateResponse(Some(dobErrorKey), "PIN should not include your date of birth")
                     )
@@ -91,7 +91,7 @@ class ValidateController @Inject() (
                             .exists(storedHash => BCrypt.checkpw(enteredPin, storedHash))) {
                         logger.info("Entered Pin can't be same as last three pins!")
                         Future.successful(
-                          Unauthorized(
+                          Ok(
                             Json.toJson(
                               ValidateResponse(Some(previousPinErrorKey), "Do not re-use an old PIN")
                             )
@@ -99,11 +99,11 @@ class ValidateController @Inject() (
                         )
                       } else {
                         logger.info("Successful! Entered Pin is valid")
-                        Future.successful(Ok(Json.toJson(ValidateResponse(None, "Pin is valid"))))
+                        Future.successful(Ok(Json.toJson(ValidateResponse(Some("valid_pin"), "Pin is valid"))))
                       }
                     case None =>
                       logger.info("Successful! Entered Pin is valid")
-                      Future.successful(Ok(Json.toJson(ValidateResponse(None, "Pin is valid"))))
+                      Future.successful(Ok(Json.toJson(ValidateResponse(Some("valid_pin"), "Pin is valid"))))
                   }
 
                 }
