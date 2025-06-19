@@ -23,7 +23,7 @@ import play.api.libs.json.Json.{prettyPrint, toJson}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 class DomainFormatCheckSpec extends BaseSpec {
 

@@ -28,7 +28,6 @@ import uk.gov.hmrc.customerprofile.domain.*
 import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 

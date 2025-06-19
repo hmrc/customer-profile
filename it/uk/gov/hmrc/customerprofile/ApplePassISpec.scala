@@ -14,7 +14,7 @@ class ApplePassISpec extends BaseISpec {
   val fullName = "Mr Angus John Smith"
 
   "GET  /apple-pass" should {
-    val url = s"/apple-pass?journeyId=$journeyId"
+    val url = s"/apple-pass?journeyId=${journeyId.value}"
 
     "return the apple pass with the journey id" in {
       authRecordExists(nino)
@@ -24,6 +24,7 @@ class ApplePassISpec extends BaseISpec {
       getApplePassId(nino, fullName, passId)
       getApplePass(passId, base64String)
       val response = await(getRequestWithAcceptHeader(url))
+
       response.status                          shouldBe 200
       (response.json \ "applePass").as[String] shouldBe base64String
     }

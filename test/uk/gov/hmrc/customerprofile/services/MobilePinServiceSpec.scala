@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
 
   val mockMongo: MobilePinMongo = mock[MobilePinMongo]
-  val service = new MobilePinService(mockMongo, maxStoredPins = 3)(ec: ExecutionContext)
+  val service: MobilePinService = new MobilePinService(mockMongo, maxStoredPins = 3)(ec: ExecutionContext)
   val someNino: Option[Nino] = Some(Nino("CS700100A"))
 
   val deviceId = UUID.randomUUID().toString
@@ -50,11 +50,12 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.add(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
       service.upsertPin(request, someNino).map { _ =>
-        verify(mockMongo).add(argThat {
-          record: MobilePin =>
+        verify(mockMongo).add(
+          argThat(record =>
             record.deviceId == deviceId &&
               record.hashedPins.length == 1
-        })
+          )
+        )
         succeed
       }
     }
@@ -66,11 +67,12 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
       service.upsertPin(request, someNino).map { _ =>
-        verify(mockMongo).update(argThat {
-          record: MobilePin =>
+        verify(mockMongo).update(
+          argThat(record =>
             record.hashedPins.length == 3 &&
               record.deviceId == deviceId
-        })
+          )
+        )
         succeed
       }
     }
@@ -82,11 +84,12 @@ class MobilePinServiceSpec extends BaseSpec with MockitoSugar {
       when(mockMongo.update(any[MobilePin])).thenReturn(Future.successful(Right(dummyPin)))
 
       service.upsertPin(request, someNino).map { _ =>
-        verify(mockMongo).update(argThat {
-          record: MobilePin =>
+        verify(mockMongo).update(
+          argThat(record =>
             record.hashedPins.length == 3 &&
               !record.hashedPins.contains(hash1)
-        })
+          )
+        )
         succeed
       }
     }

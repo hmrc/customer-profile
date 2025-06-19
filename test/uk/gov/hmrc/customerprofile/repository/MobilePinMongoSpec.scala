@@ -24,10 +24,11 @@ import java.time.{LocalDateTime, ZoneOffset}
 import java.util.UUID
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 class MobilePinMongoSpec extends BaseSpec with PlayMongoRepositorySupport[MobilePin] {
 
-  override lazy val repository = new MobilePinMongo(mongoComponent, appConfig)
+  override val repository: MobilePinMongo = new MobilePinMongo(mongoComponent, appConfig)
   val uuid = UUID.randomUUID().toString
   val uuid2 = UUID.randomUUID().toString
   val dateTime = LocalDateTime.of(2025, 4, 4, 0, 0) // 4 April 2025 at 00:00

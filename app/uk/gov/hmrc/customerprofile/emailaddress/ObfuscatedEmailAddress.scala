@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.emailaddress
 
-import scala.language.implicitConversions
 import scala.util.matching.Regex
 
 trait ObfuscatedEmailAddress {
@@ -28,21 +27,22 @@ object ObfuscatedEmailAddress {
   final private val shortMailbox: Regex = "(.{1,2})".r
   final private val longMailbox: Regex = "(.)(.*)(.)".r
 
+  import EmailAddress.validEmail
+
   implicit def obfuscatedEmailToString(e: ObfuscatedEmailAddress): String = e.value
 
-  def apply(plainEmailAddress: String): ObfuscatedEmailAddress =
-    new ObfuscatedEmailAddress {
-      val value: String = plainEmailAddress match {
-        case EmailAddressValidation.validEmail(shortMailbox(m), domain) =>
-          s"${obscure(m)}@$domain"
+  def apply(plainEmailAddress: String): ObfuscatedEmailAddress = new ObfuscatedEmailAddress {
+    val value: String = plainEmailAddress match {
+      case validEmail(shortMailbox(m), domain) =>
+        s"${obscure(m)}@$domain"
 
-        case EmailAddressValidation.validEmail(longMailbox(firstLetter, middle, lastLetter), domain) =>
-          s"$firstLetter${obscure(middle)}$lastLetter@$domain"
+      case validEmail(longMailbox(firstLetter, middle, lastLetter), domain) =>
+        s"$firstLetter${obscure(middle)}$lastLetter@$domain"
 
-        case invalidEmail =>
-          throw new IllegalArgumentException(s"Cannot obfuscate invalid email address '$invalidEmail'")
-      }
+      case invalidEmail =>
+        throw new IllegalArgumentException(s"Cannot obfuscate invalid email address '$invalidEmail'")
     }
+  }
 
   private def obscure(text: String): String = "*" * text.length
 }

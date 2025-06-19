@@ -36,7 +36,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
   val mockMongoService = mock[MongoService]
   val mockCustomerProfileService = mock[CustomerProfileService]
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val acceptHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptHeaderMap: (String, String) = "Accept" -> acceptHeader
 
   val controller = new ValidateController(
     mockAuthConnector,
@@ -53,7 +53,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
   val deviceId = "6D92078A-8246-4BA4-AE5B-76104861E7DC"
   val deviceId1 = "7D92078A-8246-4BA4-AE5B-76104861E7DC"
   val dob1 = LocalDate.of(1980, 7, 24)
-  val fakeRequest = FakeRequest("GET", "/").withHeaders(acceptHeader)
+  val fakeRequest = FakeRequest("GET", "/").withHeaders(acceptHeaderMap)
   val uuid = UUID.randomUUID().toString
 
   val mobilePin = MobilePin(uuid, hashNino, List(hash11, hash2))

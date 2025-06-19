@@ -21,10 +21,10 @@ import org.scalamock.scalatest.MockFactory
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.{Paperless, PaperlessOptOut, Preference, TermsAccepted}
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 import uk.gov.hmrc.http.{HttpResponse, InternalServerException, NotFoundException, UpstreamErrorResponse}
-import scala.concurrent.Future
 
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class EntityResolverConnectorSpec extends HttpClientV2Helper with MockFactory {

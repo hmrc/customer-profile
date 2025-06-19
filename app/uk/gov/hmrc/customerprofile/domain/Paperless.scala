@@ -19,6 +19,7 @@ package uk.gov.hmrc.customerprofile.domain
 import play.api.libs.json.{Format, JsError, JsResult, JsString, JsSuccess, JsValue, Json, OFormat, Reads, Writes}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.PlayJsonFormats
 
 case class TermsAccepted(accepted: Option[Boolean], optInPage: Option[OptInPage] = None)
 

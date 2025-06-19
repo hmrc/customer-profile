@@ -28,10 +28,10 @@ import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailNotExist, EmailUpdateOk, EntityResolverConnector, HttpClientV2Helper, NoPreferenceExists, PreferencesConnector, PreferencesCreated, PreferencesDoesNotExist, PreferencesExists, PreferencesFailure, PreferencesStatus, ShutteringConnector}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.*
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 import uk.gov.hmrc.customerprofile.services.{AuditService, CustomerProfileService}
 import uk.gov.hmrc.customerprofile.utils.AuthAndShutterMock
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.emailaddress.EmailAddress
 import uk.gov.hmrc.http.UpstreamErrorResponse
 
 import scala.concurrent.Future
@@ -419,7 +419,7 @@ class LiveCustomerProfileControllerSpec extends AuthAndShutterMock with BeforeAn
       def validPaperlessOptOutRequest(pageType: PageType): FakeRequest[JsValue] =
         FakeRequest()
           .withBody(toJson(optOutPaperlessSettingsWithVersion(pageType)))
-          .withHeaders(HeaderNames.ACCEPT -> acceptheader)
+          .withHeaders(HeaderNames.ACCEPT -> acceptHeader)
 
       val optOutPaperlessSettingsRequestWithoutAcceptHeader: FakeRequest[JsValue] =
         FakeRequest().withBody(toJson(optOutPaperlessSettings))
@@ -563,7 +563,7 @@ class LiveCustomerProfileControllerSpec extends AuthAndShutterMock with BeforeAn
       val validPendingEmailRequest: FakeRequest[JsValue] =
         FakeRequest()
           .withBody(toJson(changeEmail))
-          .withHeaders(HeaderNames.ACCEPT -> acceptheader)
+          .withHeaders(HeaderNames.ACCEPT -> acceptHeader)
       val changeEmailRequestWithoutAcceptHeader: FakeRequest[JsValue] =
         FakeRequest().withBody(toJson(changeEmail))
 

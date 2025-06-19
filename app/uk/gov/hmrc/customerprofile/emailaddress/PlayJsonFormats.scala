@@ -16,11 +16,16 @@
 
 package uk.gov.hmrc.customerprofile.emailaddress
 
-object StringValue {
-  implicit def stringValueToString(e: StringValue): String = e.value
-}
+object PlayJsonFormats {
+  import play.api.libs.json.*
 
-trait StringValue {
-  def value: String
-  override def toString: String = value
+  implicit val emailAddressReads: Reads[EmailAddress] = new Reads[EmailAddress] {
+    def reads(js: JsValue): JsResult[EmailAddress] = js.validate[String].flatMap {
+      case s if EmailAddress.isValid(s) => JsSuccess(EmailAddress(s))
+      case _                            => JsError("not a valid email address")
+    }
+  }
+  implicit val emailAddressWrites: Writes[EmailAddress] = new Writes[EmailAddress] {
+    def writes(e: EmailAddress): JsValue = JsString(e.value)
+  }
 }

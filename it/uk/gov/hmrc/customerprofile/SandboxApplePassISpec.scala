@@ -27,7 +27,7 @@ class SandboxApplePassISpec extends BaseISpec {
     url: String,
     journeyId: JourneyId
   ): WSRequest =
-    wsUrl(s"$url?journeyId=$journeyId")
+    wsUrl(s"$url?journeyId=${journeyId.value}")
       .addHttpHeaders(
         acceptJsonHeader,
         "X-MOBILE-USER-ID" -> "208606423740"
@@ -37,7 +37,7 @@ class SandboxApplePassISpec extends BaseISpec {
     url: String,
     journeyId: JourneyId
   ): WSRequest =
-    wsUrl(s"$url?journeyId=$journeyId")
+    wsUrl(s"$url?journeyId=${journeyId.value}")
       .addHttpHeaders("X-MOBILE-USER-ID" -> "208606423740")
 
   def requestWithoutJourneyId(url: String): WSRequest =

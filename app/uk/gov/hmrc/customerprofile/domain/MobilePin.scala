@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import org.bson.codecs.pojo.annotations.BsonId
-import org.mongodb.scala.bson.annotations.BsonProperty
 import play.api.Logger
 import play.api.libs.json.{Format, JsError, JsResult, JsSuccess, JsValue, Json, Reads, Writes}
 import uk.gov.hmrc.mongo.play.json.formats.MongoJavatimeFormats

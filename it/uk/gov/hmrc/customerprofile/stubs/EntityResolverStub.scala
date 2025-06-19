@@ -7,7 +7,7 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, Verified}
 import uk.gov.hmrc.customerprofile.domain.*
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 import java.time.LocalDate
 
@@ -37,7 +37,9 @@ object EntityResolverStub {
          |  "emailAddress": "$email",
          |  "linkSent": "${linkSent.getOrElse(LocalDate.now())}",
          |  "email" : {
-         |    "email" : "$email",
+         |    "email" : {
+         |         "value" : "$email"
+         |         },
          |    "status" : "$status",
          |    "linkSent": "${linkSent.getOrElse(LocalDate.now())}"
          |  },
@@ -47,7 +49,7 @@ object EntityResolverStub {
          |      "reoptinMajor": 10
          |  }
          |}
-      """.stripMargin
+""".stripMargin
     } else
       s"""
          |{

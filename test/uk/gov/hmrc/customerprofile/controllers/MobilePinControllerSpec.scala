@@ -38,7 +38,7 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
   val mockPinService: MobilePinService = mock[MobilePinService]
   val auditConnector: AuditConnector = mock[AuditConnector]
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val acceptHeader: (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptHeaderMap: (String, String) = "Accept" -> acceptHeader
   val uuid = UUID.randomUUID().toString
   val mockCustomerProfileService: CustomerProfileService = mock[CustomerProfileService]
 
@@ -48,7 +48,7 @@ class MobilePinControllerSpec extends BaseSpec with MockitoSugar with Results {
   )
 
   val fakeRequest: FakeRequest[jsonRequest.type] =
-    FakeRequest("PUT", "/").withHeaders(acceptHeader).withBody(jsonRequest)
+    FakeRequest("PUT", "/").withHeaders(acceptHeaderMap).withBody(jsonRequest)
 
   val controller = new MobilePinController(
     mockAuthConnector,

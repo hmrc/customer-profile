@@ -33,6 +33,8 @@ object JourneyId {
   def from(s: String): Either[String, JourneyId] =
     refineV[ValidJourneyId](s).map(JourneyId(_))
 
+  // Allow JourneyId to behave like String easily
+
   import play.api.mvc.{PathBindable, QueryStringBindable}
 
   given QueryStringBindable[JourneyId] with {

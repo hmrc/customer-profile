@@ -28,7 +28,6 @@ import uk.gov.hmrc.customerprofile.errors.MongoDBError
 import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
@@ -84,7 +83,6 @@ class MobilePinMongo @Inject() (
   def update(updatedMobilePin: MobilePin): ServiceResponse[MobilePin] = {
 
     val filter = and(equal("deviceId", updatedMobilePin.deviceId), equal("ninoHash", updatedMobilePin.ninoHash))
-    val currentTime = Instant.now()
     collection
       .replaceOne(filter, updatedMobilePin.copy(updatedAt = Some(Instant.now)), ReplaceOptions().upsert(true))
       .toFuture()

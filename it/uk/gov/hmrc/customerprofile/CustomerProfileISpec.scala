@@ -24,23 +24,26 @@ import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, OptInPage, PageType, Paperless, PaperlessOptOut, Shuttering, TermsAccepted, Version}
 import uk.gov.hmrc.customerprofile.stubs.AuthStub.*
 import uk.gov.hmrc.customerprofile.stubs.ShutteringStub.*
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 import uk.gov.hmrc.customerprofile.stubs.CitizenDetailsStub.{designatoryDetailsForNinoAre, designatoryDetailsWillReturnErrorResponse, npsDataIsLockedDueToMciFlag}
 import uk.gov.hmrc.customerprofile.stubs.EntityResolverStub.*
 import uk.gov.hmrc.customerprofile.stubs.PreferencesStub.{conflictPendingEmailUpdate, errorPendingEmailUpdate, successfulPendingEmailUpdate}
 import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.emailaddress.EmailAddress
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
 
 import java.time.LocalDate
 
 trait CustomerProfileTests extends BaseISpec with Eventually {
 
   "GET /profile/preferences" should {
-    val url = s"/profile/preferences?journeyId=$journeyId"
+    val url = s"/profile/preferences?journeyId=${journeyId.value}"
 
     "return preferences" in {
       authRecordExists(nino)
-      respondPreferencesWithPaperlessOptedIn()
       stubForShutteringDisabled
+      respondPreferencesWithPaperlessOptedIn()
 
       val response = await(getRequestWithAcceptHeader(url))
 
@@ -126,7 +129,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "GET /profile/personal-details/:nino" should {
-    val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
+    val url = s"/profile/personal-details/${nino.value}?journeyId=${journeyId.value}"
 
     "return 404 response status code when citizen-details returns 404 response status code." in {
       designatoryDetailsWillReturnErrorResponse(nino, 404)
@@ -172,7 +175,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "POST /profile/paperless-settings/opt-in" should {
-    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=${journeyId.value}"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -297,7 +300,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "POST /profile/paperless-settings/opt-out" should {
-    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=${journeyId.value}"
     val paperless =
       toJson(
         PaperlessOptOut(
@@ -359,7 +362,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
   }
 
   "POST /profile/preferences/pending-email" should {
-    val url = s"/profile/preferences/pending-email?journeyId=$journeyId"
+    val url = s"/profile/preferences/pending-email?journeyId=${journeyId.value}"
     val entityId = "1098561938451038465138465"
     val changeEmail = toJson(ChangeEmail(email = EmailAddress("new-email@new-email.new.email")))
 
@@ -436,8 +439,8 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
   "GET /validate/pin/:enteredPin" should {
 
-    val url = s"/validate/pin/$pin?journeyId=$journeyId&deviceId=$deviceId"
-    val urlWithDobPin = s"/validate/pin/050369?journeyId=$journeyId&deviceId=$deviceId"
+    val url = s"/validate/pin/$pin?journeyId=${journeyId.value}&deviceId=$deviceId"
+    val urlWithDobPin = s"/validate/pin/050369?journeyId=${journeyId.value}&deviceId=$deviceId"
 
     "return 200" in {
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
@@ -465,7 +468,7 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
 class CustomerProfileAllEnabledISpec extends CustomerProfileTests {
   "GET /profile/personal-details/:nino - Citizen Details Enabled" should {
-    val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
+    val url = s"/profile/personal-details/${nino.value}?journeyId=${journeyId.value}"
     "return personal details for the given NINO from citizen-details" in {
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
       authRecordExistsNinoCheck(nino)
@@ -527,7 +530,7 @@ class CustomerProfileCitizenDetailsDisabledISpec extends CustomerProfileTests {
   )
 
   "GET /profile/personal-details/:nino - Citizen Details Disabled" should {
-    val url = s"/profile/personal-details/${nino.value}?journeyId=$journeyId"
+    val url = s"/profile/personal-details/${nino.value}?journeyId=${journeyId.value}"
     "return 404 for disabled citizen-details" in {
       authRecordExistsNinoCheck(nino)
       stubForShutteringDisabled
@@ -550,7 +553,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
   )
 
   "POST /profile/paperless-settings/opt-in - Paperless Versions Enabled" should {
-    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-in?journeyId=${journeyId.value}"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -575,7 +578,7 @@ class CustomerProfilePaperlessVersionsEnabledISpec extends CustomerProfileTests 
   }
 
   "POST /profile/paperless-settings/opt-out - Paperless Versions Enabled" should {
-    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=$journeyId"
+    val url = s"/profile/preferences/paperless-settings/opt-out?journeyId=${journeyId.value}"
     val entityId = "1098561938451038465138465"
     val paperless =
       toJson(
@@ -610,7 +613,7 @@ class CustomerProfileReOptInDisabledISpec extends CustomerProfileTests {
   )
 
   "GET /profile/preferences" should {
-    val url = s"/profile/preferences?journeyId=$journeyId"
+    val url = s"/profile/preferences?journeyId=${journeyId.value}"
 
     "return preferences with a status of verified instead of reOptIn" in {
       authRecordExists(nino)
