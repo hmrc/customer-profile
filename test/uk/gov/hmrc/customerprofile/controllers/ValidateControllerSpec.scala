@@ -70,8 +70,10 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(person4)))
         when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
           .thenReturn(Future.successful(None))
-        val result = controller.validatePin("300684", deviceId, journeyId)(fakeRequest)
+        val result   = controller.validatePin("300684", deviceId, journeyId)(fakeRequest)
+        val jsonBody = contentAsJson(result)
         status(result) mustBe (200)
+        (jsonBody \ "key").as[String] mustBe "valid_pin"
       }
 
       "valid pin is entered if the deviceId and nino combination exists in DB" in {
@@ -83,13 +85,12 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
         when(mockMongoService.findByDeviceIdAndNinoHash(any(), any())(any()))
           .thenReturn(Future.successful(Some(mobilePin)))
 
-        val result = controller.validatePin("300685", deviceId, journeyId)(fakeRequest)
+        val result   = controller.validatePin("300685", deviceId, journeyId)(fakeRequest)
+        val jsonBody = contentAsJson(result)
         status(result) mustBe (200)
+        (jsonBody \ "key").as[String] mustBe "valid_pin"
 
       }
-    }
-
-    "return 401 - unauthorised" when {
 
       "a pin matching dob is entered while pin creation" in {
 
@@ -100,7 +101,7 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
           .thenReturn(Future.successful(Some(person4)))
         val result   = controller.validatePin("300686", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
-        status(result) mustBe (401)
+        status(result) mustBe (200)
         (jsonBody \ "key").as[String] mustBe "dob_error"
 
       }
@@ -117,10 +118,11 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
 
         val result   = controller.validatePin("240712", deviceId, journeyId)(fakeRequest)
         val jsonBody = contentAsJson(result)
-        status(result) mustBe (401)
+        status(result) mustBe (200)
         (jsonBody \ "key").as[String] mustBe "prev_pin_error"
 
       }
+
     }
   }
 

@@ -448,12 +448,12 @@ trait CustomerProfileTests extends BaseISpec with Eventually {
 
     }
 
-    "return 401 if pin matches the dob while pin creation" in {
+    "return 200 if pin matches the dob while pin creation" in {
       designatoryDetailsForNinoAre(nino, resourceAsString("AA000006C-citizen-details.json").get)
       authRecordExistsNinoCheck(nino)
       getNino()
       val response = await(getRequestWithAcceptHeader(urlWithDobPin))
-      response.status shouldBe 401
+      response.status shouldBe 200
       response.json shouldBe parse(
         """{"key":"create_pin_date_of_birth_error_message","message":"PIN should not include your date of birth"}"""
       )

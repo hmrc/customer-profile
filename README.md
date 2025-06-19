@@ -61,11 +61,12 @@ Validate the entered pin against the DOB pattern and previously used pin
 Example response body for success with 200 OK:
 ```json
 {
+   "key" : "valid_pin",
    "message ":  "Pin is valid"
 }
 ```
 
-Example response body for DOB match with 401 OK:
+Example response body for DOB match with 200 OK:
 ```json
 {
     "key" : "create_pin_date_of_birth_error_message",
@@ -73,7 +74,7 @@ Example response body for DOB match with 401 OK:
 }
 ```
 
-Example response body for previous pin match 401 OK:
+Example response body for previous pin match 200 OK:
 ```json
 {
     "key" : "change_pin_disallow_previous_pins_error_message",
