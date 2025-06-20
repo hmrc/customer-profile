@@ -36,7 +36,6 @@ object AppDependencies {
   private def testCommon(scope: String) = Seq(
     "uk.gov.hmrc"         %% "bootstrap-test-play-30"  % bootstrapPlayVersion % scope,
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-30" % hmrcMongoVersion     % scope,
-    "org.pegdown"          % "pegdown"                 % pegdownVersion       % scope,
     "com.vladsch.flexmark" % "flexmark-all"            % flexmarkAllVersion   % scope
   )
 
