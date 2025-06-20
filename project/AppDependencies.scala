@@ -7,7 +7,7 @@ object AppDependencies {
   private val domainVersion = "12.1.0"
   private val reactiveCircuitBreakerVersion = "6.0.0"
   private val emailAddressVersion = "4.0.0"
-  private val flexmarkAllVersion = "0.36.8"
+  private val flexmarkAllVersion = "0.64.8"
   private val hmrcMongoVersion = "2.6.0"
 
   private val scalaMockVersion = "7.3.2"
@@ -22,9 +22,9 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "domain-play-30"                  % domainVersion,
     "uk.gov.hmrc"                  %% "reactive-circuit-breaker"        % reactiveCircuitBreakerVersion,
     "eu.timepit"                   %% "refined"                         % refinedVersion,
-    "com.google.auth"               % "google-auth-library-oauth2-http" % "1.28.0",
-    "com.auth0"                     % "java-jwt"                        % "4.4.0",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"            % "2.17.1",
+    "com.google.auth"               % "google-auth-library-oauth2-http" % "1.37.0",
+    "com.auth0"                     % "java-jwt"                        % "4.5.0",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"            % "2.19.1",
     "org.mindrot"                   % "jbcrypt"                         % "0.4"
   )
 
