@@ -58,5 +58,5 @@ object EmailAddress {
   implicit val emailAddressWrites: Writes[EmailAddress] = new Writes[EmailAddress] {
     def writes(e: EmailAddress): JsValue = JsString(e.value)
   }
-  implicit val emailAddressFormat: OFormat[EmailAddress] = Json.format[EmailAddress]
+  implicit val emailAddressFormat: Format[EmailAddress] = Format(emailAddressReads, emailAddressWrites)
 }

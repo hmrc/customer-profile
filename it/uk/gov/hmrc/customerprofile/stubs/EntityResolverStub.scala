@@ -37,9 +37,7 @@ object EntityResolverStub {
          |  "emailAddress": "$email",
          |  "linkSent": "${linkSent.getOrElse(LocalDate.now())}",
          |  "email" : {
-         |    "email" : {
-         |         "value" : "$email"
-         |         },
+         |    "email" :  "$email",
          |    "status" : "$status",
          |    "linkSent": "${linkSent.getOrElse(LocalDate.now())}"
          |  },

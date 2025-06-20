@@ -18,7 +18,6 @@ package uk.gov.hmrc.customerprofile.domain
 
 import play.api.libs.json.*
 import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
-import uk.gov.hmrc.customerprofile.emailaddress.PlayJsonFormats
 
 import java.time.LocalDate
 
