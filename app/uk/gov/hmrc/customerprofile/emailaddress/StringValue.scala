@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2025 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.customerprofile.domain.types
+package uk.gov.hmrc.customerprofile.emailaddress
 
-import eu.timepit.refined._
-import eu.timepit.refined.api.Refined
-import eu.timepit.refined.string.MatchesRegex
+object StringValue {
+  implicit def stringValueToString(e: StringValue): String = e.value
+}
 
-object ModelTypes {
-
-  type JourneyId = String Refined ValidJourneyId
-
-  private type ValidJourneyId =
-    MatchesRegex[W.`"""[A-Fa-f0-9]{8}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{4}\\-[A-Fa-f0-9]{12}"""`.T]
-
+trait StringValue {
+  def value: String
+  override def toString: String = value
 }

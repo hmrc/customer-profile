@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.customerprofile.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import play.api.libs.json.Json.obj
 import uk.gov.hmrc.auth.core.AuthenticateHeaderParser.{ENROLMENT, WWW_AUTHENTICATE}
@@ -47,7 +47,7 @@ object AuthStub {
     """{ "authorise": [], "retrieve": ["nino"] }""".stripMargin
 
   def authRecordExists(
-    nino:            Nino,
+    nino: Nino,
     confidenceLevel: ConfidenceLevel = L200
   ): StubMapping =
     stubFor(
@@ -61,7 +61,7 @@ object AuthStub {
     )
 
   def authRecordExistsNinoCheck(
-    nino:            Nino,
+    nino: Nino,
     confidenceLevel: ConfidenceLevel = L200
   ): StubMapping =
     stubFor(

@@ -11,7 +11,7 @@ import uk.gov.hmrc.customerprofile.support.BaseISpec
 class GooglePassISpec extends BaseISpec {
 
   "GET /google-pass" should {
-    val url = s"/google-pass?journeyId=$journeyId"
+    val url = s"/google-pass?journeyId=${journeyId.value}"
     "return 406 if no request header is supplied" in {
       await(wsUrl(url).get()).status shouldBe 406
     }

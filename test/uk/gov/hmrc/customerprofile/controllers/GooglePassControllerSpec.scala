@@ -19,8 +19,8 @@ package uk.gov.hmrc.customerprofile.controllers
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import uk.gov.hmrc.customerprofile.services.GooglePassService
-import uk.gov.hmrc.customerprofile.domain._
-import play.api.test.Helpers._
+import uk.gov.hmrc.customerprofile.domain.*
+import play.api.test.Helpers.*
 import play.api.libs.json.Json.toJson
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
@@ -33,7 +33,7 @@ class GooglePassControllerSpec extends AuthAndShutterMock {
   implicit val shutteringConnectorMock: ShutteringConnector =
     new ShutteringConnector(http = mockHttpClient, serviceUrl = s"http://baseUrl")
   val googleService: GooglePassService = mock[GooglePassService]
-  val jwtToken:      String            = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val jwtToken: String = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
 
   val googlePassController: GooglePassController =
     new GooglePassController(mockAuthConnector, 200, googleService, components, shutteringConnectorMock)

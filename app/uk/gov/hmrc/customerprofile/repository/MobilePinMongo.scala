@@ -18,50 +18,54 @@ package uk.gov.hmrc.customerprofile.repository
 
 import org.mongodb.scala.model.{IndexModel, IndexOptions, Indexes, ReplaceOptions}
 import play.api.Logger
-import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model.Filters.*
 import uk.gov.hmrc.customerprofile.domain.{MobilePin, ServiceResponse}
 import uk.gov.hmrc.mongo.MongoComponent
 import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.Indexes.{ascending, descending}
 import uk.gov.hmrc.customerprofile.config.AppConfig
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
+import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.time.Instant
-import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class MobilePinMongo @Inject() (
-  mongo:                     MongoComponent,
-  appConfig:                 AppConfig
+  mongo: MongoComponent,
+  appConfig: AppConfig
 )(implicit executionContext: ExecutionContext)
-    extends PlayMongoRepository[MobilePin](collectionName = "mobilePin",
-                                           mongoComponent = mongo,
-                                           domainFormat   = MobilePin.format,
-                                           indexes = Seq(
-                                             IndexModel(
-                                               Indexes.compoundIndex(
-                                                 Indexes.ascending("deviceId"),
-                                                 Indexes.ascending("ninoHash")
-                                               ),
-                                               IndexOptions()
-                                                 .name("device-nino-index")
-                                                 .unique(true)
-                                                 .background(true)
-                                             ),
-                                             IndexModel(ascending("createdAt"),
-                                                        IndexOptions()
-                                                          .background(false)
-                                                          .name("createdAt")),
-                                             IndexModel(descending("updatedAt"),
-                                                        IndexOptions()
-                                                          .background(false)
-                                                          .name("updatedAt")
-                                                          .expireAfter(appConfig.mongoTtl, TimeUnit.DAYS))
-                                           ),
-                                           replaceIndexes = true) {
+    extends PlayMongoRepository[MobilePin](
+      collectionName = "mobilePin",
+      mongoComponent = mongo,
+      domainFormat   = MobilePin.format,
+      indexes = Seq(
+        IndexModel(
+          Indexes.compoundIndex(
+            Indexes.ascending("deviceId"),
+            Indexes.ascending("ninoHash")
+          ),
+          IndexOptions()
+            .name("device-nino-index")
+            .unique(true)
+            .background(true)
+        ),
+        IndexModel(ascending("createdAt"),
+                   IndexOptions()
+                     .background(false)
+                     .name("createdAt")
+                  ),
+        IndexModel(descending("updatedAt"),
+                   IndexOptions()
+                     .background(false)
+                     .name("updatedAt")
+                     .expireAfter(appConfig.mongoTtl, TimeUnit.DAYS)
+                  )
+      ),
+      replaceIndexes = true
+    ) {
 
   val logger: Logger = Logger(this.getClass)
 
@@ -71,23 +75,20 @@ class MobilePinMongo @Inject() (
       .insertOne(mobilePin.copy(updatedAt = Some(currentTime), createdAt = Some(currentTime)))
       .toFuture()
       .map(_ => Right(mobilePin))
-      .recover {
-        case _ => Left(MongoDBError("Unexpected error while writing a document."))
+      .recover { case _ =>
+        Left(MongoDBError("Unexpected error while writing a document."))
       }
   }
 
   def update(updatedMobilePin: MobilePin): ServiceResponse[MobilePin] = {
 
-    val filter      = and(equal("deviceId", updatedMobilePin.deviceId), equal("ninoHash", updatedMobilePin.ninoHash))
-    val currentTime = Instant.now()
+    val filter = and(equal("deviceId", updatedMobilePin.deviceId), equal("ninoHash", updatedMobilePin.ninoHash))
     collection
-      .replaceOne(filter,
-                  updatedMobilePin.copy(updatedAt = Some(Instant.now)),
-                  ReplaceOptions().upsert(true))
+      .replaceOne(filter, updatedMobilePin.copy(updatedAt = Some(Instant.now)), ReplaceOptions().upsert(true))
       .toFuture()
       .map(_ => Right(updatedMobilePin))
-      .recover {
-        case _ => Left(MongoDBError("Unexpected error while editing a document."))
+      .recover { case _ =>
+        Left(MongoDBError("Unexpected error while editing a document."))
       }
   }
 
@@ -101,8 +102,8 @@ class MobilePinMongo @Inject() (
       .find[MobilePin](filter)
       .toFuture()
       .map(data => Right(data.headOption))
-      .recover {
-        case _ => Left(MongoDBError("Unexpected error while searching  a document."))
+      .recover { case _ =>
+        Left(MongoDBError("Unexpected error while searching  a document."))
       }
   }
 
@@ -110,9 +111,9 @@ class MobilePinMongo @Inject() (
     collection
       .drop()
       .toFuture()
-      .map(_ => Right())
-      .recover {
-        case _ => Left(MongoDBError("Unexpected error while searching  a document."))
+      .map(_ => Right(()))
+      .recover { case _ =>
+        Left(MongoDBError("Unexpected error while searching  a document."))
 
       }
 
@@ -124,9 +125,9 @@ class MobilePinMongo @Inject() (
     collection
       .deleteOne(filter)
       .toFuture()
-      .map(_ => Right())
-      .recover {
-        case _ => Left(MongoDBError("Unexpected error while searching  a document."))
+      .map(_ => Right(()))
+      .recover { case _ =>
+        Left(MongoDBError("Unexpected error while searching  a document."))
 
       }
   }

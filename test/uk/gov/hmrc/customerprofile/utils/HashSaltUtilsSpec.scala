@@ -25,36 +25,36 @@ class HashSaltUtilsSpec extends AnyWordSpec with Matchers {
   "HashSaltUtilsSpec" should {
 
     "return true if the string matched the hashed string" in {
-      val hashed  = HashSaltUtils.createHashAndSalt("30061986")
+      val hashed = HashSaltUtils.createHashAndSalt("30061986")
       val isValid = BCrypt.checkpw("30061986", hashed)
-      isValid shouldBe (true)
+      isValid shouldBe true
     }
 
     "return true if the string is present in hashed list" in {
 
       val string1 = "30061986"
-      val hash1   = HashSaltUtils.createHashAndSalt(string1)
+      val hash1 = HashSaltUtils.createHashAndSalt(string1)
 
       val string2 = "24072012"
-      val hash2   = HashSaltUtils.createHashAndSalt(string2)
+      val hash2 = HashSaltUtils.createHashAndSalt(string2)
 
       val hashedList = List(hash1, hash2)
 
-      hashedList.exists(storedHash => BCrypt.checkpw("30061986", storedHash)) shouldBe (true)
+      hashedList.exists(storedHash => BCrypt.checkpw("30061986", storedHash)) shouldBe true
 
     }
 
     "return false if the string is not present in hashed list" in {
 
       val string1 = "30061986"
-      val hash1   = HashSaltUtils.createHashAndSalt(string1)
+      val hash1 = HashSaltUtils.createHashAndSalt(string1)
 
       val string2 = "24072012"
-      val hash2   = HashSaltUtils.createHashAndSalt(string2)
+      val hash2 = HashSaltUtils.createHashAndSalt(string2)
 
       val hashedList = List(hash1, hash2)
 
-      hashedList.exists(storedHash => BCrypt.checkpw("04061985", storedHash)) shouldBe (false)
+      hashedList.exists(storedHash => BCrypt.checkpw("04061985", storedHash)) shouldBe false
 
     }
   }

@@ -29,19 +29,17 @@ import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GooglePassService @Inject() (
-  citizenDetailsConnector:       CitizenDetailsConnector,
-  googlePassConnector:           GooglePassConnector,
-  authRetrievals:                AuthRetrievals,
-  googleCredentialsHelper:       GoogleCredentialsHelper,
-  @Named("appName") val appName: String,
-  @Named("key") val key:         String,
-  auditService:                  AuditService) {
+class GooglePassService @Inject() (citizenDetailsConnector: CitizenDetailsConnector,
+                                   googlePassConnector: GooglePassConnector,
+                                   authRetrievals: AuthRetrievals,
+                                   googleCredentialsHelper: GoogleCredentialsHelper,
+                                   @Named("appName") val appName: String,
+                                   @Named("key") val key: String,
+                                   auditService: AuditService
+                                  ) {
 
   def getNino(
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[Option[Nino]] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Nino]] =
     auditService.withAudit("getGooglePass", Map.empty) {
       authRetrievals.retrieveNino()
     }
@@ -50,18 +48,16 @@ class GooglePassService @Inject() (
     url.stripPrefix("https://pay.google.com/gp/v/save/")
 
   def getGooglePass(
-  )(implicit hc:      HeaderCarrier,
-    executionContext: ExecutionContext
-  ): Future[RetrieveGooglePass] =
+  )(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[RetrieveGooglePass] =
     auditService.withAudit("googlePass", Map.empty) {
       for {
         nino           <- getNino()
         citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
         getGooglePass <- googlePassConnector.createGooglePassWithCredentials(
-                          citizenDetails.person.completeName,
-                          nino.get.formatted,
-                          googleCredentialsHelper.createGoogleCredentials(key)
-                        )
+                           citizenDetails.person.completeName,
+                           nino.get.formatted,
+                           googleCredentialsHelper.createGoogleCredentials(key)
+                         )
         retrievePass <- googlePassConnector.getGooglePassUrl(getGooglePass)
         retrieveGooglePass: RetrieveGooglePass = RetrieveGooglePass(retrieveJwt(retrievePass.googlePass))
       } yield retrieveGooglePass

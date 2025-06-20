@@ -18,11 +18,11 @@ package uk.gov.hmrc.customerprofile.controllers
 
 import org.mockito.ArgumentMatchers.any
 import play.api.test.Helpers.{contentAsJson, status}
-import uk.gov.hmrc.customerprofile.domain.{RetrieveApplePass}
+import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.customerprofile.services.ApplePassService
 import org.mockito.Mockito.when
 import play.api.libs.json.Json
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 import uk.gov.hmrc.customerprofile.connector.ShutteringConnector
 import uk.gov.hmrc.customerprofile.utils.AuthAndShutterMock
 import uk.gov.hmrc.http.{NotFoundException, UpstreamErrorResponse}

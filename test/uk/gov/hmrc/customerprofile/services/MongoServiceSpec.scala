@@ -28,7 +28,7 @@ import scala.util.{Failure, Success}
 
 class MongoServiceSpec extends BaseSpec {
 
-  val uuid               = UUID.randomUUID().toString
+  val uuid = UUID.randomUUID().toString
   val mockMobilePinMongo = mock[MobilePinMongo]
 
   val service = new MongoService(mockMobilePinMongo)
@@ -51,7 +51,7 @@ class MongoServiceSpec extends BaseSpec {
         )
       )
       service.findByDeviceIdAndNinoHash(uuid, nino.nino) onComplete {
-        case Success(value) => value.get mustBe (mobilePin)
+        case Success(value) => value.get mustBe mobilePin
         case Failure(_)     => ()
       }
     }
@@ -65,7 +65,7 @@ class MongoServiceSpec extends BaseSpec {
         )
       )
       service.findByDeviceIdAndNinoHash(uuid, nino.nino) onComplete {
-        case Success(value) => value.isDefined mustBe (false)
+        case Success(value) => value.isDefined mustBe false
         case Failure(_)     => ()
       }
     }

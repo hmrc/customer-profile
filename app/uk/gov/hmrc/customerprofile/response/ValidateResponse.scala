@@ -18,9 +18,7 @@ package uk.gov.hmrc.customerprofile.response
 
 import play.api.libs.json.{Format, Json}
 
-case class ValidateResponse(
-  key:     Option[String] = None,
-  message: String)
+case class ValidateResponse(key: Option[String] = None, message: String)
 
 object ValidateResponse {
   implicit val format: Format[ValidateResponse] = Json.format[ValidateResponse]

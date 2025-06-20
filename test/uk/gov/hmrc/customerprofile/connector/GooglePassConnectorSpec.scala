@@ -26,9 +26,9 @@ import scala.util.{Failure, Success}
 class GooglePassConnectorSpec extends HttpClientV2Helper {
 
   val connector = app.injector.instanceOf[GooglePassConnector]
-  val passId:    String = "c864139e-77b5-448f-b443-17c69060870d"
+  val passId: String = "c864139e-77b5-448f-b443-17c69060870d"
   val jwtString: String = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-  val fullName    = "Mr Joe Bloggs"
+  val fullName = "Mr Joe Bloggs"
   val credentials = "dummyCredentials"
 
   "GooglePassConnector" when {

@@ -26,7 +26,7 @@ import scala.concurrent.ExecutionContext
 
 class AccountAccessControlISpec extends BaseISpec with Eventually {
 
-  implicit val hc:      HeaderCarrier    = HeaderCarrier(authorization = Some(Authorization("Bearer 123")))
+  implicit val hc: HeaderCarrier = HeaderCarrier(authorization = Some(Authorization("Bearer 123")))
   implicit lazy val ec: ExecutionContext = scala.concurrent.ExecutionContext.Implicits.global
 
   val testAuthRetrievals: AuthRetrievals = app.injector.instanceOf[AuthRetrievals]

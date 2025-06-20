@@ -17,13 +17,14 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import org.mockito.Mockito.{doReturn, when}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
 import play.api.libs.json.JsValue
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
+import play.api.libs.ws.BodyWritable
 
 import java.net.URL
 import scala.concurrent.ExecutionContext
@@ -36,9 +37,9 @@ trait HttpClientV2Helper extends BaseSpec with MockitoSugar with ScalaFutures {
   when(mockHttpClient.delete(any[URL])(any[HeaderCarrier])).thenReturn(requestBuilder)
   when(mockHttpClient.put(any[URL])(any[HeaderCarrier])).thenReturn(requestBuilder)
   when(requestBuilder.transform(any())).thenReturn(requestBuilder)
-  when(requestBuilder.withBody(any[JsValue])(any(), any(), any())).thenReturn(requestBuilder)
+  when(requestBuilder.withBody(any)(using any, any, any)).thenReturn(requestBuilder)
   when(mockServicesConfig.baseUrl(any[String])).thenReturn("http://example.com")
 
-  def requestBuilderExecute[A] = requestBuilder.execute[A](any[HttpReads[A]], any[ExecutionContext])
+  def requestBuilderExecute[A] = requestBuilder.execute[A](using any[HttpReads[A]], any[ExecutionContext])
 
 }

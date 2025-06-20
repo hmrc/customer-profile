@@ -22,11 +22,11 @@ import org.scalatest.BeforeAndAfterEach
 import play.api.Configuration
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailUpdateOk, EntityResolverConnector, PreferencesConnector, PreferencesCreated, PreferencesExists, PreferencesStatus}
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain._
+import uk.gov.hmrc.customerprofile.domain.*
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
 
@@ -39,10 +39,10 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
   val mockCitizenDetailsConnector: CitizenDetailsConnector =
     mock[CitizenDetailsConnector]
-  val mockPreferencesConnector: PreferencesConnector    = mock[PreferencesConnector]
-  val mockEntityResolver:       EntityResolverConnector = mock[EntityResolverConnector]
-  val mockAuthRetrievals:       AuthRetrievals          = mock[AuthRetrievals]
-  val mockAuditService:         AuditService            = mock[AuditService]
+  val mockPreferencesConnector: PreferencesConnector = mock[PreferencesConnector]
+  val mockEntityResolver: EntityResolverConnector = mock[EntityResolverConnector]
+  val mockAuthRetrievals: AuthRetrievals = mock[AuthRetrievals]
+  val mockAuditService: AuditService = mock[AuditService]
 
   val service =
     new CustomerProfileService(
@@ -58,7 +58,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
   override def beforeEach(): Unit = {
     reset(mockEntityResolver)
     reset(mockAuditService)
-   // reset(mockCitizenDetailsConnector)
+    reset(mockCitizenDetailsConnector)
   }
 
   implicit val defaultTimeout: FiniteDuration = 5 seconds
@@ -82,7 +82,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
   "getPersonalDetails" should {
     def mockPersonalDetails(
       updatedPerson: PersonDetails,
-      person:        PersonDetails
+      person: PersonDetails
     ) = {
       when(mockCitizenDetailsConnector.personDetails(any())(any(), any())).thenReturn(Future.successful(person))
       when(mockAuditService.withAudit[PersonDetails](any(), any())(any())(any(), any()))
@@ -115,9 +115,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
       val personalDetails = await(service.getPersonalDetails(nino))
 
-      personalDetails mustBe person.copy(address =
-        Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings")))
-      )
+      personalDetails mustBe person.copy(address = Some(Address(changeAddressLink = Some("/personal-account/profile-and-settings"))))
       personalDetails.person.shortName mustBe "Firstname Lastname"
       personalDetails.person.completeName mustBe "Title Firstname Lastname Honours"
     }
@@ -181,7 +179,7 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
 
     def mockPaperlessSettings(
       preferencesStatus: PreferencesStatus,
-      prefOpt:           Option[Preference]
+      prefOpt: Option[Preference]
     ) = {
       when(mockAuditService.withAudit[PreferencesStatus](any(), any())(any())(any(), any()))
         .thenReturn(Future.successful(preferencesStatus))
@@ -230,7 +228,8 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
       await(
         service.paperlessSettings(newPaperlessSettings
                                     .copy(generic = newPaperlessSettings.generic.copy(accepted = Some(false))),
-                                  journeyId)
+                                  journeyId
+                                 )
       ) mustBe PreferencesCreated
     }
   }
@@ -261,11 +260,11 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
       val expectedPreferences = preferencesWithStatus(ReOptIn)
 
       service.reOptInEnabledCheck(expectedPreferences) mustBe
-      expectedPreferences.copy(
-        status = Some(
-          PaperlessStatus(ReOptIn, category = Category.Info)
+        expectedPreferences.copy(
+          status = Some(
+            PaperlessStatus(ReOptIn, category = Category.Info)
+          )
         )
-      )
     }
     "replace ReOptIn status with Verified if disabled" in {
       val service =
@@ -281,11 +280,11 @@ class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {
       val expectedPreferences = preferencesWithStatus(ReOptIn)
 
       service.reOptInEnabledCheck(expectedPreferences) mustBe
-      expectedPreferences.copy(
-        status = Some(
-          PaperlessStatus(Verified, category = Category.Info)
+        expectedPreferences.copy(
+          status = Some(
+            PaperlessStatus(Verified, category = Category.Info)
+          )
         )
-      )
     }
   }
 

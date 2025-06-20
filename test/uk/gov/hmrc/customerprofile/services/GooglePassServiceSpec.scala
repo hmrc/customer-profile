@@ -25,22 +25,22 @@ import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, GooglePas
 import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
 import uk.gov.hmrc.customerprofile.utils.{BaseSpec, GoogleCredentialsHelper}
 
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 
 class GooglePassServiceSpec extends BaseSpec {
 
-  val appNameConfiguration:    Configuration           = mock[Configuration]
-  val auditConnector:          AuditConnector          = mock[AuditConnector]
-  val getGooglePassConnector:  GooglePassConnector     = mock[GooglePassConnector]
+  val appNameConfiguration: Configuration = mock[Configuration]
+  val auditConnector: AuditConnector = mock[AuditConnector]
+  val getGooglePassConnector: GooglePassConnector = mock[GooglePassConnector]
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
+  val accountAccessControl: AuthRetrievals = mock[AuthRetrievals]
   val googleCredentialsHelper: GoogleCredentialsHelper = mock[GoogleCredentialsHelper]
-  val passId:                  String                  = "c864139e-77b5-448f-b443-17c69060870d"
-  val jwtUrl:                  String                  = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-  val googleKey:               String                  = "123456789"
-  val auditService:            AuditService            = mock[AuditService]
-  implicit val defaultTimeout: FiniteDuration          = 5 seconds
+  val passId: String = "c864139e-77b5-448f-b443-17c69060870d"
+  val jwtUrl: String = "www.url.com/eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
+  val googleKey: String = "123456789"
+  val auditService: AuditService = mock[AuditService]
+  implicit val defaultTimeout: FiniteDuration = 5 seconds
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
 
   val googlePassService = new GooglePassService(

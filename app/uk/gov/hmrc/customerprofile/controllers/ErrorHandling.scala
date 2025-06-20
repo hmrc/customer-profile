@@ -17,33 +17,28 @@
 package uk.gov.hmrc.customerprofile.controllers
 
 import play.api.Logger
-import play.api.http.Status._
+import play.api.http.Status.*
 import play.api.libs.json.Json.{obj, toJson}
 import play.api.mvc.Result
-import uk.gov.hmrc.api.controllers._
+import uk.gov.hmrc.api.controllers.*
 import uk.gov.hmrc.auth.core.AuthorisationException
 import uk.gov.hmrc.http.HttpException
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
 
 import scala.concurrent.{ExecutionContext, Future}
 
-case object ErrorUnauthorizedNoNino
-    extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
+case object ErrorUnauthorizedNoNino extends ErrorResponse(UNAUTHORIZED, "UNAUTHORIZED", "NINO does not exist on account")
 
 case object ErrorManualCorrespondenceIndicator
-    extends ErrorResponse(LOCKED,
-                          "MANUAL_CORRESPONDENCE_IND",
-                          "Data cannot be disclosed to the user because MCI flag is set in NPS")
+    extends ErrorResponse(LOCKED, "MANUAL_CORRESPONDENCE_IND", "Data cannot be disclosed to the user because MCI flag is set in NPS")
 
 case object ErrorPreferenceConflict extends ErrorResponse(CONFLICT, "CONFLICT", "No existing verified or pending data")
 
-case object ErrorUnauthorizedUpstream
-    extends ErrorResponse(401, "UNAUTHORIZED", "Upstream service such as auth returned 401")
+case object ErrorUnauthorizedUpstream extends ErrorResponse(401, "UNAUTHORIZED", "Upstream service such as auth returned 401")
 
 case object ForbiddenAccess extends ErrorResponse(403, "UNAUTHORIZED", "Access denied!")
 
-case object ErrorTooManyRequests
-    extends ErrorResponse(429, "TOO_MANY_REQUESTS", "Too many requests made to customer profile please try again later")
+case object ErrorTooManyRequests extends ErrorResponse(429, "TOO_MANY_REQUESTS", "Too many requests made to customer profile please try again later")
 
 class FailToMatchTaxIdOnAuth(message: String) extends HttpException(message, 403)
 

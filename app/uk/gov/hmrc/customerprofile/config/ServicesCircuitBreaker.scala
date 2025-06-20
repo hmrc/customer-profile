@@ -23,7 +23,7 @@ import uk.gov.hmrc.http.{BadRequestException, NotFoundException, UpstreamErrorRe
 trait ServicesCircuitBreaker extends UsingCircuitBreaker {
 
   def configuration: Configuration
-  def environment:   Environment
+  def environment: Environment
   protected val externalServiceName: String
 
   // Annoyingly, the `config` method in `ServicesConfig` is protected, although it is never used within the class,
@@ -36,20 +36,19 @@ trait ServicesCircuitBreaker extends UsingCircuitBreaker {
       .getOrElse(throw new IllegalArgumentException(s"Configuration for service $serviceName not found"))
 
   override protected def circuitBreakerConfig = CircuitBreakerConfig(
-    serviceName = externalServiceName,
-    numberOfCallsToTriggerStateChange =
-      config(externalServiceName).getOptional[Int]("circuitBreaker.numberOfCallsToTriggerStateChange"),
+    serviceName                       = externalServiceName,
+    numberOfCallsToTriggerStateChange = config(externalServiceName).getOptional[Int]("circuitBreaker.numberOfCallsToTriggerStateChange"),
     unavailablePeriodDuration = config(externalServiceName)
-        .getOptional[Int]("circuitBreaker.unavailablePeriodDurationInSeconds") map (_ * 1000),
+      .getOptional[Int]("circuitBreaker.unavailablePeriodDurationInSeconds") map (_ * 1000),
     unstablePeriodDuration = config(externalServiceName)
-        .getOptional[Int]("circuitBreaker.unstablePeriodDurationInSeconds") map (_ * 1000)
+      .getOptional[Int]("circuitBreaker.unstablePeriodDurationInSeconds") map (_ * 1000)
   )
 
   override protected def breakOnException(t: Throwable): Boolean = t match {
-    case _: BadRequestException                           => false
-    case _: NotFoundException                             => false
-    case e: UpstreamErrorResponse if (e.statusCode < 500) => false
-    case _: UpstreamErrorResponse                         => true
-    case _ => true
+    case _: BadRequestException                         => false
+    case _: NotFoundException                           => false
+    case e: UpstreamErrorResponse if e.statusCode < 500 => false
+    case _: UpstreamErrorResponse                       => true
+    case _                                              => true
   }
 }

@@ -27,9 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AuthRetrievals @Inject() (val authConnector: AuthConnector) extends AuthorisedFunctions {
 
   def retrieveNino(
-  )(implicit hc: HeaderCarrier,
-    ec:          ExecutionContext
-  ): Future[Option[Nino]] =
+  )(implicit hc: HeaderCarrier, ec: ExecutionContext): Future[Option[Nino]] =
     authorised().retrieve(nino)(foundNino => Future successful foundNino.map(Nino(_)))
 
 }

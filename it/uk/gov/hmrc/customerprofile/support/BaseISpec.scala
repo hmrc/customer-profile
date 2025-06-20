@@ -26,13 +26,17 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.libs.json.{JsValue, Json}
 import play.api.libs.ws.{WSClient, WSResponse}
 import play.api.test.{DefaultAwaitTimeout, FutureAwaits}
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 
-import eu.timepit.refined.auto._
+import eu.timepit.refined.auto.*
 import java.io.InputStream
 import scala.concurrent.Future
 import scala.io.Source.fromInputStream
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.DefaultBodyWritables.*
 
 class BaseISpec
     extends AnyWordSpecLike
@@ -48,17 +52,17 @@ class BaseISpec
     .build()
 
   val nino: Nino = Nino("AA000006C")
-  val pin      = "240712"
+  val pin = "240712"
   val deviceId = "f7a5d556-9f34-47cb-9d84-7e904f2fe704"
-  val acceptJsonHeader:        (String, String) = "Accept" -> "application/vnd.hmrc.1.0+json"
+  val acceptJsonHeader: (String, String) = "Accept"               -> "application/vnd.hmrc.1.0+json"
   val authorisationJsonHeader: (String, String) = "AUTHORIZATION" -> "Bearer 123"
-  val journeyId:               JourneyId        = "b6ef25bc-8f5e-49c8-98c5-f039f39e4557"
+  val journeyId: JourneyId = JourneyId.from("b6ef25bc-8f5e-49c8-98c5-f039f39e4557").toOption.get
 
   def getRequestWithAcceptHeader(url: String): Future[WSResponse] =
     wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).get()
 
   def postRequestWithAcceptHeader(
-    url:  String,
+    url: String,
     form: JsValue
   ): Future[WSResponse] =
     wsUrl(url).addHttpHeaders(acceptJsonHeader, authorisationJsonHeader).post(form)

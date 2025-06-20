@@ -22,11 +22,11 @@ import play.api.libs.json.JsValue
 
 import javax.inject.Named
 import play.api.libs.json.Json.toJson
-import play.api.mvc._
-import uk.gov.hmrc.api.controllers._
+import play.api.mvc.*
+import uk.gov.hmrc.api.controllers.*
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.customerprofile.connector._
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.connector.*
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.customerprofile.domain.{ChangeEmail, Paperless, PaperlessOptOut, TermsAccepted}
 import uk.gov.hmrc.customerprofile.services.CustomerProfileService
 import uk.gov.hmrc.domain.Nino
@@ -38,14 +38,14 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class LiveCustomerProfileController @Inject() (
-  override val authConnector:                                   AuthConnector,
+  override val authConnector: AuthConnector,
   @Named("controllers.confidenceLevel") override val confLevel: Int,
-  service:                                                      CustomerProfileService,
-  @Named("citizen-details.enabled") val citizenDetailsEnabled:  Boolean,
-  controllerComponents:                                         ControllerComponents,
-  shutteringConnector:                                          ShutteringConnector,
-  @Named("optInVersionsEnabled") val optInVersionsEnabled:      Boolean
-)(implicit val executionContext:                                ExecutionContext)
+  service: CustomerProfileService,
+  @Named("citizen-details.enabled") val citizenDetailsEnabled: Boolean,
+  controllerComponents: ControllerComponents,
+  shutteringConnector: ShutteringConnector,
+  @Named("optInVersionsEnabled") val optInVersionsEnabled: Boolean
+)(implicit val executionContext: ExecutionContext)
     extends BackendController(controllerComponents)
     with CustomerProfileController
     with ErrorHandling
@@ -58,7 +58,7 @@ class LiveCustomerProfileController @Inject() (
   val app = "Live-Customer-Profile"
 
   override def getPersonalDetails(
-    nino:      Nino,
+    nino: Nino,
     journeyId: JourneyId
   ): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, Some(nino)).async { implicit request =>
@@ -92,91 +92,86 @@ class LiveCustomerProfileController @Inject() (
     }
 
   override def paperlessSettingsOptIn(journeyId: JourneyId): Action[JsValue] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromRequest(request)
-        shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-          withShuttering(shuttered) {
-            request.body
-              .validate[Paperless]
-              .fold(
-                errors => {
-                  logger.warn("Received error with service getPaperlessSettings: " + errors)
-                  Future successful BadRequest
-                },
-                settings => {
-                  val settingsToSend =
-                    if (!optInVersionsEnabled) settings.copy(generic = settings.generic.copy(optInPage = None))
-                    else settings
-                  errorWrapper(service.paperlessSettings(settingsToSend, journeyId).map {
-                    case PreferencesExists | EmailUpdateOk => NoContent
-                    case PreferencesCreated                => Created
-                    case EmailNotExist                     => Conflict(toJson[ErrorResponse](ErrorPreferenceConflict))
-                    case NoPreferenceExists                => NotFound(toJson[ErrorResponse](ErrorNotFound))
-                    case _                                 => InternalServerError(toJson[ErrorResponse]((PreferencesSettingsError)))
-                  })
-                }
-              )
-          }
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          request.body
+            .validate[Paperless]
+            .fold(
+              errors => {
+                logger.warn("Received error with service getPaperlessSettings: " + errors)
+                Future successful BadRequest
+              },
+              settings => {
+                val settingsToSend =
+                  if (!optInVersionsEnabled) settings.copy(generic = settings.generic.copy(optInPage = None))
+                  else settings
+                errorWrapper(service.paperlessSettings(settingsToSend, journeyId).map {
+                  case PreferencesExists | EmailUpdateOk => NoContent
+                  case PreferencesCreated                => Created
+                  case EmailNotExist                     => Conflict(toJson[ErrorResponse](ErrorPreferenceConflict))
+                  case NoPreferenceExists                => NotFound(toJson[ErrorResponse](ErrorNotFound))
+                  case _                                 => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
+                })
+              }
+            )
         }
+      }
     }
 
   override def paperlessSettingsOptOut(journeyId: JourneyId): Action[JsValue] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromRequest(request)
-        shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-          withShuttering(shuttered) {
-            request.body
-              .validate[PaperlessOptOut]
-              .fold(
-                errors => {
-                  logger.warn("Received error with service getPaperlessSettings: " + errors)
-                  Future successful BadRequest
-                },
-                settings => {
-                  val paperlessOptOutToSend =
-                    if (!optInVersionsEnabled)
-                      settings
-                        .copy(generic =
-                          Some(settings.generic.getOrElse(TermsAccepted(Some(false))).copy(optInPage = None))
-                        )
-                    else settings
-                  errorWrapper(service.paperlessSettingsOptOut(paperlessOptOutToSend).map {
-                    case PreferencesExists       => NoContent
-                    case PreferencesCreated      => Created
-                    case PreferencesDoesNotExist => NotFound
-                    case _                       => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
-                  })
-                }
-              )
-          }
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          request.body
+            .validate[PaperlessOptOut]
+            .fold(
+              errors => {
+                logger.warn("Received error with service getPaperlessSettings: " + errors)
+                Future successful BadRequest
+              },
+              settings => {
+                val paperlessOptOutToSend =
+                  if (!optInVersionsEnabled)
+                    settings
+                      .copy(generic = Some(settings.generic.getOrElse(TermsAccepted(Some(false))).copy(optInPage = None)))
+                  else settings
+                errorWrapper(service.paperlessSettingsOptOut(paperlessOptOutToSend).map {
+                  case PreferencesExists       => NoContent
+                  case PreferencesCreated      => Created
+                  case PreferencesDoesNotExist => NotFound
+                  case _                       => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
+                })
+              }
+            )
         }
+      }
     }
 
   override def preferencesPendingEmail(journeyId: JourneyId): Action[JsValue] =
-    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) {
-      implicit request =>
-        implicit val hc: HeaderCarrier = fromRequest(request)
-        shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
-          withShuttering(shuttered) {
-            request.body
-              .validate[ChangeEmail]
-              .fold(
-                errors => {
-                  logger.warn("Errors validating request body: " + errors)
-                  Future successful BadRequest
-                },
-                changeEmail =>
-                  errorWrapper(service.setPreferencesPendingEmail(changeEmail).map {
-                    case EmailUpdateOk      => NoContent
-                    case EmailNotExist      => Conflict
-                    case NoPreferenceExists => NotFound
-                    case _                  => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
-                  })
-              )
-          }
+    validateAcceptWithAuth(acceptHeaderValidationRules, None).async(controllerComponents.parsers.json) { implicit request =>
+      implicit val hc: HeaderCarrier = fromRequest(request)
+      shutteringConnector.getShutteringStatus(journeyId).flatMap { shuttered =>
+        withShuttering(shuttered) {
+          request.body
+            .validate[ChangeEmail]
+            .fold(
+              errors => {
+                logger.warn("Errors validating request body: " + errors)
+                Future successful BadRequest
+              },
+              changeEmail =>
+                errorWrapper(service.setPreferencesPendingEmail(changeEmail).map {
+                  case EmailUpdateOk      => NoContent
+                  case EmailNotExist      => Conflict
+                  case NoPreferenceExists => NotFound
+                  case _                  => InternalServerError(toJson[ErrorResponse](PreferencesSettingsError))
+                })
+            )
         }
+      }
     }
 
 }

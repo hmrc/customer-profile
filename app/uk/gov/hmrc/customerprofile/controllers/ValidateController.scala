@@ -25,7 +25,7 @@ import uk.gov.hmrc.api.controllers.HeaderValidator
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.auth.AccessControl
 import uk.gov.hmrc.customerprofile.connector.CitizenDetailsConnector
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.customerprofile.response.ValidateResponse
 import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MongoService}
 import uk.gov.hmrc.customerprofile.utils.{DOBUtils, HashSaltUtils}
@@ -40,29 +40,29 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class ValidateController @Inject() (
-  override val authConnector:                            AuthConnector,
-  citizenDetailsConnector:                               CitizenDetailsConnector,
-  mongoService:                                          MongoService,
-  customerProfileService:                                CustomerProfileService,
-  @Named("controllers.confidenceLevel") val confLevel:   Int,
-  @Named("service.maxStoredPins") val storedPinCount:    Int,
-  @Named("dobErrorKey") val dobErrorKey:                 String,
+  override val authConnector: AuthConnector,
+  citizenDetailsConnector: CitizenDetailsConnector,
+  mongoService: MongoService,
+  customerProfileService: CustomerProfileService,
+  @Named("controllers.confidenceLevel") val confLevel: Int,
+  @Named("service.maxStoredPins") val storedPinCount: Int,
+  @Named("dobErrorKey") val dobErrorKey: String,
   @Named("previousPinErrorKey") val previousPinErrorKey: String,
-  controllerComponents:                                  ControllerComponents
-)(implicit val executionContext:                         ExecutionContext)
+  controllerComponents: ControllerComponents
+)(implicit val executionContext: ExecutionContext)
     extends BackendController(controllerComponents)
     with ErrorHandling
     with AccessControl
     with HeaderValidator {
 
-  override val app:    String                 = "mobile-pin-security"
-  override val logger: Logger                 = Logger(this.getClass)
+  override val app: String = "mobile-pin-security"
+  override val logger: Logger = Logger(this.getClass)
   override def parser: BodyParser[AnyContent] = controllerComponents.parsers.anyContent
 
   def validatePin(
     enteredPin: String,
-    deviceId:   String,
-    journeyId:  JourneyId
+    deviceId: String,
+    journeyId: JourneyId
   ): Action[AnyContent] =
     validateAcceptWithAuth(acceptHeaderValidationRules, None).async { implicit request =>
       implicit val hc: HeaderCarrier = fromRequest(request)
@@ -86,9 +86,11 @@ class ValidateController @Inject() (
                 mongoService.findByDeviceIdAndNinoHash(deviceId, hashNino).flatMap {
                   _ match {
                     case Some(mobilePin) =>
-                      if (mobilePin.hashedPins
-                            .takeRight(storedPinCount)
-                            .exists(storedHash => BCrypt.checkpw(enteredPin, storedHash))) {
+                      if (
+                        mobilePin.hashedPins
+                          .takeRight(storedPinCount)
+                          .exists(storedHash => BCrypt.checkpw(enteredPin, storedHash))
+                      ) {
                         logger.info("Entered Pin can't be same as last three pins!")
                         Future.successful(
                           Ok(

@@ -20,41 +20,36 @@ import com.google.inject.{Inject, Singleton}
 
 import javax.inject.Named
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
-import uk.gov.hmrc.customerprofile.connector._
+import uk.gov.hmrc.customerprofile.connector.*
 import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.Category.Info
 import uk.gov.hmrc.customerprofile.domain.StatusName.{ReOptIn, Verified}
-import uk.gov.hmrc.customerprofile.domain._
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.*
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class CustomerProfileService @Inject() (
-  citizenDetailsConnector:                     CitizenDetailsConnector,
-  preferencesConnector:                        PreferencesConnector,
-  entityResolver:                              EntityResolverConnector,
-  val accountAccessControl:                    AuthRetrievals,
-  @Named("appName") val appName:               String,
-  @Named("reOptInEnabled") val reOptInEnabled: Boolean,
-  auditService:                                AuditService) {
+class CustomerProfileService @Inject() (citizenDetailsConnector: CitizenDetailsConnector,
+                                        preferencesConnector: PreferencesConnector,
+                                        entityResolver: EntityResolverConnector,
+                                        val accountAccessControl: AuthRetrievals,
+                                        @Named("appName") val appName: String,
+                                        @Named("reOptInEnabled") val reOptInEnabled: Boolean,
+                                        auditService: AuditService
+                                       ) {
 
   def getNino(
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[Option[Nino]] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Nino]] =
     auditService.withAudit("getAccounts", Map.empty) {
       accountAccessControl.retrieveNino()
     }
 
   def getPersonalDetails(
-    nino:        Nino
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PersonDetails] =
+    nino: Nino
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PersonDetails] =
     auditService.withAudit("getPersonalDetails", Map("nino" -> nino.value)) {
       citizenDetailsConnector
         .personDetails(nino)
@@ -74,28 +69,26 @@ class CustomerProfileService @Inject() (
     }
 
   def paperlessSettings(
-    settings:    Paperless,
-    journeyId:   JourneyId
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PreferencesStatus] =
+    settings: Paperless,
+    journeyId: JourneyId
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     auditService.withAudit("paperlessSettings", Map("accepted" -> settings.generic.accepted.toString)) {
       for {
         preferences <- entityResolver.getPreferences()
         status <- preferences.fold(paperlessOptIn(settings)) { preference =>
-                   if (preference.digital && preference.status
-                         .getOrElse(PaperlessStatus(Verified, Info))
-                         .name != ReOptIn) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
-                   else paperlessOptIn(settings)
-                 }
+                    if (
+                      preference.digital && preference.status
+                        .getOrElse(PaperlessStatus(Verified, Info))
+                        .name != ReOptIn
+                    ) setPreferencesPendingEmail(ChangeEmail(settings.email.value))
+                    else paperlessOptIn(settings)
+                  }
       } yield status
     }
 
   def paperlessSettingsOptOut(
     paperlessOptOut: PaperlessOptOut
-  )(implicit hc:     HeaderCarrier,
-    ex:              ExecutionContext
-  ): Future[PreferencesStatus] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     auditService.withAudit("paperlessSettingsOptOut", Map.empty) {
       val genericOptOut = paperlessOptOut.generic.getOrElse(TermsAccepted(Some(false))).copy(accepted = Some(false))
       entityResolver.paperlessOptOut(
@@ -104,18 +97,14 @@ class CustomerProfileService @Inject() (
     }
 
   def getPreferences(
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[Option[Preference]] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Preference]] =
     auditService.withAudit("getPreferences", Map.empty) {
       copyToResponsePayload(entityResolver.getPreferences())
     }
 
   def setPreferencesPendingEmail(
     changeEmail: ChangeEmail
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PreferencesStatus] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] =
     auditService.withAudit("updatePendingEmailPreference", Map("email" -> changeEmail.email)) {
       for {
         nino     <- getNino()
@@ -133,25 +122,20 @@ class CustomerProfileService @Inject() (
 
   private def copyToResponsePayload(
     preferencesReceived: Future[Option[Preference]]
-  )(implicit ex:         ExecutionContext
-  ): Future[Option[Preference]] =
+  )(implicit ex: ExecutionContext): Future[Option[Preference]] =
     for {
       emailAddressCopied <- preferencesReceived.map(
-                             _.map(pref => pref.copy(emailAddress = pref.email.map(_.email.value)))
-                           )
+                              _.map(pref => pref.copy(emailAddress = pref.email.map(_.email.value)))
+                            )
       linkSent <- preferencesReceived.map(_.flatMap(_.email.flatMap(_.linkSent)))
       backwardsCompatiblePreferences <- if (linkSent.isDefined)
-                                         Future successful emailAddressCopied.map(pref =>
-                                           pref.copy(linkSent = linkSent, email = None)
-                                         )
-                                       else Future successful emailAddressCopied.map(pref => pref.copy(email = None))
+                                          Future successful emailAddressCopied.map(pref => pref.copy(linkSent = linkSent, email = None))
+                                        else Future successful emailAddressCopied.map(pref => pref.copy(email = None))
     } yield backwardsCompatiblePreferences
 
   private def paperlessOptIn(
-    settings:    Paperless
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[PreferencesStatus] = entityResolver.paperlessSettings(
+    settings: Paperless
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[PreferencesStatus] = entityResolver.paperlessSettings(
     settings.copy(generic = settings.generic.copy(accepted = Some(true)))
   )
 

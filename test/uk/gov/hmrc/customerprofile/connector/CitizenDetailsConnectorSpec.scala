@@ -58,8 +58,8 @@ class CitizenDetailsConnectorSpec extends HttpClientV2Helper {
     "get person Details For Pin" should {
 
       "give person details" in {
-        val personDets     = person.person.copy(personDateOfBirth = Some(LocalDate.of(1986, 5, 6)))
-        val personDetails1 = person.copy(person                   = personDets)
+        val personDets = person.person.copy(personDateOfBirth = Some(LocalDate.of(1986, 5, 6)))
+        val personDetails1 = person.copy(person = personDets)
         when(requestBuilderExecute[Option[PersonDetails]])
           .thenReturn(Future.successful(Some(personDetails1)))
         connector.personDetailsForPin(nino) onComplete {

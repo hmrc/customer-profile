@@ -8,8 +8,8 @@ import uk.gov.hmrc.domain.Nino
 object FindmyNinoWalletStub {
 
   def getApplePassId(
-    nino:   Nino,
-    name:   String,
+    nino: Nino,
+    name: String,
     passId: String
   ): StubMapping =
     stubFor(
@@ -48,7 +48,7 @@ object FindmyNinoWalletStub {
     )
 
   def getApplePass(
-    passId:    String,
+    passId: String,
     applePass: String
   ): StubMapping =
     stubFor(
@@ -61,10 +61,10 @@ object FindmyNinoWalletStub {
     )
 
   def createGooglePassWithCredentials(
-    nino:        Nino,
-    name:        String,
+    nino: Nino,
+    name: String,
     credentials: String,
-    passId:      String
+    passId: String
   ): StubMapping =
     stubFor(
       post(urlEqualToCreateGooglePass())
@@ -81,7 +81,7 @@ object FindmyNinoWalletStub {
     )
 
   def getGooglePass(
-    passId:     String,
+    passId: String,
     googlePass: String
   ): StubMapping =
     stubFor(

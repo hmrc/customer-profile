@@ -20,7 +20,7 @@ import play.api.Logger
 import play.api.libs.json.JsValue
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.customerprofile.auth.AccessControl
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.domain.Nino
 
 trait CustomerProfileController extends AccessControl {
@@ -30,7 +30,7 @@ trait CustomerProfileController extends AccessControl {
   def controllerComponents: ControllerComponents
 
   def getPersonalDetails(
-    nino:      Nino,
+    nino: Nino,
     journeyId: JourneyId
   ): Action[AnyContent]
 
