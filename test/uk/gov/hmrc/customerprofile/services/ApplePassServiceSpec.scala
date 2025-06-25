@@ -23,21 +23,21 @@ import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
 import uk.gov.hmrc.customerprofile.connector.{ApplePassConnector, CitizenDetailsConnector}
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import scala.concurrent.duration._
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, Future}
 
 class ApplePassServiceSpec extends BaseSpec {
 
-  val appNameConfiguration:    Configuration  = mock[Configuration]
-  val passId:                  String         = "c864139e-77b5-448f-b443-17c69060870d"
-  val base64String:            String         = "TXIgSm9lIEJsb2dncw=="
+  val appNameConfiguration: Configuration = mock[Configuration]
+  val passId: String = "c864139e-77b5-448f-b443-17c69060870d"
+  val base64String: String = "TXIgSm9lIEJsb2dncw=="
   implicit val defaultTimeout: FiniteDuration = 5 seconds
   def await[A](future: Future[A])(implicit timeout: Duration): A = Await.result(future, timeout)
 
   val citizenDetailsConnector: CitizenDetailsConnector = mock[CitizenDetailsConnector]
-  val getApplePassConnector:   ApplePassConnector      = mock[ApplePassConnector]
-  val accountAccessControl:    AuthRetrievals          = mock[AuthRetrievals]
-  val auditService:            AuditService            = mock[AuditService]
+  val getApplePassConnector: ApplePassConnector = mock[ApplePassConnector]
+  val accountAccessControl: AuthRetrievals = mock[AuthRetrievals]
+  val auditService: AuditService = mock[AuditService]
 
   val service = new ApplePassService(
     citizenDetailsConnector,

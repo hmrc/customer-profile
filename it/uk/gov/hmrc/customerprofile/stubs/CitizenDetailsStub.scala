@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.customerprofile.stubs
 
-import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import com.github.tomakehurst.wiremock.matching.UrlPattern
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import uk.gov.hmrc.domain.Nino
@@ -24,7 +24,7 @@ import uk.gov.hmrc.domain.Nino
 object CitizenDetailsStub {
 
   def designatoryDetailsForNinoAre(
-    nino:        Nino,
+    nino: Nino,
     detailsJson: String
   ): StubMapping =
     stubFor(
@@ -37,7 +37,7 @@ object CitizenDetailsStub {
     )
 
   def designatoryDetailsWillReturnErrorResponse(
-    nino:               Nino,
+    nino: Nino,
     responseStatusCode: Int
   ): StubMapping =
     stubFor(

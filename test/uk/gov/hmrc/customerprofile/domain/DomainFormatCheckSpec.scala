@@ -23,11 +23,11 @@ import play.api.libs.json.Json.{prettyPrint, toJson}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
-import uk.gov.hmrc.emailaddress.EmailAddress
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 class DomainFormatCheckSpec extends BaseSpec {
 
-  import DomainGenerator._
+  import DomainGenerator.*
 
   val logger: Logger = Logger(this.getClass)
 
@@ -64,14 +64,14 @@ object DomainGenerator {
 
   import uk.gov.hmrc.domain.Generator
 
-  val nino:                               Nino            = new Generator().nextNino
-  val email:                              EmailAddress    = EmailAddress("name@email.co.uk")
-  val paperless:                          Paperless       = Paperless(TermsAccepted(Some(true)), email, Some(English))
-  val verifiedEmailPreference:            Preference      = Preference(digital = true)
-  val paperlessOptOut:                    PaperlessOptOut = PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))
-  lazy val paperlessAsJson:               JsValue         = toJson(paperless)
-  lazy val paperlessOptOutAsJson:         JsValue         = toJson(paperlessOptOut)
-  lazy val verifiedEmailPreferenceAsJson: JsValue         = toJson(verifiedEmailPreference)
+  val nino: Nino = new Generator().nextNino
+  val email: EmailAddress = EmailAddress("name@email.co.uk")
+  val paperless: Paperless = Paperless(TermsAccepted(Some(true)), email, Some(English))
+  val verifiedEmailPreference: Preference = Preference(digital = true)
+  val paperlessOptOut: PaperlessOptOut = PaperlessOptOut(Some(TermsAccepted(Some(false))), Some(English))
+  lazy val paperlessAsJson: JsValue = toJson(paperless)
+  lazy val paperlessOptOutAsJson: JsValue = toJson(paperlessOptOut)
+  lazy val verifiedEmailPreferenceAsJson: JsValue = toJson(verifiedEmailPreference)
 
   val person =
     Person(
@@ -87,10 +87,10 @@ object DomainGenerator {
       Some("John Albert"),
       Some("/personal-account/national-insurance-summary/save-letter-as-pdf")
     )
-  val address:                    Option[Address]   = None
-  val personalDetails:            PersonDetails     = PersonDetails(person, address, None)
-  val applePass:                  RetrieveApplePass = RetrieveApplePass("TXIgSm9lIEJsb2dncw==")
-  lazy val personalDetailsAsJson: JsValue           = toJson(personalDetails)
-  lazy val applePassJson:         JsValue           = toJson(applePass)
+  val address: Option[Address] = None
+  val personalDetails: PersonDetails = PersonDetails(person, address, None)
+  val applePass: RetrieveApplePass = RetrieveApplePass("TXIgSm9lIEJsb2dncw==")
+  lazy val personalDetailsAsJson: JsValue = toJson(personalDetails)
+  lazy val applePassJson: JsValue = toJson(applePass)
 
 }

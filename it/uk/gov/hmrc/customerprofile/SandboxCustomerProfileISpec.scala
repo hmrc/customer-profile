@@ -21,21 +21,24 @@ import play.api.libs.json.Json
 import play.api.libs.ws.WSRequest
 import uk.gov.hmrc.customerprofile.domain.StatusName.{Bounced, Pending, ReOptIn, Verified}
 import uk.gov.hmrc.customerprofile.domain.Language.English
-import uk.gov.hmrc.customerprofile.domain._
-import uk.gov.hmrc.customerprofile.domain.types.ModelTypes.JourneyId
+import uk.gov.hmrc.customerprofile.domain.*
+import uk.gov.hmrc.customerprofile.domain.types.JourneyId
 import uk.gov.hmrc.customerprofile.support.BaseISpec
-import uk.gov.hmrc.emailaddress.EmailAddress
+import play.api.libs.ws.WSBodyWritables.writeableOf_JsValue
+import play.api.libs.ws.writeableOf_JsValue
+import play.api.libs.ws.JsonBodyWritables.writeableOf_JsValue
+import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 import java.time.LocalDate
 
 class SandboxCustomerProfileISpec extends BaseISpec {
 
   def request(
-    url:            String,
+    url: String,
     sandboxControl: Option[String] = None,
-    journeyId:      JourneyId
+    journeyId: JourneyId
   ): WSRequest =
-    wsUrl(s"$url?journeyId=$journeyId")
+    wsUrl(s"$url?journeyId=${journeyId.value}")
       .addHttpHeaders(
         acceptJsonHeader,
         "SANDBOX-CONTROL"  -> s"${sandboxControl.getOrElse("")}",
@@ -43,14 +46,14 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       )
 
   def requestWithoutAcceptHeader(
-    url:       String,
+    url: String,
     journeyId: JourneyId
   ): WSRequest =
-    wsUrl(s"$url?journeyId=$journeyId")
+    wsUrl(s"$url?journeyId=${journeyId.value}")
       .addHttpHeaders("X-MOBILE-USER-ID" -> "208606423740")
 
   def requestWithoutJourneyId(
-    url:            String,
+    url: String,
     sandboxControl: Option[String] = None
   ): WSRequest =
     wsUrl(s"$url").addHttpHeaders(
@@ -144,7 +147,7 @@ class SandboxCustomerProfileISpec extends BaseISpec {
       )
 
     def preferencesSandbox(
-      status:   StatusName,
+      status: StatusName,
       linkSent: Option[LocalDate] = None
     ) =
       Preference(

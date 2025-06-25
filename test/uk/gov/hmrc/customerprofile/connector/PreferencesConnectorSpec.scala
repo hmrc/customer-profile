@@ -19,16 +19,16 @@ package uk.gov.hmrc.customerprofile.connector
 import org.mockito.Mockito.when
 import play.api.http.Status.{CONFLICT, IM_A_TEAPOT, NOT_FOUND}
 import uk.gov.hmrc.customerprofile.domain.ChangeEmail
-import uk.gov.hmrc.http.{HttpResponse}
+import uk.gov.hmrc.http.HttpResponse
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 class PreferencesConnectorSpec extends HttpClientV2Helper {
 
-  val baseUrl:             String      = "http://baseUrl"
-  val externalServiceName: String      = "externalServiceName"
-  val entityId:            String      = "entityId"
-  val changeEmailRequest:  ChangeEmail = ChangeEmail(email = "some-new-email@newEmail.new.email")
+  val baseUrl: String = "http://baseUrl"
+  val externalServiceName: String = "externalServiceName"
+  val entityId: String = "entityId"
+  val changeEmailRequest: ChangeEmail = ChangeEmail(email = "some-new-email@newEmail.new.email")
 
   val connector: PreferencesConnector =
     new PreferencesConnector(mockHttpClient, baseUrl, externalServiceName, config, environment)

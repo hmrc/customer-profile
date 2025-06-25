@@ -16,16 +16,13 @@
 
 package uk.gov.hmrc.customerprofile.domain
 
-import play.api.libs.json._
+import play.api.libs.json.*
 
-case class PaperlessStatus(
-  name:         StatusName,
-  category:     Category,
-  majorVersion: Option[Int] = None)
+case class PaperlessStatus(name: StatusName, category: Category, majorVersion: Option[Int] = None)
 
 object PaperlessStatus {
-  import play.api.libs.functional.syntax._
-  import play.api.libs.json._
+  import play.api.libs.functional.syntax.*
+  import play.api.libs.json.*
 
   implicit def optionFormat[T: Format]: Format[Option[T]] = new Format[Option[T]] {
     override def reads(json: JsValue): JsResult[Option[T]] = json.validateOpt[T]
@@ -38,15 +35,15 @@ object PaperlessStatus {
 
   implicit val statusReads: Reads[PaperlessStatus] = (
     (__ \ "name").read[StatusName] and
-    (__ \ "category").read[Category] and
-    (__ \ "reoptinMajor").readNullable[Int]
-  )(PaperlessStatus.apply _)
+      (__ \ "category").read[Category] and
+      (__ \ "reoptinMajor").readNullable[Int]
+  )(PaperlessStatus.apply)
 
   implicit val statusWrites: Writes[PaperlessStatus] = (
     (__ \ "name").write[StatusName] and
-    (__ \ "category").write[Category] and
-    (__ \ "majorVersion").writeNullable[Int]
-  )(unlift(PaperlessStatus.unapply))
+      (__ \ "category").write[Category] and
+      (__ \ "majorVersion").writeNullable[Int]
+  )(PaperlessStatus => Tuple.fromProductTyped(PaperlessStatus))
 
 }
 
@@ -54,16 +51,16 @@ sealed trait StatusName
 
 object StatusName {
 
-  case object Paper extends StatusName
+  case object Paper            extends StatusName
   case object EmailNotVerified extends StatusName
-  case object BouncedEmail extends StatusName
-  case object Alright extends StatusName
-  case object NewCustomer extends StatusName
-  case object NoEmail extends StatusName
-  case object Verified extends StatusName
-  case object Bounced extends StatusName
-  case object Pending extends StatusName
-  case object ReOptIn extends StatusName
+  case object BouncedEmail     extends StatusName
+  case object Alright          extends StatusName
+  case object NewCustomer      extends StatusName
+  case object NoEmail          extends StatusName
+  case object Verified         extends StatusName
+  case object Bounced          extends StatusName
+  case object Pending          extends StatusName
+  case object ReOptIn          extends StatusName
 
   val reads: Reads[StatusName] = new Reads[StatusName] {
 
@@ -102,12 +99,12 @@ object StatusName {
 sealed trait Category
 
 object Category {
-  import StatusName._
+  import StatusName.*
 
-  case object ActionRequired extends Category
-  case object Info extends Category
+  case object ActionRequired  extends Category
+  case object Info            extends Category
   case object ReOptInRequired extends Category
-  case object OptInRequired extends Category
+  case object OptInRequired   extends Category
 
   private val statusByCategory: Map[Category, List[StatusName]] =
     Map(

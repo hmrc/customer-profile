@@ -31,8 +31,8 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class MobilePinTestOnlyController @Inject() (
   mobilePinMongo: MobilePinMongo,
-  cc:             ControllerComponents
-)(implicit ec:    ExecutionContext)
+  cc: ControllerComponents
+)(implicit ec: ExecutionContext)
     extends BackendController(cc)
     with Logging {
 
@@ -42,14 +42,11 @@ class MobilePinTestOnlyController @Inject() (
 
         val hashedPinsInsert = mobilePin.hashedPins.map(x => HashSaltUtils.createHashAndSalt(x))
         val updatedMobilePin =
-          mobilePin.copy(ninoHash   = HashSaltUtils.createNINOHash(mobilePin.ninoHash),
-                         hashedPins = hashedPinsInsert)
+          mobilePin.copy(ninoHash = HashSaltUtils.createNINOHash(mobilePin.ninoHash), hashedPins = hashedPinsInsert)
 
         mobilePinMongo.add(updatedMobilePin).map {
           _.fold(
-            { _ =>
-              InternalServerError
-            },
+            _ => InternalServerError,
             _ => Created
           )
 
@@ -76,7 +73,7 @@ class MobilePinTestOnlyController @Inject() (
 
   def deleteByDeviceIdAndNino(
     deviceId: String,
-    nino:     String
+    nino: String
   ) = Action.async { implicit request =>
     val hashNino = HashSaltUtils.createNINOHash(nino)
     mobilePinMongo.deleteOne(deviceId, hashNino).map {

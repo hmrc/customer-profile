@@ -23,37 +23,31 @@ import uk.gov.hmrc.customerprofile.controllers.NinoNotFoundOnAccount
 import uk.gov.hmrc.customerprofile.domain.RetrieveApplePass
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import javax.inject.Named
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplePassService @Inject() (
-  citizenDetailsConnector:       CitizenDetailsConnector,
-  createApplePassConnector:      ApplePassConnector,
-  authRetrievals:                AuthRetrievals,
-  @Named("appName") val appName: String,
-  auditService:                  AuditService) {
+class ApplePassService @Inject() (citizenDetailsConnector: CitizenDetailsConnector,
+                                  createApplePassConnector: ApplePassConnector,
+                                  authRetrievals: AuthRetrievals,
+                                  @Named("appName") val appName: String,
+                                  auditService: AuditService
+                                 ) {
 
   def getNino(
-  )(implicit hc: HeaderCarrier,
-    ex:          ExecutionContext
-  ): Future[Option[Nino]] =
+  )(implicit hc: HeaderCarrier, ex: ExecutionContext): Future[Option[Nino]] =
     auditService.withAudit("getApplePass", Map.empty) {
       authRetrievals.retrieveNino()
     }
 
   def getApplePass(
-  )(implicit hc:      HeaderCarrier,
-    executionContext: ExecutionContext
-  ): Future[RetrieveApplePass] =
+  )(implicit hc: HeaderCarrier, executionContext: ExecutionContext): Future[RetrieveApplePass] =
     auditService.withAudit("applePass", Map.empty) {
       for {
-        nino           <- getNino()
-        citizenDetails <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
-        createApplePass <- createApplePassConnector.createApplePass(nino.get.formatted,
-                                                                    citizenDetails.person.completeName)
-        getApplePass <- createApplePassConnector.getApplePass(createApplePass)
+        nino            <- getNino()
+        citizenDetails  <- citizenDetailsConnector.personDetails(nino.getOrElse(throw new NinoNotFoundOnAccount("")))
+        createApplePass <- createApplePassConnector.createApplePass(nino.get.formatted, citizenDetails.person.completeName)
+        getApplePass    <- createApplePassConnector.getApplePass(createApplePass)
       } yield getApplePass
     }
 

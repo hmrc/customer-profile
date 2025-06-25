@@ -19,9 +19,7 @@ package uk.gov.hmrc.customerprofile.domain.audit
 import play.api.libs.json.{Json, OFormat}
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
 
-case class MobilePinAudit(
-  pin:      String,
-  deviceId: String)
+case class MobilePinAudit(pin: String, deviceId: String)
 
 object MobilePinAudit {
 
