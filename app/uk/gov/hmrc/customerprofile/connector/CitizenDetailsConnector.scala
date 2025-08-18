@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, InternalServerException, NotFoundException, StringContextOps, UpstreamErrorResponse}
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.customerprofile.domain.PersonDetails
 import uk.gov.hmrc.domain.Nino
@@ -56,7 +56,7 @@ class CitizenDetailsConnector @Inject() (@Named("citizen-details") citizenDetail
       .execute[PersonDetails]
       .map(details => Some(details))
       .recover { case _ =>
-        logger.warn(s"No Customer found in the DB with the given NINO")
-        None
+        logger.warn(s"Internal server error while connecting to citizen details")
+        throw InternalServerException(s"Internal server error")
       }
 }

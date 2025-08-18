@@ -124,6 +124,20 @@ class ValidateControllerSpec extends BaseSpec with AuthAndShutterMock {
       }
 
     }
+
+    "return 500" when {
+
+      "when citizen details is down" in {
+        mockAuthorisationGrantAccess(grantAccessWithCL200)
+        when(mockCustomerProfileService.getNino()(any(), any()))
+          .thenReturn(Future.successful(Some(nino)))
+        when(mockCitizenDetailsConnector.personDetailsForPin(any())(any(), any()))
+          .thenReturn(Future.failed(new Exception(" Internal server error")))
+        val result = controller.validatePin("240712", deviceId, journeyId)(fakeRequest)
+        status(result) mustBe 500
+      }
+
+    }
   }
 
 }
