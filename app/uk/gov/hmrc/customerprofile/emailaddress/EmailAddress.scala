@@ -19,7 +19,6 @@ package uk.gov.hmrc.customerprofile.emailaddress
 import play.api.libs.json.{JsResult, JsValue}
 import play.api.libs.json.*
 
-import javax.naming.Context.INITIAL_CONTEXT_FACTORY as ICF
 import scala.jdk.CollectionConverters.*
 
 case class EmailAddress(value: String) extends StringValue {

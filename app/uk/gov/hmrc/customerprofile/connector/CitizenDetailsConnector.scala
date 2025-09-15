@@ -19,7 +19,7 @@ package uk.gov.hmrc.customerprofile.connector
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import play.api.Logger
-import uk.gov.hmrc.http.{HeaderCarrier, HttpException, InternalServerException, NotFoundException, StringContextOps, UpstreamErrorResponse}
+import uk.gov.hmrc.http.{HeaderCarrier, HttpException, InternalServerException, StringContextOps, UpstreamErrorResponse}
 import play.api.http.Status.{LOCKED, NOT_FOUND}
 import uk.gov.hmrc.customerprofile.domain.PersonDetails
 import uk.gov.hmrc.domain.Nino

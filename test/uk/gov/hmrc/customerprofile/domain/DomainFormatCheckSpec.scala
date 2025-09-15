@@ -23,6 +23,7 @@ import play.api.libs.json.Json.{prettyPrint, toJson}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress
 
 class DomainFormatCheckSpec extends BaseSpec {
@@ -62,9 +63,7 @@ class DomainFormatCheckSpec extends BaseSpec {
 
 object DomainGenerator {
 
-  import uk.gov.hmrc.domain.Generator
-
-  val nino: Nino = new Generator().nextNino
+  val nino: Nino = new NinoGenerator().nextNino
   val email: EmailAddress = EmailAddress("name@email.co.uk")
   val paperless: Paperless = Paperless(TermsAccepted(Some(true)), email, Some(English))
   val verifiedEmailPreference: Preference = Preference(digital = true)

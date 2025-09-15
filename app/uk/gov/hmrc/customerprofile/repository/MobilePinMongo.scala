@@ -25,7 +25,6 @@ import uk.gov.hmrc.mongo.play.json.PlayMongoRepository
 import org.mongodb.scala.model.Indexes.{ascending, descending}
 import uk.gov.hmrc.customerprofile.config.AppConfig
 import uk.gov.hmrc.customerprofile.errors.MongoDBError
-import org.mongodb.scala.{ObservableFuture, SingleObservableFuture}
 
 import java.time.Instant
 import java.util.concurrent.TimeUnit

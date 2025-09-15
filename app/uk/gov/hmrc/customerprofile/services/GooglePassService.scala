@@ -25,7 +25,6 @@ import uk.gov.hmrc.customerprofile.domain.RetrieveGooglePass
 import uk.gov.hmrc.customerprofile.utils.GoogleCredentialsHelper
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
-import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import scala.concurrent.{ExecutionContext, Future}
 

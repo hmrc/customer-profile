@@ -4,13 +4,13 @@ object AppDependencies {
 
   private val bootstrapPlayVersion = "10.1.0"
   private val playHmrcVersion = "8.3.0"
-  private val domainVersion = "12.1.0"
-  private val reactiveCircuitBreakerVersion = "6.0.0"
+  private val domainVersion = "13.0.0"
+  private val reactiveCircuitBreakerVersion = "6.1.0"
   private val emailAddressVersion = "4.0.0"
   private val flexmarkAllVersion = "0.64.8"
   private val hmrcMongoVersion = "2.7.0"
 
-  private val scalaMockVersion = "7.4.1"
+  private val scalaMockVersion = "7.5.0"
   private val pegdownVersion = "1.6.0"
   private val wiremockVersion = "3.8.0"
   private val refinedVersion = "0.11.3"
@@ -22,9 +22,9 @@ object AppDependencies {
     "uk.gov.hmrc"                  %% "domain-play-30"                  % domainVersion,
     "uk.gov.hmrc"                  %% "reactive-circuit-breaker"        % reactiveCircuitBreakerVersion,
     "eu.timepit"                   %% "refined"                         % refinedVersion,
-    "com.google.auth"               % "google-auth-library-oauth2-http" % "1.37.1",
+    "com.google.auth"               % "google-auth-library-oauth2-http" % "1.39.0",
     "com.auth0"                     % "java-jwt"                        % "4.5.0",
-    "com.fasterxml.jackson.module" %% "jackson-module-scala"            % "2.19.2",
+    "com.fasterxml.jackson.module" %% "jackson-module-scala"            % "2.20.0",
     "org.mindrot"                   % "jbcrypt"                         % "0.4"
   )
 
@@ -36,7 +36,8 @@ object AppDependencies {
   private def testCommon(scope: String) = Seq(
     "uk.gov.hmrc"         %% "bootstrap-test-play-30"  % bootstrapPlayVersion % scope,
     "uk.gov.hmrc.mongo"   %% "hmrc-mongo-test-play-30" % hmrcMongoVersion     % scope,
-    "com.vladsch.flexmark" % "flexmark-all"            % flexmarkAllVersion   % scope
+    "com.vladsch.flexmark" % "flexmark-all"            % flexmarkAllVersion   % scope,
+    "uk.gov.hmrc"         %% "domain-test-play-30"     % domainVersion        % scope
   )
 
   object Test {
