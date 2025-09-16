@@ -22,8 +22,6 @@ import uk.gov.hmrc.customerprofile.domain.{MobilePin, MobilePinValidatedRequest}
 import uk.gov.hmrc.customerprofile.repository.MobilePinMongo
 import uk.gov.hmrc.customerprofile.utils.HashSaltUtils
 import uk.gov.hmrc.domain.Nino
-
-import java.time.Instant
 import javax.inject.{Inject, Named}
 import scala.concurrent.{ExecutionContext, Future}
 

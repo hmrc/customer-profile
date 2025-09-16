@@ -18,13 +18,13 @@ package uk.gov.hmrc.customerprofile.controllers
 
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
-import play.api.mvc.{ControllerComponents, Results}
+import play.api.mvc.ControllerComponents
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsJson, status, stubControllerComponents}
 import uk.gov.hmrc.customerprofile.connector.CitizenDetailsConnector
 import uk.gov.hmrc.customerprofile.domain.MobilePin
 import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MongoService}
-import uk.gov.hmrc.customerprofile.utils.{AuthAndShutterMock, BaseSpec, HashSaltUtils}
+import uk.gov.hmrc.customerprofile.utils.{AuthAndShutterMock, BaseSpec}
 
 import java.time.LocalDate
 import java.util.UUID

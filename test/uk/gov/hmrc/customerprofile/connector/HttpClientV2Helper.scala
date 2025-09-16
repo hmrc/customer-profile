@@ -17,14 +17,12 @@
 package uk.gov.hmrc.customerprofile.connector
 
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{doReturn, when}
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatestplus.mockito.MockitoSugar
-import play.api.libs.json.JsValue
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.http.client.RequestBuilder
 import uk.gov.hmrc.http.{HeaderCarrier, HttpReads}
-import play.api.libs.ws.BodyWritable
 
 import java.net.URL
 import scala.concurrent.ExecutionContext

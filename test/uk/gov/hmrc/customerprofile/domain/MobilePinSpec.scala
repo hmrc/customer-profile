@@ -20,7 +20,6 @@ import play.api.libs.json.Json
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 
 import java.time.{LocalDateTime, ZoneOffset}
-import java.util.UUID
 
 class MobilePinSpec extends BaseSpec {
 

@@ -30,7 +30,6 @@ import uk.gov.hmrc.customerprofile.domain.*
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
 import uk.gov.hmrc.domain.Nino
 
-import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.{Await, Future}
 
 class CustomerProfileServiceSpec extends BaseSpec with BeforeAndAfterEach {

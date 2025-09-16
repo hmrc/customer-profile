@@ -25,7 +25,7 @@ import play.api.libs.json.Json.toJson
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.customerprofile.auth.AuthRetrievals
-import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailNotExist, EmailUpdateOk, EntityResolverConnector, HttpClientV2Helper, NoPreferenceExists, PreferencesConnector, PreferencesCreated, PreferencesDoesNotExist, PreferencesExists, PreferencesFailure, PreferencesStatus, ShutteringConnector}
+import uk.gov.hmrc.customerprofile.connector.{CitizenDetailsConnector, EmailNotExist, EmailUpdateOk, EntityResolverConnector, NoPreferenceExists, PreferencesConnector, PreferencesCreated, PreferencesDoesNotExist, PreferencesExists, PreferencesFailure, PreferencesStatus, ShutteringConnector}
 import uk.gov.hmrc.customerprofile.domain.Language.English
 import uk.gov.hmrc.customerprofile.domain.*
 import uk.gov.hmrc.customerprofile.emailaddress.EmailAddress

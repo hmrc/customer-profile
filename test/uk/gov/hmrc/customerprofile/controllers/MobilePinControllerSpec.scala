@@ -25,9 +25,8 @@ import play.api.test.Helpers.*
 import play.api.test.*
 import uk.gov.hmrc.auth.core.AuthConnector
 import uk.gov.hmrc.customerprofile.domain.MobilePinValidatedRequest
-import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MobilePinService, MongoService}
+import uk.gov.hmrc.customerprofile.services.{CustomerProfileService, MobilePinService}
 import uk.gov.hmrc.customerprofile.utils.BaseSpec
-import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 
 import java.util.UUID
