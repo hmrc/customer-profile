@@ -359,10 +359,10 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
-  /validate/pin/{enteredPin}:
+  /customer-profile/validate/pin/{enteredPin}:
     get:
       tags:
-        - mobile-pin
+        - customer-profile
       summary: Validate the PIN against DOB pattern and previously used PINs.
       description: This endpoint validate the user entered PIN against DOB pattern and previously used PINs.
       operationId: ValidatePin
@@ -424,10 +424,10 @@ paths:
       security:
         - userRestricted:
             - read:customer-profile
-  /upsert:
+  /customer-profile/upsert:
     put:
       tags:
-        - mobile-pin
+        - customer-profile
       summary: Insert or update the PIN.
       operationId: UpsertPin
       requestBody:
