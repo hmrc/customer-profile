@@ -54,7 +54,9 @@ class SandboxValidateController @Inject() (
 
     enteredPin match {
       case "310199" | "319901" | "013199" | "019931" | "990131" | "993101" | "319901" | "199901" | "199931" | "011999" | "311999" | "199931" =>
-        Future.successful(Ok(Json.toJson(ValidateResponse(Some("dob_error"), "PIN should not include your date of birth"))))
+        Future.successful(
+          Ok(Json.toJson(ValidateResponse(Some(dobErrorKey), "PIN should not include your date of birth")))
+        )
       case _ => Future.successful(Ok(Json.toJson(ValidateResponse(Some("valid_pin"), "Pin is valid"))))
     }
 
