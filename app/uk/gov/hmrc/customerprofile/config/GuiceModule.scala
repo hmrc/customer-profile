@@ -20,7 +20,6 @@ import com.google.inject.AbstractModule
 import com.google.inject.name.Names.named
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.auth.core.AuthConnector
-import uk.gov.hmrc.customerprofile.controllers.api.ApiAccess
 import uk.gov.hmrc.play.bootstrap.auth.DefaultAuthConnector
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
@@ -34,9 +33,7 @@ class GuiceModule(environment: Environment, configuration: Configuration) extend
     bindConfigInt("controllers.confidenceLevel")
     bindConfigInt("mongodb.ttlDays")
     bindConfigInt("service.maxStoredPins")
-    bind(classOf[ApiAccess]).toInstance(
-      ApiAccess("PRIVATE")
-    )
+    bind(classOf[String]).annotatedWith(named("api-access")).toInstance("CONTROLLED")
 
     bindConfigBoolean("citizen-details.enabled", "microservice.services.citizen-details.enabled")
     bindConfigBoolean("optInVersionsEnabled", "optInVersionsEnabled")
